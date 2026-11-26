@@ -387,3 +387,46 @@ create policy dp_admin on public.depenses for all using (public.is_admin()) with
 grant select, insert, update, delete on public.depenses to authenticated;
 grant usage, select on all sequences in schema public to authenticated;
 select 'ok' as v5;
+
+-- v6 : durcissement sécurité (audit nov. 2026)
+revoke truncate, trigger, references on all tables in schema public from anon, authenticated;
+drop function if exists public.place_order(jsonb, text, date, text);
+
+-- limite anti-abus : 5 commandes en ligne ouvertes max par client
+create or replace function public.guard_order() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if new.source = 'en_ligne' and new.user_id is not null and not public.is_admin() then
+    if (select count(*) from public.orders where user_id = new.user_id and statut in ('a_preparer','prete')) >= 5 then
+      raise exception 'Trop de commandes en cours. Écris-nous par le chat.';
+    end if;
+  end if;
+  return new;
+end $$;
+drop trigger if exists orders_guard on public.orders;
+create trigger orders_guard before insert on public.orders for each row execute function public.guard_order();
+
+-- limite anti-spam : 10 messages client par 10 minutes
+create or replace function public.guard_message() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if not new.from_admin and not public.is_admin() then
+    if (select count(*) from public.messages where user_id = new.user_id and not from_admin and created_at > now() - interval '10 minutes') >= 10 then
+      raise exception 'Trop de messages, réessaie dans quelques minutes.';
+    end if;
+  end if;
+  return new;
+end $$;
+drop trigger if exists messages_guard on public.messages;
+create trigger messages_guard before insert on public.messages for each row execute function public.guard_message();
+
+-- pseudo valide même si quelqu'un passe à côté du site
+create or replace function public.handle_new_user() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare u text := lower(trim(coalesce(new.raw_user_meta_data->>'username','')));
+begin
+  if u !~ '^[a-z0-9._-]{3,20}$' then raise exception 'Pseudo invalide'; end if;
+  insert into public.profiles (id, username, tel)
+  values (new.id, u, left(coalesce(new.raw_user_meta_data->>'tel',''), 30));
+  return new;
+end $$;
