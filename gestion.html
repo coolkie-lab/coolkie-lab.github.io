@@ -101,7 +101,7 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
 <main id="app" style="display:none">
   <div class="view" id="v-accueil">
     <div class="kpis" id="kpis"></div>
-    <a href="#chiffres" data-goch="liasse" class="card row" style="margin-top:14px;text-decoration:none;color:inherit"><span class="ico-r" aria-hidden="true">📄</span><span class="grow"><b>Rapport mensuel en PDF</b><br><span class="mute">Tous les chiffres du mois, à télécharger</span></span><span style="color:var(--ice);font-weight:600">Ouvrir →</span></a>
+    <a href="#chiffres" data-goch="liasse" class="card row" style="margin-top:14px;text-decoration:none;color:inherit"><span class="ico-r" aria-hidden="true">📄</span><span class="grow"><b>Rapport financier en PDF</b><br><span class="mute">Mensuel, trimestriel, annuel ou depuis janvier</span></span><span style="color:var(--ice);font-weight:600">Ouvrir →</span></a>
     <section><h2>À préparer <small id="prepCount"></small></h2><div id="prep"></div></section>
     <section><h2>Planning de production <small>délai <input id="lead" type="number" min="0" max="14" value="2" style="width:56px;min-height:32px;padding:2px 6px;font-size:14px" aria-label="Délai de production en jours"> j</small></h2><div id="plan"></div></section>
     <section><h2>À produire <small>commandes en cours vs stock</small></h2><div id="toMake"></div></section>
@@ -170,9 +170,9 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
       <div class="savebar"><span class="grow" id="cState">Tout est enregistré</span><button class="btn sm" id="cSave">Enregistrer</button></div>
     </div>
     <div class="chv" id="ch-liasse">
-      <div class="card"><b>Rapport financier mensuel (liasse PDF)</b>
+      <div class="card"><b>Rapport financier (liasse PDF)</b>
         <p class="mute" style="margin:6px 0 0">Un document PDF de plusieurs pages avec tous les chiffres du mois : synthèse, comparaison avec le mois précédent, compte de résultat simplifié, répartition des ventes, production, détail des commandes et des dépenses, montants à encaisser et coût de revient.</p>
-        <label for="rMonth">Mois</label><select id="rMonth"></select>
+        <div class="two"><div><label for="rType">Période</label><select id="rType"><option value="mois">Mensuel</option><option value="trim">Trimestriel</option><option value="annee">Annuel</option><option value="ytd">Year to date</option></select></div><div><label for="rMonth">Choix</label><select id="rMonth"></select></div></div>
         <div class="acts"><button class="btn ice" id="rGo">Télécharger le PDF</button></div>
         <p class="mute" style="margin:10px 0 0">La fenêtre d'impression s'ouvre : choisis « Enregistrer au format PDF » (sur iPhone : Partager › Enregistrer dans Fichiers).</p></div>
     </div>
@@ -282,7 +282,7 @@ function render(){
   $('#kpis').innerHTML=[[eur(ca),'Ventes ce mois'],[eur(marge),'Marge brute ce mois',ca?Math.round(marge/ca*100)+' % du chiffre d\'affaires':''],[stockT+' boîtes','En stock',(stockT-resT)+' libres après commandes'],[eur(due),'À encaisser']].map(k=>`<div class="kpi"><b>${esc(k[0])}</b><span>${k[1]}</span>${k[2]?'<small>'+esc(k[2])+'</small>':''}</div>`).join('');
   {const PER={mois:'Ce mois',trim:'3 derniers mois',annee:'Cette année',tout:'Depuis le début'};
    document.querySelectorAll('.perc').forEach(e=>e.innerHTML=Object.entries(PER).map(([k,l])=>`<button class="chip${S.per===k?' on':''}" data-per="${k}">${l}</button>`).join(''));
-   const CH={apercu:'Vue d\'ensemble',finances:'Finances',couts:'Coûts de revient',depenses:'Dépenses',liasse:'Rapport mensuel (PDF)'};
+   const CH={apercu:'Vue d\'ensemble',finances:'Finances',couts:'Coûts de revient',depenses:'Dépenses',liasse:'Rapport PDF'};
    $('#chTabs').innerHTML=Object.entries(CH).map(([k,l])=>`<button class="chip${S.ch===k?' on':''}" data-ch="${k}">${l}</button>`).join('');
    document.querySelectorAll('.chv').forEach(e=>e.classList.toggle('on',e.id==='ch-'+S.ch));
    const t=today(),y=t.slice(0,4),d90=new Date(Date.now()-91*864e5).toISOString().slice(0,10);
@@ -500,13 +500,27 @@ $('#ch-depenses').addEventListener('click',async e=>{const b=e.target.closest('b
   else if(b.dataset.ddel){if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Supprimer ?';return}const{error}=await sb.from('depenses').delete().eq('id',+b.dataset.ddel);if(error)return toast('Erreur : '+error.message);load('depenses')}});
 
 // ---------- liasse financière mensuelle (PDF via impression) ----------
+const fmtD=d=>new Date(d+'T12:00').toLocaleDateString('fr-BE',{day:'numeric',month:'short',year:'numeric'});
+const lastDay=(y,m)=>new Date(Date.UTC(y,m,0)).toISOString().slice(0,10);
+function periodOf(type,v){const t=today();let from,to,label,pf,pt,pl;
+  if(type==='mois'){const[y,m]=v.split('-').map(Number);from=v+'-01';to=lastDay(y,m);label=mLabel(v);const py=m===1?y-1:y,pm=m===1?12:m-1,pym=py+'-'+String(pm).padStart(2,'0');pf=pym+'-01';pt=lastDay(py,pm);pl=mLabel(pym)}
+  else if(type==='trim'){const[y,q]=v.split('-Q').map(Number);from=y+'-'+String(q*3-2).padStart(2,'0')+'-01';to=lastDay(y,q*3);label=q+'e trimestre '+y;const py=q===1?y-1:y,pq=q===1?4:q-1;pf=py+'-'+String(pq*3-2).padStart(2,'0')+'-01';pt=lastDay(py,pq*3);pl=pq+'e trimestre '+py}
+  else if(type==='annee'){const y=+v;from=y+'-01-01';to=y+'-12-31';label='Année '+y;pf=(y-1)+'-01-01';pt=(y-1)+'-12-31';pl='Année '+(y-1)}
+  else{const y=+t.slice(0,4);from=y+'-01-01';to=t;label='Depuis le début de '+y+' (au '+fmtD(t)+')';pf=(y-1)+'-01-01';pt=(y-1)+t.slice(4);pl='même période '+(y-1)}
+  return{from,to,label,pf,pt,pl,type}}
+function periodOptions(type){const ms=monthsList();
+  if(type==='mois')return ms.map(m=>[m,mLabel(m)]);
+  if(type==='trim')return[...new Set(ms.map(m=>m.slice(0,4)+'-Q'+Math.ceil(+m.slice(5,7)/3)))].map(q=>[q,q.slice(5,7).replace('Q','')+'e trimestre '+q.slice(0,4)]);
+  if(type==='annee')return[...new Set(ms.map(m=>m.slice(0,4)))].map(y=>[y,'Année '+y]);
+  return[['ytd','Depuis le 1er janvier '+today().slice(0,4)]]}
 function monthsList(){const s=new Set([today().slice(0,7)]);S.orders.forEach(o=>o.date_retrait&&s.add(o.date_retrait.slice(0,7)));S.depenses.forEach(d=>d.date&&s.add(d.date.slice(0,7)));return[...s].sort().reverse()}
 const mLabel=ym=>new Date(ym+'-15T12:00').toLocaleDateString('fr-BE',{month:'long',year:'numeric'});
-function renderRep(){const sel=$('#rMonth');if(!sel)return;const cur=sel.value,ms=monthsList();
-  sel.innerHTML=ms.map(m=>`<option value="${m}"${m===cur?' selected':''}>${esc(mLabel(m))}</option>`).join('');if(!cur){const prev=new Date();prev.setDate(1);prev.setMonth(prev.getMonth()-1);const pm=prev.toISOString().slice(0,7);if(ms.includes(pm))sel.value=pm}}
-async function buildReport(ym){
-  const pd=new Date(ym+'-15T12:00');pd.setMonth(pd.getMonth()-1);const pym=pd.toISOString().slice(0,7);
-  const inM=(d,m)=>(d||'').slice(0,7)===m,os=S.orders.filter(active);
+function renderRep(){const sel=$('#rMonth');if(!sel)return;const type=$('#rType').value||'mois',cur=sel.dataset.type===type?sel.value:'',op=periodOptions(type);sel.dataset.type=type;
+  sel.innerHTML=op.map(([v,l])=>`<option value="${v}"${v===cur?' selected':''}>${esc(l)}</option>`).join('');sel.disabled=type==='ytd';
+  if(!cur&&type==='mois'){const prev=new Date();prev.setDate(1);prev.setMonth(prev.getMonth()-1);const pm=prev.toISOString().slice(0,7);if(op.some(o=>o[0]===pm))sel.value=pm}}
+async function buildReport(P){
+  const ym='cur',pym='prev',inM=(d,m)=>{d=d||'';return m==='cur'?(d>=P.from&&d<=P.to):(d>=P.pf&&d<=P.pt)},os=S.orders.filter(active);
+  const mLabel=x=>x==='cur'?P.label:x==='prev'?P.pl:x;
   const po=os.filter(o=>inM(o.date_retrait,ym)),pp=os.filter(o=>inM(o.date_retrait,pym));
   const k=costCalc(),perBox={ing:k.ing/k.bx,pack:k.pack};
   const stat=arr=>{const brut=arr.reduce((a,o)=>a+(o.lignes||[]).reduce((b,l)=>b+l.qte*(+l.prix||0),0),0),net=arr.reduce((a,o)=>a+(+o.total||0),0),bx=arr.reduce((a,o)=>a+boxes(o),0);
@@ -517,14 +531,14 @@ async function buildReport(ym){
   const key=o=>o.user_id||('n:'+(o.client_nom||'').trim().toLowerCase());
   const firstBy={};[...os].sort((a,b)=>(a.date_retrait||'').localeCompare(b.date_retrait||'')).forEach(o=>{const c=key(o);if(!firstBy[c])firstBy[c]=o.date_retrait});
   const cli=new Set(po.map(key)),nouv=[...cli].filter(c=>inM(firstBy[c],ym)).length;
-  const prodM=(await q(sb.from('production').select('*').gte('date',ym+'-01').lte('date',ym+'-31').order('date')))||[];
+  const prodM=(await q(sb.from('production').select('*').gte('date',P.from).lte('date',P.to).order('date')))||[];
   const g=(arr,kf,vf)=>{const m={};arr.forEach(x=>{const kk=kf(x);m[kk]=(m[kk]||0)+vf(x)});return Object.entries(m).sort((a,b)=>b[1]-a[1])};
   const vr=(a,b)=>b?((a-b)/Math.abs(b)*100>=0?'+':'')+Math.round((a-b)/Math.abs(b)*100)+' %':'–';
   const tr=(l,v,c)=>`<tr${c?' class="'+c+'"':''}><td>${l}</td><td class="r">${v}</td></tr>`;
-  const unpaid=os.filter(o=>!o.paye&&(+o.total)>0&&o.date_retrait<=ym+'-31').sort((a,b)=>(a.date_retrait||'').localeCompare(b.date_retrait||''));
+  const unpaid=os.filter(o=>!o.paye&&(+o.total)>0&&o.date_retrait<=P.to).sort((a,b)=>(a.date_retrait||'').localeCompare(b.date_retrait||''));
   const kp=[[eur(A.net),'Chiffre d\'affaires'],[eur(A.mb),'Marge brute · '+pct(A.mb,A.net)],[eur(A.enc-dep),'Résultat (encaissé − dépenses)'],[A.bx+' boîtes','Vendues · '+A.n+' commandes'],
-    [eur(A.n?A.net/A.n:0),'Panier moyen'],[eur(A.bx?A.net/A.bx:0),'Prix moyen par boîte'],[cli.size,'Clients servis · '+nouv+' nouveaux'],[eur(A.net-A.enc),'Reste à encaisser (mois)']];
-  return `<div class="rp-h"><div><h1>Liasse financière</h1><p>Coolkie Lab · ${esc(mLabel(ym))}</p></div><img src="img/coolkie-logo.jpg" alt=""></div>
+    [eur(A.n?A.net/A.n:0),'Panier moyen'],[eur(A.bx?A.net/A.bx:0),'Prix moyen par boîte'],[cli.size,'Clients servis · '+nouv+' nouveaux'],[eur(A.net-A.enc),'Reste à encaisser (période)']];
+  return `<div class="rp-h"><div><h1>${P.type==='mois'?'Liasse financière mensuelle':P.type==='trim'?'Liasse financière trimestrielle':P.type==='annee'?'Liasse financière annuelle':'Liasse financière depuis janvier'}</h1><p>Coolkie Lab · ${esc(mLabel(ym))}</p></div><img src="img/coolkie-logo.jpg" alt=""></div>
   <p class="rp-m">Généré le ${esc(new Date().toLocaleDateString('fr-BE',{day:'numeric',month:'long',year:'numeric'}))}. Ventes comptées à la date de retrait, hors commandes annulées. Coût de revient actuel : ${eur(k.box)} par boîte.</p>
   <h2>1. Synthèse</h2><div class="rp-k">${kp.map(x=>`<div><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div>`).join('')}</div>
   <h2>2. Comparaison avec ${esc(mLabel(pym))}</h2><table><thead><tr><th></th><th class="r">${esc(mLabel(ym))}</th><th class="r">${esc(mLabel(pym))}</th><th class="r">Évolution</th></tr></thead><tbody>
@@ -534,24 +548,25 @@ async function buildReport(ym){
   ${tr('Coût des ingrédients ('+A.bx+' boîtes)','− '+eur(A.cogs*(k.box?perBox.ing/k.box:0)))}${tr('Coût du packaging ('+A.bx+' boîtes)','− '+eur(A.cogs*(k.box?perBox.pack/k.box:1)))}
   ${tr('<b>Marge brute</b> · '+pct(A.mb,A.net),'<b>'+eur(A.mb)+'</b>','t')}
   ${g(dm,d=>CATS[d.categorie]||d.categorie,d=>+d.montant||0).map(([c,v])=>tr('Dépenses : '+esc(c),'− '+eur(v))).join('')||tr('Dépenses','0,00 €')}
-  ${tr('<b>Encaissé sur le mois</b>','<b>'+eur(A.enc)+'</b>')}${tr('<b>Résultat de trésorerie</b> (encaissé − dépenses)','<b>'+eur(A.enc-dep)+'</b>','t')}</tbody></table>
-  <p class="rp-m">La marge brute compare les ventes au coût des ingrédients et du packaging des boîtes vendues. Les dépenses sont les achats réellement payés ce mois-ci (courses, matériel, marketing).</p>
+  ${tr('<b>Encaissé sur la période</b>','<b>'+eur(A.enc)+'</b>')}${tr('<b>Résultat de trésorerie</b> (encaissé − dépenses)','<b>'+eur(A.enc-dep)+'</b>','t')}</tbody></table>
+  <p class="rp-m">La marge brute compare les ventes au coût des ingrédients et du packaging des boîtes vendues. Les dépenses sont les achats réellement payés sur la période (courses, matériel, marketing).</p>
   <h2>4. Répartition des ventes</h2><div class="rp-2"><table><thead><tr><th>Point de retrait</th><th class="r">CA</th></tr></thead><tbody>${g(po,o=>(C.points[o.point]||{}).nom||PTS[o.point]||o.point,o=>+o.total||0).map(([l,v])=>tr(esc(l),eur(v))).join('')||tr('–','')}</tbody></table>
   <table><thead><tr><th>Paiement (encaissé)</th><th class="r">Montant</th></tr></thead><tbody>${g(po.filter(o=>o.paye),o=>PAY[o.paiement]||o.paiement||'Autre',o=>+o.total||0).map(([l,v])=>tr(esc(l),eur(v))).join('')||tr('–','')}</tbody></table></div>
-  <h2>5. Production et stock</h2><table><thead><tr><th>Date</th><th>Produit</th><th class="r">Boîtes produites</th></tr></thead><tbody>${prodM.map(x=>`<tr><td>${esc(fdate(x.date))}</td><td>${esc(x.nom)}</td><td class="r">${esc(x.qte)}</td></tr>`).join('')||'<tr><td colspan="3">Aucune production enregistrée ce mois-ci.</td></tr>'}</tbody></table>
+  <h2>5. Production et stock</h2>${P.type!=='mois'?`<h3 style="font-size:11pt;margin:6px 0">Ventes par mois</h3><table><thead><tr><th>Mois</th><th class="r">Commandes</th><th class="r">Boîtes</th><th class="r">CA</th><th class="r">Marge brute</th><th class="r">Dépenses</th></tr></thead><tbody>${(()=>{const mm=[];let d=new Date(P.from+'T12:00');while(d.toISOString().slice(0,10)<=P.to){mm.push(d.toISOString().slice(0,7));d.setMonth(d.getMonth()+1)}return mm.map(m=>{const ar=po.filter(o=>(o.date_retrait||'').startsWith(m)),st=stat(ar),dd=dm.filter(x=>(x.date||'').startsWith(m)).reduce((a,x)=>a+(+x.montant||0),0);return `<tr><td>${esc(new Date(m+'-15T12:00').toLocaleDateString('fr-BE',{month:'long',year:'numeric'}))}</td><td class="r">${st.n}</td><td class="r">${st.bx}</td><td class="r">${eur(st.net)}</td><td class="r">${eur(st.mb)}</td><td class="r">${eur(dd)}</td></tr>`}).join('')})()}</tbody></table>`:''}<table><thead><tr><th>Date</th><th>Produit</th><th class="r">Boîtes produites</th></tr></thead><tbody>${prodM.map(x=>`<tr><td>${esc(fdate(x.date))}</td><td>${esc(x.nom)}</td><td class="r">${esc(x.qte)}</td></tr>`).join('')||'<tr><td colspan="3">Aucune production enregistrée sur la période.</td></tr>'}</tbody></table>
   <p class="rp-m">Stock au ${esc(new Date().toLocaleDateString('fr-BE'))} : ${S.products.filter(p=>p.actif).map(p=>esc(p.nom)+' '+(+p.stock||0)+' boîtes').join(', ')} (valeur ${eur(S.products.filter(p=>p.actif).reduce((a,p)=>a+(+p.stock||0)*(+p.cout||0),0))} au coût de revient).</p>
   <h2>6. Détail des commandes</h2><table class="sm"><thead><tr><th>Retrait</th><th>N°</th><th>Client</th><th class="r">Boîtes</th><th class="r">Total</th><th>Statut</th><th>Payé</th></tr></thead><tbody>
   ${po.sort((a,b)=>(a.date_retrait||'').localeCompare(b.date_retrait||'')).map(o=>`<tr><td>${esc(fdate(o.date_retrait))}</td><td>${esc(o.id)}</td><td>${esc(o.client_nom)}${o.promo_code?' <i>('+esc(o.promo_code)+')</i>':''}</td><td class="r">${boxes(o)}</td><td class="r">${eur(o.total)}</td><td>${esc(ST[o.statut]||o.statut)}</td><td>${o.paye?'Oui':'Non'}</td></tr>`).join('')||'<tr><td colspan="7">Aucune commande.</td></tr>'}</tbody></table>
   <h2>7. Détail des dépenses</h2><table class="sm"><thead><tr><th>Date</th><th>Description</th><th>Catégorie</th><th>Payé par</th><th class="r">Montant</th></tr></thead><tbody>
-  ${dm.map(d=>`<tr><td>${esc(fdate(d.date))}</td><td>${esc(d.description)}</td><td>${esc(CATS[d.categorie]||d.categorie)}</td><td>${esc(d.qui)}</td><td class="r">${eur(d.montant)}</td></tr>`).join('')||'<tr><td colspan="5">Aucune dépense notée ce mois-ci.</td></tr>'}</tbody></table>
-  <h2>8. Montants restant à encaisser <small>commandes jusqu'à fin ${esc(mLabel(ym))}, non payées à ce jour</small></h2><table class="sm"><thead><tr><th>Retrait</th><th>N°</th><th>Client</th><th class="r">Montant</th></tr></thead><tbody>
+  ${dm.map(d=>`<tr><td>${esc(fdate(d.date))}</td><td>${esc(d.description)}</td><td>${esc(CATS[d.categorie]||d.categorie)}</td><td>${esc(d.qui)}</td><td class="r">${eur(d.montant)}</td></tr>`).join('')||'<tr><td colspan="5">Aucune dépense notée sur la période.</td></tr>'}</tbody></table>
+  <h2>8. Montants restant à encaisser <small>commandes jusqu'au ${esc(fmtD(P.to))}, non payées à ce jour</small></h2><table class="sm"><thead><tr><th>Retrait</th><th>N°</th><th>Client</th><th class="r">Montant</th></tr></thead><tbody>
   ${unpaid.map(o=>`<tr><td>${esc(fdate(o.date_retrait))}</td><td>${esc(o.id)}</td><td>${esc(o.client_nom)}</td><td class="r">${eur(o.total)}</td></tr>`).join('')||'<tr><td colspan="4">Tout est encaissé.</td></tr>'}
   ${unpaid.length?`<tr class="t"><td colspan="3"><b>Total</b></td><td class="r"><b>${eur(unpaid.reduce((a,o)=>a+(+o.total||0),0))}</b></td></tr>`:''}</tbody></table>
   <h2>9. Coût de revient d'une boîte</h2><table class="sm"><thead><tr><th>Élément</th><th class="r">Achat</th><th class="r">Utilisé</th><th class="r">Coût</th></tr></thead><tbody>
   ${(S.costs?.items||[]).map(i=>`<tr><td>${esc(i.nom)}${i.cat==='pack'?' <i>(par boîte)</i>':''}</td><td class="r">${esc(i.pack_qty)} ${esc(i.unit||'')} · ${eur(i.pack_price)}</td><td class="r">${esc(i.used)} ${esc(i.unit||'')}</td><td class="r">${eur(k.line(i))}</td></tr>`).join('')}
   <tr class="t"><td colspan="3">Ingrédients par batch (${esc(S.costs?.batch_cookies)} coolkies, ${k.bx.toFixed(0)} boîtes)</td><td class="r">${eur(k.ing)}</td></tr><tr class="t"><td colspan="3"><b>Coût par boîte</b></td><td class="r"><b>${eur(k.box)}</b></td></tr></tbody></table>`}
-$('#rGo')?.addEventListener('click',async()=>{const ym=$('#rMonth').value;if(!ym)return;const b=$('#rGo');b.disabled=true;
-  try{if(!S.costs)await load('costs');let r=$('#report');if(!r){r=document.createElement('div');r.id='report';document.body.appendChild(r)}r.innerHTML=await buildReport(ym);
+$('#rType')?.addEventListener('change',renderRep);
+$('#rGo')?.addEventListener('click',async()=>{const type=$('#rType').value,v=$('#rMonth').value;if(type!=='ytd'&&!v)return;const P=periodOf(type,v),ym=P.from+'_'+P.to;const b=$('#rGo');b.disabled=true;
+  try{if(!S.costs)await load('costs');let r=$('#report');if(!r){r=document.createElement('div');r.id='report';document.body.appendChild(r)}r.innerHTML=await buildReport(P);
     const t=document.title;document.title='Coolkie - Liasse financiere - '+ym;
     await new Promise(ok=>{const im=r.querySelector('img');if(!im||im.complete)ok();else{im.onload=im.onerror=ok}});
     setTimeout(()=>{window.print();setTimeout(()=>document.title=t,1500)},100)}finally{b.disabled=false}});
