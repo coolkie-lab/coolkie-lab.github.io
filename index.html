@@ -46,6 +46,14 @@ section>h2{font-size:clamp(26px,6vw,34px);margin-bottom:12px}
 .tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 footer{max-width:860px;margin:40px auto 0;padding:20px max(4vw,14px);color:var(--mute);font-size:14px}
 footer a{color:inherit}
+.bake{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+.temp{background:var(--ink);color:#fff;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:2px}
+.temp b{font-family:Fredoka;font-size:clamp(48px,12vw,72px);font-weight:600;line-height:1}
+.temp span{font-weight:600}.temp small{opacity:.8;font-size:14px}
+.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:10px}
+.steps li{counter-increment:s;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px 12px 52px;position:relative}
+.steps li::before{content:counter(s);position:absolute;left:14px;top:12px;width:26px;height:26px;border-radius:50%;background:var(--dough);font-weight:700;text-align:center;line-height:26px;font-size:14px}
+@media(min-width:700px){.bake{grid-template-columns:240px minmax(0,1fr)}}
 .info{background:var(--iceBg);color:var(--ice);border-radius:14px;padding:12px 14px;font-size:15px;font-weight:500}
 </style>
 </head>
@@ -60,7 +68,7 @@ footer a{color:inherit}
   <div class="hero">
     <div>
       <h1>Frozen cookie dough. Chewy & gooey.</h1>
-      <p>Pâte à cookies faite main à Bruxelles. Tu cuis 12 minutes, et c'est prêt.</p>
+      <p>Pâte à cookies aux chunks de chocolat noir, faite main à Bruxelles. Vendue par boîtes de 4, à cuire chez toi.</p>
       <a class="btn main cta" href="#commander" style="display:inline-flex;align-items:center;text-decoration:none">Commander</a>
     </div>
     <div class="ph" role="img" aria-label="Cookies Coolkie"></div>
@@ -68,14 +76,28 @@ footer a{color:inherit}
   <div class="strip" id="strip" aria-label="Photos Coolkie"></div>
   <main>
     <section id="commander">
-      <h2>Choisis tes parfums</h2>
-      <div class="prods" id="prods"><div class="card empty">Chargement des parfums…</div></div>
+      <h2>Choisis tes boîtes</h2>
+      <p class="mute" style="margin:-4px 0 12px">Pour l'instant, un seul parfum : les coolkies aux chunks de chocolat noir, par boîtes de 4. Commande autant de boîtes que tu veux.</p>
+      <div class="prods" id="prods"><div class="card empty">Chargement…</div></div>
+      <p class="info" id="special" style="display:none;margin-top:12px">Plus de 20 coolkies : c'est une commande spéciale. Passe-la ici, on te confirme la date par le chat.</p>
     </section>
     <section>
       <h2>Où récupérer ta commande ?</h2>
       <div class="pts" id="pts"></div>
       <div class="two" style="margin-top:4px"><div><label for="date">Date de retrait</label><input type="date" id="date"></div><div><label for="notes">Note (optionnel)</label><input id="notes" placeholder="Heure, remarque…"></div></div>
       <p class="info" style="margin-top:14px">Paiement au retrait. Rien à payer en ligne.</p>
+    </section>
+    <section id="cuisson">
+      <h2>Comment les cuire</h2>
+      <div class="bake">
+        <div class="temp"><b>170°</b><span>four classique</span><small>160° si ton four chauffe fort, jusqu'à 180° s'il chauffe moins</small></div>
+        <ol class="steps">
+          <li><b>14 à 15 min</b> pour un cœur bien coulant.</li>
+          <li><b>17 min</b>, c'est notre recommandation.</li>
+          <li>Laisse reposer <b>5 min hors de la plaque</b> avant de croquer. Ils sont aussi très bons tièdes ou froids.</li>
+          <li><b>5 min après la sortie du four</b>, ajoute un peu de fleur de sel.</li>
+        </ol>
+      </div>
     </section>
   </main>
 </div>
@@ -101,7 +123,7 @@ footer a{color:inherit}
 <div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="in" id="sheetIn"></div></div>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="config.js?v=3"></script>
+<script src="config.js?v=4"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 (()=>{
@@ -130,10 +152,10 @@ $('#pts').addEventListener('click',e=>{const b=e.target.closest('[data-pt]');if(
 
 function renderProds(){
   $('#prods').innerHTML=S.prods.length?S.prods.map(p=>{const q=S.cart[p.id]||0,out=(+p.stock||0)<=0;return `<div class="prod"><div class="im"${p.photo&&/^img\/[\w.-]+$/.test(p.photo)?` style="background-image:url('${esc(p.photo)}')"`:''}></div><div class="bd"><h3>${esc(p.nom)}</h3>${p.description?`<div class="mute">${esc(p.description)}</div>`:''}
-  <div class="row"><span class="price grow">${eur(p.prix)}${p.unite?' <span class="mute">/ '+esc(p.unite)+'</span>':''}</span><div class="step"><button data-q="${esc(p.id)}" data-d="-1" aria-label="Retirer ${esc(p.nom)}">−</button><output>${q}</output><button data-q="${esc(p.id)}" data-d="1" aria-label="Ajouter ${esc(p.nom)}">+</button></div></div>${out?'<div class="mute">Bientôt de retour en stock, commande quand même : on te prépare ça.</div>':''}</div></div>`}).join(''):'<div class="card empty">Les parfums arrivent bientôt.</div>';
+  <div class="row"><span class="price grow">${eur(p.prix)}${p.unite?' <span class="mute">/ '+esc(p.unite)+'</span>':''}</span><div class="step"><button data-q="${esc(p.id)}" data-d="-1" aria-label="Retirer ${esc(p.nom)}">−</button><output>${q}</output><button data-q="${esc(p.id)}" data-d="1" aria-label="Ajouter ${esc(p.nom)}">+</button></div></div>${''}</div></div>`}).join(''):'<div class="card empty">Les parfums arrivent bientôt.</div>';
   renderBar()}
 function cartLines(){return S.prods.filter(p=>S.cart[p.id]>0).map(p=>({p,q:S.cart[p.id]}))}
-function renderBar(){const l=cartLines(),n=l.reduce((a,x)=>a+x.q,0);$('#barCount').textContent=n?n+' article'+(n>1?'s':''):'Panier vide';$('#barTot').textContent=eur(l.reduce((a,x)=>a+x.q*x.p.prix,0))}
+function renderBar(){const l=cartLines(),n=l.reduce((a,x)=>a+x.q,0);$('#barCount').textContent=n?n+' boîte'+(n>1?'s':'')+' · '+n*4+' coolkies':'Panier vide';$('#special').style.display=n*4>20?'block':'none';$('#barTot').textContent=eur(l.reduce((a,x)=>a+x.q*x.p.prix,0))}
 $('#prods').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;const id=b.dataset.q;S.cart[id]=Math.max(0,Math.min(50,(S.cart[id]||0)+ +b.dataset.d));renderProds()});
 
 if(!C.supabaseUrl||!C.supabaseKey||!window.supabase){$('#prods').innerHTML='<div class="card empty">Le site est en cours d\'installation. Reviens très vite !</div>';return}
