@@ -20,7 +20,7 @@
 .quick span{background:var(--card);border:1px solid var(--line);border-radius:99px;padding:8px 14px;font-weight:600;font-size:15px;white-space:nowrap}
 main{max-width:900px;margin:0 auto;padding:12px max(4vw,14px) 40px}
 .step{display:grid;grid-template-columns:120px minmax(0,1fr);gap:18px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:12px}
-.step svg{width:120px;height:120px;display:block}
+.ico{display:grid;place-items:center;background:var(--dough);width:104px;height:104px;border-radius:26px;justify-self:center}.ico svg{width:72px;height:72px;display:block}
 .step .n{font:600 13px var(--fB);color:var(--doughDeep)}
 .step h2{font-size:clamp(22px,5vw,28px);margin:2px 0 6px}
 .step p{margin:0 0 6px}
@@ -31,7 +31,7 @@ main{max-width:900px;margin:0 auto;padding:12px max(4vw,14px) 40px}
 .times b{display:block;font-family:var(--fT);font-size:24px;font-weight:600}
 .times small{font-size:13px;color:var(--mute)}
 .times .rec{background:var(--ink);color:#fff;border-color:var(--ink)}.times .rec small{color:#cfe6f3}
-@media(max-width:560px){.step{grid-template-columns:minmax(0,1fr);text-align:left}.step svg{width:96px;height:96px}}
+@media(max-width:560px){.step{grid-template-columns:minmax(0,1fr);text-align:left}.ico{width:72px;height:72px;border-radius:20px;justify-self:start}.ico svg{width:46px;height:46px}}
 .cta{margin-top:26px;text-align:center}
 </style>
 </head>
@@ -49,57 +49,45 @@ main{max-width:900px;margin:0 auto;padding:12px max(4vw,14px) 40px}
 <main>
 
 <div class="step">
-  <svg viewBox="0 0 120 120" aria-hidden="true"><rect x="22" y="14" width="76" height="92" rx="14" fill="#dcf1f9" stroke="#123047" stroke-width="4"/><line x1="22" y1="50" x2="98" y2="50" stroke="#123047" stroke-width="4"/><rect x="82" y="26" width="6" height="14" rx="3" fill="#123047"/><rect x="82" y="60" width="6" height="18" rx="3" fill="#123047"/>
-  <g stroke="#2f8fd0" stroke-width="4" stroke-linecap="round"><line x1="52" y1="62" x2="52" y2="96"/><line x1="37" y1="70" x2="67" y2="88"/><line x1="37" y1="88" x2="67" y2="70"/><path d="M46 64l6 5 6-5M46 94l6-5 6 5" fill="none"/></g></svg>
+  <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="13" y="5" width="22" height="38" rx="4"/><path d="M13 17h22M30 9v4M30 21v5"/><path d="M22 27v12M16.8 30l10.4 6M16.8 36l10.4-6" stroke="#2f8fd0"/></svg></span>
   <div><div class="n">Étape 1</div><h2 data-c="guide.s1.t" data-label="Étape 1 : titre">Conserve au congélateur</h2>
   <p data-c="guide.s1.p" data-label="Étape 1 : texte">Range ta boîte au congélateur dès que tu rentres. Les coolkies y gardent tout leur goût pendant <b>3 mois</b>.</p>
   <span class="tip">Au-delà, aucun risque : le goût peut juste être un peu moins intense.</span></div>
 </div>
 
 <div class="step">
-  <svg viewBox="0 0 120 120" aria-hidden="true"><rect x="12" y="20" width="96" height="84" rx="14" fill="#fff" stroke="#123047" stroke-width="4"/><rect x="24" y="44" width="72" height="48" rx="8" fill="#fde3b8" stroke="#123047" stroke-width="4"/><circle cx="30" cy="32" r="4" fill="#123047"/><circle cx="44" cy="32" r="4" fill="#123047"/>
-  <path d="M34 62c6-6 12 6 18 0s12 6 18 0 12 6 16 0" fill="none" stroke="#e8b264" stroke-width="5" stroke-linecap="round"/><text x="60" y="84" text-anchor="middle" font-family="Outfit,sans-serif" font-weight="600" font-size="20" fill="#123047">170°</text></svg>
+  <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="8" width="36" height="32" rx="4"/><path d="M6 16h36"/><circle cx="12" cy="12" r="1.2" fill="#123047" stroke="none"/><circle cx="17" cy="12" r="1.2" fill="#123047" stroke="none"/><rect x="12" y="21" width="24" height="13" rx="2.5" fill="#ffffff"/><text x="24" y="30.6" text-anchor="middle" font-family="Outfit,Inter,sans-serif" font-size="8" font-weight="600" fill="#123047" stroke="none">170°</text></svg></span>
   <div><div class="n">Étape 2</div><h2 data-c="guide.s2.t" data-label="Étape 2 : titre">Préchauffe à 170°</h2>
   <p data-c="guide.s2.p" data-label="Étape 2 : texte">170° dans un four classique. Si ton four chauffe très fort, descends à 160°. S'il chauffe moins, monte jusqu'à 180°.</p></div>
 </div>
 
 <div class="step">
-  <svg viewBox="0 0 120 120" aria-hidden="true"><path d="M10 78l14-34h72l14 34z" fill="#f5ecdd" stroke="#123047" stroke-width="4" stroke-linejoin="round"/><path d="M28 50h64l10 24H18z" fill="#fff" stroke="#c98a3a" stroke-width="3" stroke-dasharray="5 4"/>
-  <g fill="#e8b264" stroke="#123047" stroke-width="3"><circle cx="40" cy="58" r="8"/><circle cx="80" cy="58" r="8"/><circle cx="34" cy="70" r="7"/><circle cx="86" cy="70" r="7"/></g>
-  <g fill="#123047"><rect x="37" y="55" width="4" height="4"/><rect x="78" y="56" width="4" height="4"/><rect x="32" y="68" width="3" height="3"/><rect x="85" y="68" width="3" height="3"/></g>
-  <rect x="12" y="84" width="96" height="10" rx="5" fill="#123047"/></svg>
+  <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 33h38l-3 6H8z"/><path d="M8 33h32" stroke="#2f8fd0" stroke-width="2.5"/><circle cx="13" cy="26" r="5" fill="#e8b264"/><circle cx="24" cy="26" r="5" fill="#e8b264"/><circle cx="35" cy="26" r="5" fill="#e8b264"/><rect x="10.4" y="23.4" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="22.4" y="22.9" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="34.4" y="24.4" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/></svg></span>
   <div><div class="n">Étape 3</div><h2 data-c="guide.s3.t" data-label="Étape 3 : titre">Sur du papier cuisson</h2>
   <p data-c="guide.s3.p" data-label="Étape 3 : texte"><b>From freezer to oven</b> : pas besoin de décongeler. Pose les coolkies encore surgelés sur une plaque recouverte de papier cuisson, en les espaçant bien.</p>
   <span class="tip warn">Évite le papier siliconé : le coolkie risque de trop s'étaler.</span></div>
 </div>
 
 <div class="step">
-  <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="66" r="42" fill="#fff" stroke="#123047" stroke-width="4"/><rect x="52" y="10" width="16" height="10" rx="3" fill="#123047"/><path d="M60 66V30A36 36 0 0 1 94 74z" fill="#e8b264" opacity=".85"/><circle cx="60" cy="66" r="5" fill="#123047"/><line x1="60" y1="66" x2="60" y2="34" stroke="#123047" stroke-width="4" stroke-linecap="round"/>
-  <text x="60" y="96" text-anchor="middle" font-family="Outfit,sans-serif" font-weight="600" font-size="16" fill="#123047">17'</text></svg>
+  <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M24 26V12A14 14 0 0 1 37.3 30.3Z" fill="#ffffff" stroke="none"/><circle cx="24" cy="26" r="14"/><path d="M21 6h6M24 6v6M24 26l7 4"/><path d="M36 11l2.5-2.5"/></svg></span>
   <div><div class="n">Étape 4</div><h2>Choisis ta cuisson</h2>
   <div class="times"><div><b>14-15'</b><small>bien coulant</small></div><div class="rec"><b>17'</b><small>notre conseil</small></div></div></div>
 </div>
 
 <div class="step">
-  <svg viewBox="0 0 120 120" aria-hidden="true"><g fill="none" stroke="#123047" stroke-width="4"><line x1="14" y1="92" x2="106" y2="92"/><line x1="24" y1="92" x2="24" y2="104"/><line x1="96" y1="92" x2="96" y2="104"/></g>
-  <ellipse cx="60" cy="78" rx="34" ry="12" fill="#c98a3a" stroke="#123047" stroke-width="4"/><g fill="#123047"><rect x="44" y="73" width="7" height="5" rx="1"/><rect x="62" y="76" width="8" height="5" rx="1"/><rect x="74" y="71" width="6" height="4" rx="1"/></g>
-  <g fill="none" stroke="#e8b264" stroke-width="4" stroke-linecap="round"><path d="M46 56c-6-8 6-12 0-20"/><path d="M60 54c-6-8 6-12 0-20"/><path d="M74 56c-6-8 6-12 0-20"/></g>
-  <text x="98" y="38" text-anchor="middle" font-family="Outfit,sans-serif" font-weight="600" font-size="18" fill="#2f8fd0">5'</text></svg>
+  <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 34h34M11 34v6M37 34v6"/><ellipse cx="24" cy="30" rx="12" ry="4" fill="#e8b264"/><path d="M18 22c-1.5-1.8 1.5-3.2 0-5s1.5-3.2 0-5" stroke="#2f8fd0"/><path d="M24 21c-1.5-1.8 1.5-3.2 0-5s1.5-3.2 0-5" stroke="#2f8fd0"/><path d="M30 22c-1.5-1.8 1.5-3.2 0-5s1.5-3.2 0-5" stroke="#2f8fd0"/></svg></span>
   <div><div class="n">Étape 5</div><h2 data-c="guide.s4.t" data-label="Étape 4 : titre">Laisse reposer 5 min</h2>
   <p data-c="guide.s4.p" data-label="Étape 4 : texte">Sors-les de la plaque dès la fin de la cuisson et laisse-les reposer 5 minutes. Ils continuent de prendre leur texture parfaite.</p></div>
 </div>
 
 <div class="step">
-  <svg viewBox="0 0 120 120" aria-hidden="true"><ellipse cx="60" cy="86" rx="38" ry="14" fill="#c98a3a" stroke="#123047" stroke-width="4"/><g fill="#123047"><rect x="40" y="80" width="8" height="6" rx="1"/><rect x="66" y="84" width="8" height="5" rx="1"/></g>
-  <path d="M44 14h32l-4 16H48z" fill="#fff" stroke="#123047" stroke-width="4" stroke-linejoin="round"/><rect x="42" y="8" width="36" height="8" rx="4" fill="#123047"/>
-  <g fill="#fff" stroke="#8fc6e6" stroke-width="2"><rect x="52" y="40" width="7" height="7" transform="rotate(20 55 43)"/><rect x="64" y="50" width="6" height="6" transform="rotate(-15 67 53)"/><rect x="48" y="58" width="6" height="6" transform="rotate(35 51 61)"/><rect x="62" y="66" width="7" height="7" transform="rotate(10 65 69)"/><rect x="56" y="78" width="6" height="6"/><rect x="74" y="80" width="5" height="5"/></g></svg>
+  <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9h12l2 15H16z" fill="#fff"/><path d="M17 14h14"/><rect x="20" y="28" width="2.4" height="2.4" rx=".6" fill="#2f8fd0" stroke="none"/><rect x="25" y="30.5" width="2.4" height="2.4" rx=".6" fill="#2f8fd0" stroke="none"/><rect x="22.5" y="33.5" width="2.4" height="2.4" rx=".6" fill="#2f8fd0" stroke="none"/><ellipse cx="24" cy="40" rx="13" ry="3.5" fill="#e8b264"/></svg></span>
   <div><div class="n">Étape 6</div><h2 data-c="guide.s5.t" data-label="Étape 5 : titre">Une pincée de fleur de sel</h2>
   <p data-c="guide.s5.p" data-label="Étape 5 : texte">5 minutes après la sortie du four, parsème un peu de fleur de sel sur chaque coolkie. C'est ce qui fait toute la différence avec le chocolat noir.</p></div>
 </div>
 
 <div class="step">
-  <svg viewBox="0 0 120 120" aria-hidden="true"><path d="M78 30h26l-4 74H82z" fill="#fff" stroke="#123047" stroke-width="4" stroke-linejoin="round"/><path d="M80 56h22l-2 46H82z" fill="#dcf1f9"/><line x1="94" y1="10" x2="88" y2="56" stroke="#2f8fd0" stroke-width="5" stroke-linecap="round"/>
-  <path d="M60 70a32 32 0 1 1-12-25 8 8 0 0 0 10 10 8 8 0 0 0 2 15z" fill="#c98a3a" stroke="#123047" stroke-width="4" stroke-linejoin="round"/><g fill="#123047"><rect x="16" y="56" width="8" height="7" rx="1"/><rect x="32" y="74" width="9" height="7" rx="1"/><rect x="22" y="86" width="7" height="6" rx="1"/><rect x="40" y="58" width="6" height="5" rx="1"/></g></svg>
+  <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="28" r="11" fill="#e8b264"/><rect x="12.0" y="23.099999999999998" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="20.25" y="21.45" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="19.7" y="30.25" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="13.1" y="31.35" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><path d="M33 12h9l-1.5 28h-6z" fill="#fff"/><path d="M33.6 21h7.8" /><path d="M34 21.5h7l-1.3 18h-4.4z" fill="#ffffff" stroke="none"/><path d="M33 12h9l-1.5 28h-6z"/><path d="M39 12l3-7" stroke="#2f8fd0"/></svg></span>
   <div><div class="n">Étape 7</div><h2 data-c="guide.s6.t" data-label="Étape 6 : titre">Déguste</h2>
   <p data-c="guide.s6.p" data-label="Étape 6 : texte">Tièdes, ils sont fondants. Tu peux aussi les laisser reposer plus longtemps et les déguster tièdes ou froids. Un verre de lait à côté ne fait jamais de mal.</p></div>
 </div>
