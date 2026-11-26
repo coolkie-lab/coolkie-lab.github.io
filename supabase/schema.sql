@@ -361,3 +361,29 @@ end $$;
 revoke execute on function public.place_order(jsonb,text,date,text,text) from public, anon;
 grant execute on function public.place_order(jsonb,text,date,text,text) to authenticated;
 select 'ok' as v4;
+-- ===== v5 : coûts de revient et dépenses (réservé aux admins) =====
+create table if not exists public.admin_settings (
+  id text primary key,
+  data jsonb not null default '{}',
+  updated_at timestamptz not null default now()
+);
+alter table public.admin_settings enable row level security;
+drop policy if exists as_admin on public.admin_settings;
+create policy as_admin on public.admin_settings for all using (public.is_admin()) with check (public.is_admin());
+grant select, insert, update, delete on public.admin_settings to authenticated;
+
+create table if not exists public.depenses (
+  id bigint generated always as identity primary key,
+  date date not null default current_date,
+  description text not null default '',
+  montant numeric(10,2) not null default 0,
+  categorie text not null default 'ingredients',
+  qui text default '',
+  created_at timestamptz not null default now()
+);
+alter table public.depenses enable row level security;
+drop policy if exists dp_admin on public.depenses;
+create policy dp_admin on public.depenses for all using (public.is_admin()) with check (public.is_admin());
+grant select, insert, update, delete on public.depenses to authenticated;
+grant usage, select on all sequences in schema public to authenticated;
+select 'ok' as v5;

@@ -9,9 +9,9 @@
 <link rel="icon" href="img/coolkie-logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=6">
+<link rel="stylesheet" href="common.css?v=7">
 <script src="config.js?v=5"></script>
-<script src="site.js?v=1"></script>
+<script src="site.js?v=2"></script>
 <style>
 body{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 .hero{background:var(--dough)}
@@ -29,7 +29,7 @@ section>h2{font-size:clamp(26px,5vw,34px);margin-bottom:6px}
 section>.sub{color:var(--mute);margin:0 0 16px}
 .prods{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:12px}
 .prod{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
-.prod .im{aspect-ratio:4/3;background:var(--dough) center/cover}
+.prod .im{display:block;aspect-ratio:4/3;background:var(--dough) center/cover}
 .prod .bd{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
 .prod h3{font-size:20px}
 .prod .row{margin-top:auto}
@@ -162,7 +162,7 @@ const dispo=p=>S.dispo&&p.id in S.dispo?Math.max(0,S.dispo[p.id]):null;
 function dispoLine(p){const d=dispo(p);if(d===null)return'';return d>0?`<div class="stockline ok">${d} boîte${d>1?'s':''} disponible${d>1?'s':''} tout de suite</div>`:`<div class="stockline next">Stock épuisé : ta commande sera pour le prochain batch</div>`}
 function overflow(){return cartLines().reduce((a,x)=>{const d=dispo(x.p);return a+(d===null?0:Math.max(0,x.q-d))},0)}
 function renderProds(){
-  $('#prods').innerHTML=S.prods.length?S.prods.map(p=>{const q=S.cart[p.id]||0,out=(+p.stock||0)<=0;return `<div class="prod"><div class="im"${p.photo&&/^img\/[\w.-]+$/.test(p.photo)?` style="background-image:url('${esc(p.photo)}')"`:''}></div><div class="bd"><h3>${esc(p.nom)}</h3>${p.description?`<div class="mute">${esc(p.description)}</div>`:''}
+  $('#prods').innerHTML=S.prods.length?S.prods.map(p=>{const q=S.cart[p.id]||0,out=(+p.stock||0)<=0;return `<div class="prod"><a class="im" href="${esc(C.instagram)}" aria-label="Voir sur Instagram"${p.photo&&/^img\/[\w.-]+$/.test(p.photo)?` style="background-image:url('${esc(p.photo)}')"`:''}></a><div class="bd"><h3>${esc(p.nom)}</h3>${p.description?`<div class="mute">${esc(p.description)}</div>`:''}
   <div class="row"><span class="price grow">${eur(p.prix)}${p.unite?' <span class="mute">/ '+esc(p.unite)+'</span>':''}</span><div class="step"><button data-q="${esc(p.id)}" data-d="-1" aria-label="Retirer ${esc(p.nom)}">−</button><output>${q}</output><button data-q="${esc(p.id)}" data-d="1" aria-label="Ajouter ${esc(p.nom)}">+</button></div></div>${dispoLine(p)}</div></div>`}).join(''):'<div class="card empty">Les parfums arrivent bientôt.</div>';
   renderBar()}
 function cartLines(){return S.prods.filter(p=>S.cart[p.id]>0).map(p=>({p,q:S.cart[p.id]}))}

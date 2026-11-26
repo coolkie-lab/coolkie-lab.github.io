@@ -9,9 +9,9 @@
 <link rel="icon" href="img/coolkie-logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=6">
+<link rel="stylesheet" href="common.css?v=7">
 <script src="config.js?v=5"></script>
-<script src="site.js?v=1"></script>
+<script src="site.js?v=2"></script>
 <style>
 body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 header{background:var(--dough);border-bottom:1px solid var(--line);padding:calc(16px + env(safe-area-inset-top)) max(5vw,16px) 44px}
@@ -50,8 +50,8 @@ section>h2 small{font:500 13px var(--fB);color:var(--mute)}
 .bars .t{height:18px;border-radius:6px;background:var(--line);overflow:hidden}
 .bars .t i{display:block;height:100%;background:var(--ice);opacity:.75;border-radius:6px}
 .bars .v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-nav{position:fixed;inset:auto 0 0 0;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(6,minmax(0,1fr));padding-bottom:env(safe-area-inset-bottom);z-index:5}
-nav a{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 8px;font-size:11px;font-weight:500;color:var(--mute);text-decoration:none;min-height:56px}
+nav{position:fixed;inset:auto 0 0 0;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(7,minmax(0,1fr));padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav a{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 8px;font-size:10.5px;font-weight:500;color:var(--mute);text-decoration:none;min-height:56px}
 nav a.on{color:var(--ink)}nav a.on svg{stroke:var(--ink)}
 nav svg{width:24px;height:24px;fill:none;stroke:var(--mute);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--warn);color:#fff;font-size:11px;line-height:18px;text-align:center}
@@ -59,6 +59,12 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
 .kp3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.kp3 div{background:var(--bg);border-radius:12px;padding:8px 10px}.kp3 b{display:block;font-family:var(--fT);font-size:24px;font-weight:600}.kp3 b.neg{color:var(--warn)}.kp3 span{font-size:13px;color:var(--mute)}
 .tot{font-family:var(--fT);font-size:26px;font-weight:600}
 .src{font-size:12px;font-weight:600;color:var(--ice)}
+.chv{display:none}.chv.on{display:block}
+.cl{display:grid;grid-template-columns:minmax(0,2.2fr) repeat(3,minmax(0,1fr)) 70px 30px;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.cl input{min-height:38px;padding:6px 8px;font-size:14px}.cl .r{text-align:right;font-variant-numeric:tabular-nums}
+.cl.h{font-size:12px;color:var(--mute);font-weight:600;border:0;padding-bottom:0}
+.cl button{border:0;background:none;color:var(--mute);font-size:18px;min-height:38px}
+@media(max-width:640px){.cl{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 60px 26px}.cl .nm{grid-column:1/-1}.cl.h .nm{display:none}}
 .ed{display:grid;gap:10px}.ed .f{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
 .ed .f label{margin:0 0 6px;font-weight:600}.ed .f .mute{font-size:12px}
 .ed textarea{min-height:60px;resize:vertical}
@@ -68,12 +74,13 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
 .sw input[type=color]{width:44px;height:36px;min-height:0;padding:0;border:0;background:none;flex:none}
 .savebar{position:sticky;bottom:calc(64px + env(safe-area-inset-bottom));z-index:4;background:var(--ink);color:#fff;border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-top:16px}
 .savebar .btn{background:#fff;color:var(--ink);border-color:#fff}
+@media(max-width:520px){.brand>a{flex:0 0 auto!important;font-size:0}.brand>a img{width:32px;height:32px}.brand{justify-content:space-between}}
 #login{max-width:420px;margin:30px auto;padding:0 16px}
 </style>
 </head>
 <body>
 <header>
-  <div class="brand"><a href="gestion.html" style="display:flex;align-items:center;gap:10px;flex:1;color:inherit;text-decoration:none"><img src="img/coolkie-logo.jpg" alt="" onerror="this.remove()">Coolkie Lab · Gestion</a><a href="./" class="btn sm" style="background:#fff8ee;border-color:transparent;display:inline-flex;align-items:center;text-decoration:none;color:inherit">Boutique</a><button class="btn sm" id="topLogout" hidden style="background:#fff8ee;border-color:transparent">Déconnexion</button></div>
+  <div class="brand"><a href="gestion.html" style="display:flex;align-items:center;gap:10px;flex:1;color:inherit;text-decoration:none"><img src="img/coolkie-logo.jpg" alt="" onerror="this.remove()">Coolkie Lab · Gestion</a><a href="#dev" class="btn sm" id="devBtn" hidden style="display:inline-flex;align-items:center;text-decoration:none;color:inherit">Mode dev</a><a href="./" class="btn sm" style="display:inline-flex;align-items:center;text-decoration:none;color:inherit">Boutique</a><button class="btn sm" id="topLogout" hidden >Déconnexion</button></div>
   <h1 id="title">Aujourd'hui</h1>
   <p id="sub">Chargement…</p>
 </header>
@@ -84,12 +91,9 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
 <main id="app" style="display:none">
   <div class="view" id="v-accueil">
     <div class="kpis" id="kpis"></div>
-    <section><h2>Chiffres clés</h2><div class="chips" id="perChips"></div><div class="kpis" id="kpis2" style="margin-top:0"></div><p class="mute" id="kpiNote" style="margin-top:8px"></p></section>
     <section><h2>À préparer <small id="prepCount"></small></h2><div id="prep"></div></section>
     <section><h2>Planning de production <small>délai <input id="lead" type="number" min="0" max="14" value="2" style="width:56px;min-height:32px;padding:2px 6px;font-size:14px" aria-label="Délai de production en jours"> j</small></h2><div id="plan"></div></section>
     <section><h2>À produire <small>commandes en cours vs stock</small></h2><div id="toMake"></div></section>
-    <section><h2>Ventes des 6 derniers mois</h2><div class="card bars" id="bars"></div></section>
-    <section><h2>Top produits <small>ce mois</small></h2><div class="card bars" id="top"></div></section>
   </div>
   <div class="view" id="v-commandes">
     <div class="row" style="margin-bottom:10px"><button class="btn ice" id="newOrd">+ Nouvelle commande</button><span class="grow"></span><div class="chips" style="margin:0" id="viewChips"></div></div>
@@ -114,6 +118,7 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
       <label for="bnText">Texte</label><input id="bnText" maxlength="140" placeholder="Nouveau site ! Commande en ligne, retrait à Uccle ou Woluwe">
       <label for="bnLink">Lien (optionnel)</label><input id="bnLink" placeholder="Ex. story.html ou https://…"></div></section>
     <section><h2>Couleurs et polices</h2>
+      <p class="mute" style="margin:0 0 8px">Palettes proposées :</p><div class="chips" id="thPresets"></div>
       <div class="sw" id="thColors"></div>
       <div class="two" style="margin-top:6px"><div><label for="thFt">Police des titres</label><select id="thFt"></select></div><div><label for="thFb">Police du texte</label><select id="thFb"></select></div></div>
       <div class="row" style="margin-top:10px"><span class="grow mute">L'aperçu s'applique tout de suite à cette page.</span><button class="btn sm" id="thReset">Couleurs d'origine</button></div></section>
@@ -121,13 +126,46 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
       <div class="chips" id="pgChips"></div>
       <p class="mute" style="margin:0 0 10px">Laisse vide pour garder le texte d'origine. Mets un mot en gras avec **deux étoiles**.</p>
       <div class="ed" id="edFields"><div class="card empty">Chargement…</div></div></section>
-    <section><h2>Codes promo</h2>
+    <div class="savebar"><span class="grow" id="devState">Aucun changement</span><a class="btn sm" href="./" target="_blank" style="display:inline-flex;align-items:center;text-decoration:none;background:transparent;color:#fff;border-color:rgba(255,255,255,.4)">Voir le site</a><button class="btn sm" id="devSave">Publier</button></div>
+  </div>
+  <div class="view" id="v-promos">
+    <section style="margin-top:4px"><p class="mute" style="margin:0 0 12px">Crée un code, partage-le (Instagram, amis…). Le client le tape au moment de commander et la remise s'applique toute seule.</p>
       <div id="promoList"></div>
       <div class="card"><b>Nouveau code</b>
         <div class="two"><div><label for="pcCode">Code</label><input id="pcCode" maxlength="20" placeholder="BIENVENUE" style="text-transform:uppercase"></div><div><label for="pcVal">Réduction</label><div class="row" style="flex-wrap:nowrap"><input id="pcVal" inputmode="decimal" placeholder="10"><select id="pcType" style="width:90px"><option value="pct">%</option><option value="eur">€</option></select></div></div></div>
         <div class="two"><div><label for="pcExp">Valable jusqu'au (optionnel)</label><input id="pcExp" type="date"></div><div><label for="pcMax">Nombre d'utilisations max (optionnel)</label><input id="pcMax" inputmode="numeric"></div></div>
         <div class="acts"><button class="btn ice" id="pcAdd">Créer le code</button></div></div></section>
-    <div class="savebar"><span class="grow" id="devState">Aucun changement</span><a class="btn sm" href="./" target="_blank" style="display:inline-flex;align-items:center;text-decoration:none;background:transparent;color:#fff;border-color:rgba(255,255,255,.4)">Voir le site</a><button class="btn sm" id="devSave">Publier</button></div>
+  </div>
+  <div class="view" id="v-chiffres">
+    <div class="chips" id="chTabs"></div>
+    <div class="chv" id="ch-apercu">
+      <div class="chips perc"></div><div class="kpis" id="kpis2" style="margin-top:0"></div><p class="mute" id="kpiNote" style="margin-top:8px"></p>
+      <section><h2>Ventes des 6 derniers mois</h2><div class="card bars" id="bars"></div></section>
+      <section><h2>Top produits <small>ce mois</small></h2><div class="card bars" id="top"></div></section>
+    </div>
+    <div class="chv" id="ch-finances">
+      <div class="chips perc"></div><div class="kpis" id="kpisF" style="margin-top:0"></div>
+      <p class="mute" style="margin-top:8px">Marge brute = chiffre d'affaires moins le coût des ingrédients et du packaging des boîtes vendues. Résultat = argent encaissé moins les dépenses notées.</p>
+      <section><h2>Chiffre d'affaires par point de retrait</h2><div class="card bars" id="byPt"></div></section>
+      <section><h2>Encaissé par moyen de paiement</h2><div class="card bars" id="byPay"></div></section>
+      <section><h2>Dépenses par catégorie</h2><div class="card bars" id="byCat"></div></section>
+    </div>
+    <div class="chv" id="ch-couts">
+      <p class="mute" style="margin:0 0 10px">Le coût d'une boîte est calculé à partir de vos achats. Modifie un prix ou une quantité, puis enregistre : la marge brute est recalculée partout.</p>
+      <div class="kpis" id="kpisC" style="margin-top:0"></div>
+      <div class="card" style="margin-top:12px"><div class="two"><div><label for="cBatch">Coolkies par batch</label><input id="cBatch" inputmode="numeric"></div><div><label for="cPerBox">Coolkies par boîte</label><input id="cPerBox" inputmode="numeric"></div></div></div>
+      <section><h2>Ingrédients <small>pour un batch</small></h2><div id="cIng"></div><button class="btn sm" data-cadd="ing">+ Ingrédient</button></section>
+      <section><h2>Packaging <small>par boîte</small></h2><div id="cPack"></div><button class="btn sm" data-cadd="pack">+ Élément</button></section>
+      <div class="savebar"><span class="grow" id="cState">Tout est enregistré</span><button class="btn sm" id="cSave">Enregistrer</button></div>
+    </div>
+    <div class="chv" id="ch-depenses">
+      <div class="card"><b>Nouvelle dépense</b>
+        <div class="two"><div><label for="dDate">Date</label><input id="dDate" type="date"></div><div><label for="dMt">Montant (€)</label><input id="dMt" inputmode="decimal"></div></div>
+        <label for="dDesc">Description</label><input id="dDesc" placeholder="Ex. Courses 4e batch">
+        <div class="two"><div><label for="dCat">Catégorie</label><select id="dCat"></select></div><div><label for="dQui">Payé par</label><input id="dQui" placeholder="Optionnel"></div></div>
+        <div class="acts"><button class="btn ice" id="dAdd">Ajouter</button></div></div>
+      <div class="sum" id="dSum"></div><div id="dList"></div>
+    </div>
   </div>
   <div class="view" id="v-clients">
     <input id="cliSearch" type="search" placeholder="Chercher un client…" aria-label="Chercher un client" style="margin-bottom:12px">
@@ -141,8 +179,9 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
   <a href="#accueil" data-v="accueil"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Accueil</a>
   <a href="#commandes" data-v="commandes"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Commandes<span class="dot" id="dotO" hidden></span></a>
   <a href="#stock" data-v="stock"><svg viewBox="0 0 24 24"><path d="M12 2v20M4 6l16 12M20 6L4 18"/></svg>Stock</a>
+  <a href="#chiffres" data-v="chiffres"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Chiffres</a>
+  <a href="#promos" data-v="promos"><svg viewBox="0 0 24 24"><path d="M3 12l9-9h8v8l-9 9z"/><circle cx="16" cy="8" r="1.5"/></svg>Promos</a>
   <a href="#messages" data-v="messages"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Messages<span class="dot" id="dotM" hidden></span></a>
-  <a href="#dev" data-v="dev"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg>Mode dev</a>
   <a href="#clients" data-v="clients"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Clients</a>
 </nav>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="in" id="sheetIn"></div></div>
@@ -162,8 +201,8 @@ const ST={a_preparer:'À préparer',prete:'Prête',livree:'Livrée',annulee:'Ann
 const NEXT={a_preparer:'prete',prete:'livree'};
 const PAY={cash:'Cash',payconiq:'Payconiq',virement:'Virement',carte:'Carte',autre:'Autre'};
 const PTS={...Object.fromEntries(Object.entries(C.points).map(([k,p])=>[k,p.nom+' ('+p.lieu+')'])),livraison:'Livraison',autre:'Autre'};
-const views={accueil:'Aujourd\'hui',commandes:'Commandes',stock:'Stock & produits',messages:'Messages',clients:'Clients',dev:'Mode dev'};
-const S={products:[],orders:[],messages:[],profiles:[],production:[],filter:'actifs',pay:'tous',reg:'tous',pt:'tous',ov:'liste',per:'mois',conv:null};
+const views={accueil:'Aujourd\'hui',commandes:'Commandes',stock:'Stock & produits',messages:'Messages',clients:'Clients',dev:'Mode dev',chiffres:'Chiffres',promos:'Codes promo'};
+const S={products:[],orders:[],messages:[],profiles:[],production:[],depenses:[],costs:null,cDirty:false,ch:'apercu',filter:'actifs',pay:'tous',reg:'tous',pt:'tous',ov:'liste',per:'mois',conv:null};
 try{S.ov=localStorage.getItem('ck_ov')||'liste';S.per=localStorage.getItem('ck_per')||'mois'}catch(e){}
 function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',2400)}
 function openSheet(h){$('#sheetIn').innerHTML=h;$('#sheet').classList.add('on')}
@@ -177,7 +216,7 @@ const sb=window.supabase.createClient(C.supabaseUrl,C.supabaseKey);
 function route(){const v=views[location.hash.slice(1)]?location.hash.slice(1):'accueil';
   document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+v));
   document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));
-  $('#title').textContent=views[v];if(v==='dev')devOpen();if(S.started)$('#fab').style.display=(v==='commandes'||v==='dev')?'none':'block';scrollTo(0,0);render()}
+  $('#title').textContent=views[v];if(v==='dev')devOpen();if(v==='promos')loadPromos();if(S.started)$('#fab').style.display=['commandes','dev','chiffres','promos'].includes(v)?'none':'block';scrollTo(0,0);render()}
 addEventListener('hashchange',route);
 
 // ---------- data ----------
@@ -187,6 +226,8 @@ async function load(t){
   if(!t||t==='orders')S.orders=await q(sb.from('orders').select('*').order('created_at',{ascending:false}).limit(1000))||S.orders;
   if(!t||t==='messages')S.messages=await q(sb.from('messages').select('*').order('created_at').limit(2000))||S.messages;
   if(!t||t==='profiles')S.profiles=await q(sb.from('profiles').select('id,username,tel,created_at,is_admin'))||S.profiles;
+  if(!t||t==='depenses')S.depenses=await q(sb.from('depenses').select('*').order('date',{ascending:false}))||S.depenses;
+  if(!t||t==='costs'){const r=await q(sb.from('admin_settings').select('data').eq('id','costs').maybeSingle());if(r!==null||!S.costs)S.costs=JSON.parse(JSON.stringify(r?.data||{batch_cookies:24,cookies_per_box:4,items:[]}));S.cDirty=false}
   if(!t||t==='production')S.production=await q(sb.from('production').select('*').order('created_at',{ascending:false}).limit(20))||S.production;
   render();if(S.conv)renderConv()}
 const prod=id=>S.products.find(p=>p.id===id);
@@ -220,19 +261,23 @@ function render(){
   $('#dotO').hidden=!newO;$('#dotO').textContent=newO;$('#dotM').hidden=!unread;$('#dotM').textContent=unread;
   $('#sub').textContent=new Date().toLocaleDateString('fr-BE',{weekday:'long',day:'numeric',month:'long'})+' · '+pend.length+' en cours'+(unread?' · '+unread+' message'+(unread>1?'s':'')+' non lu'+(unread>1?'s':''):'');
   const stockT=S.products.filter(p=>p.actif).reduce((a,p)=>a+(+p.stock||0),0),resT=pend.reduce((a,o)=>a+boxes(o),0);
-  $('#kpis').innerHTML=[[eur(ca),'Ventes ce mois'],[eur(marge),'Marge ce mois'],[stockT+' boîtes','En stock',(stockT-resT)+' libres après commandes'],[eur(due),'À encaisser']].map(k=>`<div class="kpi"><b>${esc(k[0])}</b><span>${k[1]}</span>${k[2]?'<small>'+esc(k[2])+'</small>':''}</div>`).join('');
+  $('#kpis').innerHTML=[[eur(ca),'Ventes ce mois'],[eur(marge),'Marge brute ce mois',ca?Math.round(marge/ca*100)+' % du chiffre d\'affaires':''],[stockT+' boîtes','En stock',(stockT-resT)+' libres après commandes'],[eur(due),'À encaisser']].map(k=>`<div class="kpi"><b>${esc(k[0])}</b><span>${k[1]}</span>${k[2]?'<small>'+esc(k[2])+'</small>':''}</div>`).join('');
   {const PER={mois:'Ce mois',trim:'3 derniers mois',annee:'Cette année',tout:'Depuis le début'};
-   $('#perChips').innerHTML=Object.entries(PER).map(([k,l])=>`<button class="chip${S.per===k?' on':''}" data-per="${k}">${l}</button>`).join('');
+   document.querySelectorAll('.perc').forEach(e=>e.innerHTML=Object.entries(PER).map(([k,l])=>`<button class="chip${S.per===k?' on':''}" data-per="${k}">${l}</button>`).join(''));
+   const CH={apercu:'Vue d\'ensemble',finances:'Finances',couts:'Coûts de revient',depenses:'Dépenses'};
+   $('#chTabs').innerHTML=Object.entries(CH).map(([k,l])=>`<button class="chip${S.ch===k?' on':''}" data-ch="${k}">${l}</button>`).join('');
+   document.querySelectorAll('.chv').forEach(e=>e.classList.toggle('on',e.id==='ch-'+S.ch));
    const t=today(),y=t.slice(0,4),d90=new Date(Date.now()-91*864e5).toISOString().slice(0,10);
    const inP=o=>{const d=o.date_retrait||'';return S.per==='tout'||(S.per==='mois'?month(d)===ms:S.per==='annee'?d.slice(0,4)===y:(d>=d90&&d<=t))};
    const po=os.filter(inP),caP=po.reduce((a,o)=>a+(+o.total||0),0),mP=po.reduce((a,o)=>a+margeO(o),0),bxP=po.reduce((a,o)=>a+boxes(o),0);
    const cost=S.products.filter(p=>p.actif).reduce((a,p)=>a+(+p.stock||0)*(+p.cout||0),0);
    const cs=clients().filter(c=>c.n>0),fid=cs.filter(c=>c.n>=2).length,cliP=new Set(po.map(o=>o.user_id||('n:'+(o.client_nom||'').trim().toLowerCase()))).size;
    const regP=po.filter(isReg).length,paidP=po.filter(o=>o.paye).length;
-   const K=[[eur(caP),'Chiffre d\'affaires',po.length+' commandes','hl'],[eur(mP),'Marge estimée',caP?Math.round(mP/caP*100)+' % du CA':''],[bxP,'Boîtes vendues',(bxP*4)+' coolkies'],[eur(po.length?caP/po.length:0),'Panier moyen',(po.length?(bxP/po.length).toFixed(1).replace('.',','):0)+' boîtes / commande'],
+   const K=[[eur(caP),'Chiffre d\'affaires',po.length+' commandes','hl'],[eur(mP),'Marge brute',caP?Math.round(mP/caP*100)+' % du CA':''],[bxP,'Boîtes vendues',(bxP*4)+' coolkies'],[eur(po.length?caP/po.length:0),'Panier moyen',(po.length?(bxP/po.length).toFixed(1).replace('.',','):0)+' boîtes / commande'],
      [cliP,'Clients servis',regP+' commandes de clients enregistrés'],[Math.round(cs.length?fid/cs.length*100:0)+' %','Clients fidèles',fid+' clients sur '+cs.length+' ont commandé 2 fois ou plus'],[eur(cost),'Valeur du stock','au coût de revient'],[paidP+' / '+po.length,'Commandes payées',eur(po.filter(o=>!o.paye).reduce((a,o)=>a+(+o.total||0),0))+' restant']];
    $('#kpis2').innerHTML=K.map(k=>`<div class="kpi${k[3]?' '+k[3]:''}"><b>${esc(k[0])}</b><span>${esc(k[1])}</span>${k[2]?'<small>'+esc(k[2])+'</small>':''}</div>`).join('');
-   const noCost=S.products.filter(p=>p.actif&&!(+p.cout));$('#kpiNote').textContent=noCost.length?'Ajoute le coût de revient de '+noCost.map(p=>p.nom).join(', ')+' (Stock › Modifier) pour une marge exacte.':'Marge = prix de vente moins coût de revient ('+S.products.filter(p=>p.actif).map(p=>eur(p.cout)+' par '+(p.unite||'boîte')).join(', ')+').'}
+   renderFin(po,inP);
+   const noCost=S.products.filter(p=>p.actif&&!(+p.cout));$('#kpiNote').textContent=noCost.length?'Ajoute le coût de revient de '+noCost.map(p=>p.nom).join(', ')+' (Chiffres › Coûts de revient) pour une marge exacte.':'Marge brute = prix de vente moins coût de revient ('+S.products.filter(p=>p.actif).map(p=>eur(p.cout)+' par '+(p.unite||'boîte')).join(', ')+').'}
   $('#prepCount').textContent=pend.length?pend.length+' en cours':'';
   $('#prep').innerHTML=pend.length?pend.map(orderCard).join(''):'<div class="card empty">Rien à préparer pour l\'instant.</div>';
 
@@ -367,7 +412,8 @@ function cliSheet(key){const c=clients().find(x=>x.key===key);if(!c)return;
     b.disabled=true;const{error}=await sb.rpc('set_admin',{p_username:c.nom,p_admin:!c.admin});if(error)return toast('Erreur : '+error.message);closeSheet();toast(c.admin?'Accès retiré':c.nom+' a maintenant accès à la gestion');load('profiles')}}}
 
 document.addEventListener('click',async e=>{const t=e.target.closest('button');if(!t||t.closest('#sheet'))return;const d=t.dataset;
-  if(d.chip){S[d.chip]=d.val;if(d.chip==='ov')try{localStorage.setItem('ck_ov',d.val)}catch(e){}render()}
+  if(d.ch){S.ch=d.ch;render()}
+  else if(d.chip){S[d.chip]=d.val;if(d.chip==='ov')try{localStorage.setItem('ck_ov',d.val)}catch(e){}render()}
   else if(d.per){S.per=d.per;try{localStorage.setItem('ck_per',d.per)}catch(e){}render()}
   else if(d.editO)orderForm(S.orders.find(o=>String(o.id)===d.editO));
   else if(d.next){const o=S.orders.find(x=>String(x.id)===d.next);if(o){t.disabled=true;if(await setStatus(o,NEXT[o.statut]))toast('n°'+o.id+' : '+ST[NEXT[o.statut]])}}
@@ -381,6 +427,59 @@ $('#ordList').addEventListener('click',e=>{const r=e.target.closest('tr[data-row
 $('#ordSearch').oninput=render;try{const l=localStorage.getItem('ck_lead');if(l!==null)$('#lead').value=l}catch(e){}$('#lead').oninput=render;$('#cliSearch').oninput=render;
 $('#logout').onclick=$('#topLogout').onclick=async()=>{await sb.auth.signOut();location.reload()};
 
+// ---------- chiffres : finances, coûts, dépenses ----------
+const CATS={ingredients:'Ingrédients',packaging:'Packaging',marketing:'Marketing',materiel:'Matériel',autre:'Autre'};
+const pct=(a,b)=>b?Math.round(a/b*100)+' %':'–';
+const barsHtml=(rows,color)=>{const mx=Math.max(1,...rows.map(r=>r[1]));return rows.length?rows.map(([l,v])=>`<div class="b" style="grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr) 90px"><span>${esc(l)}</span><div class="t"><i style="width:${(v/mx*100).toFixed(1)}%${color?';background:'+color:''}"></i></div><span class="v">${eur(v)}</span></div>`).join(''):'<div class="empty">Rien sur cette période.</div>'};
+function costCalc(c){c=c||S.costs||{items:[]};const per=Math.max(1,+c.cookies_per_box||4),bx=Math.max(1,(+c.batch_cookies||24)/per);
+  const line=i=>(+i.pack_qty>0?(+i.pack_price||0)/(+i.pack_qty)*(+i.used||0):0);
+  const ing=c.items.filter(i=>i.cat==='ing').reduce((a,i)=>a+line(i),0),pack=c.items.filter(i=>i.cat==='pack').reduce((a,i)=>a+line(i),0);
+  return{line,ing,pack,bx,box:ing/bx+pack,batch:ing+pack*bx}}
+function renderFin(po,inP){
+  const caP=po.reduce((a,o)=>a+(+o.total||0),0),bxP=po.reduce((a,o)=>a+boxes(o),0);
+  const cogs=po.reduce((a,o)=>a+(o.lignes||[]).reduce((b,l)=>b+l.qte*(+(prod(l.pid)?.cout)||0),0),0),mb=caP-cogs;
+  const enc=po.filter(o=>o.paye).reduce((a,o)=>a+(+o.total||0),0),rem=po.reduce((a,o)=>a+(+o.remise||0),0);
+  const dp=S.depenses.filter(d=>inP({date_retrait:d.date})),dep=dp.reduce((a,d)=>a+(+d.montant||0),0);
+  const offerts=po.filter(o=>!(+o.total)).length,cb=costCalc().box,pm=bxP?caP/bxP:0,mu=pm-cb;
+  const K=[[eur(caP),'Chiffre d\'affaires',bxP+' boîtes vendues','hl'],[eur(mb),'Marge brute',pct(mb,caP)+' du CA'],[eur(cogs),'Coût des ventes','ingrédients + packaging'],[eur(enc),'Encaissé',eur(caP-enc)+' encore à encaisser'],
+    [eur(dep),'Dépenses',dp.length+' achat'+(dp.length>1?'s':'')+' notés'],[eur(enc-dep),'Résultat',caP?'encaissé moins dépenses':''],[eur(pm),'Prix moyen par boîte','coût '+eur(cb)+' par boîte'],[mu>0?Math.ceil(dep/mu)+' boîtes':'–','Seuil de rentabilité','pour couvrir les dépenses'],
+    [eur(rem),'Remises (codes promo)',po.filter(o=>+o.remise).length+' commandes'],[offerts,'Commandes offertes','à 0 €']];
+  $('#kpisF').innerHTML=K.map(k=>`<div class="kpi${k[3]?' '+k[3]:''}"><b>${esc(k[0])}</b><span>${esc(k[1])}</span>${k[2]?'<small>'+esc(k[2])+'</small>':''}</div>`).join('');
+  const g=(arr,key,val)=>{const m={};arr.forEach(x=>{const k=key(x);m[k]=(m[k]||0)+val(x)});return Object.entries(m).sort((a,b)=>b[1]-a[1])};
+  $('#byPt').innerHTML=barsHtml(g(po,o=>(C.points[o.point]||{}).nom||PTS[o.point]||o.point,o=>+o.total||0));
+  $('#byPay').innerHTML=barsHtml(g(po.filter(o=>o.paye),o=>PAY[o.paiement]||o.paiement||'Autre',o=>+o.total||0),'var(--ice)');
+  $('#byCat').innerHTML=barsHtml(g(dp,d=>CATS[d.categorie]||d.categorie,d=>+d.montant||0),'var(--warn)');
+  renderDep();if(!S.cDirty)renderCosts()}
+function renderCosts(){const c=S.costs;if(!c)return;const k=costCalc(),pr=S.products.find(p=>p.actif),prix=+(pr?.prix)||0;
+  $('#kpisC').innerHTML=[[eur(k.box),'Coût par boîte',eur(k.box/Math.max(1,+c.cookies_per_box||4))+' par coolkie','hl'],[prix?pct(prix-k.box,prix):'–','Marge brute',prix?eur(prix-k.box)+' par boîte à '+eur(prix):''],[eur(k.ing),'Ingrédients par batch',(+c.batch_cookies||0)+' coolkies, '+k.bx.toFixed(0)+' boîtes'],[eur(k.pack),'Packaging par boîte','boîte, couvercle, sticker…']]
+    .map(x=>`<div class="kpi${x[3]?' '+x[3]:''}"><b>${esc(x[0])}</b><span>${esc(x[1])}</span>${x[2]?'<small>'+esc(x[2])+'</small>':''}</div>`).join('');
+  if(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#ch-couts')&&S.cDirty)return;
+  $('#cBatch').value=c.batch_cookies??24;$('#cPerBox').value=c.cookies_per_box??4;
+  const rows=cat=>{const its=c.items.map((it,i)=>({it,i})).filter(x=>x.it.cat===cat);const h=cat==='ing'?['Achat (g/ml)','Prix achat','Utilisé / batch']:['Achat (pièces)','Prix achat','Par boîte'];
+    return `<div class="cl h"><span class="nm">Nom</span><span>${h[0]}</span><span>${h[1]}</span><span>${h[2]}</span><span class="r">Coût</span><span></span></div>`+its.map(({it,i})=>`<div class="cl"><input class="nm" data-ci="${i}" data-cf="nom" value="${esc(it.nom)}" aria-label="Nom"><input data-ci="${i}" data-cf="pack_qty" inputmode="decimal" value="${esc(it.pack_qty)}" aria-label="${h[0]}"><input data-ci="${i}" data-cf="pack_price" inputmode="decimal" value="${esc(it.pack_price)}" aria-label="${h[1]}"><input data-ci="${i}" data-cf="used" inputmode="decimal" value="${esc(it.used)}" aria-label="${h[2]}"><span class="r" data-cost="${i}">${eur(k.line(it))}</span><button data-cdel="${i}" aria-label="Supprimer">×</button></div>`).join('')};
+  $('#cIng').innerHTML=rows('ing');$('#cPack').innerHTML=rows('pack')}
+function cDirty(v){S.cDirty=v;$('#cState').textContent=v?'Modifications non enregistrées':'Tout est enregistré'}
+$('#ch-couts').addEventListener('input',e=>{const t=e.target,c=S.costs;if(!c)return;
+  if(t.id==='cBatch')c.batch_cookies=num(t.value);else if(t.id==='cPerBox')c.cookies_per_box=num(t.value);
+  else if(t.dataset.ci!==undefined){const it=c.items[+t.dataset.ci];it[t.dataset.cf]=t.dataset.cf==='nom'?t.value:num(t.value);const cs=$('[data-cost="'+t.dataset.ci+'"]');if(cs)cs.textContent=eur(costCalc().line(it))}
+  cDirty(true);const k=costCalc(),pr=S.products.find(p=>p.actif),prix=+(pr?.prix)||0;
+  $('#kpisC').querySelectorAll('.kpi b')[0].textContent=eur(k.box);$('#kpisC').querySelectorAll('.kpi b')[1].textContent=prix?pct(prix-k.box,prix):'–'});
+$('#ch-couts').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b||!S.costs)return;
+  if(b.dataset.cadd){S.costs.items.push({cat:b.dataset.cadd,nom:'',pack_qty:b.dataset.cadd==='ing'?1000:100,pack_price:0,used:b.dataset.cadd==='ing'?0:1,unit:b.dataset.cadd==='ing'?'g':'pce'});cDirty(true);S.cDirty=false;renderCosts();cDirty(true)}
+  else if(b.dataset.cdel){if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='?';return}S.costs.items.splice(+b.dataset.cdel,1);S.cDirty=false;renderCosts();cDirty(true)}
+  else if(b.id==='cSave'){b.disabled=true;const k=costCalc();
+    const{error}=await sb.from('admin_settings').upsert({id:'costs',data:S.costs,updated_at:new Date().toISOString()});
+    if(!error){const ids=S.products.filter(p=>p.actif).map(p=>p.id);if(ids.length)await sb.from('products').update({cout:Math.round(k.box*100)/100}).in('id',ids)}
+    b.disabled=false;if(error)return toast('Erreur : '+error.message);cDirty(false);toast('Coût par boîte : '+eur(k.box));await load('products')}});
+function renderDep(){if(!$('#dCat').options.length){$('#dCat').innerHTML=Object.entries(CATS).map(([k,l])=>`<option value="${k}">${l}</option>`).join('');$('#dDate').value=today()}
+  const tot=S.depenses.reduce((a,d)=>a+(+d.montant||0),0);$('#dSum').innerHTML=`<span><b>${S.depenses.length}</b> dépenses</span><span>Total <b>${eur(tot)}</b></span>`;
+  $('#dList').innerHTML=S.depenses.length?`<div style="overflow-x:auto;border-radius:16px"><table class="tbl"><thead><tr><th>Date</th><th>Description</th><th class="hm">Catégorie</th><th class="r">Montant</th><th></th></tr></thead><tbody>${S.depenses.map(d=>`<tr><td style="white-space:nowrap">${esc(fdate(d.date))}</td><td>${esc(d.description)}${d.qui?'<div class="mute">'+esc(d.qui)+'</div>':''}</td><td class="hm">${esc(CATS[d.categorie]||d.categorie)}</td><td class="r">${eur(d.montant)}</td><td><button class="btn sm" data-ddel="${esc(d.id)}" style="min-height:32px">×</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="card empty">Aucune dépense notée.</div>'}
+$('#ch-depenses').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.id==='dAdd'){const d={date:val('dDate')||today(),montant:num(val('dMt')),description:val('dDesc').trim(),categorie:val('dCat'),qui:val('dQui').trim()};
+    if(!d.description)return toast('Description ?');if(d.montant<=0)return toast('Montant ?');b.disabled=true;const{error}=await sb.from('depenses').insert(d);b.disabled=false;
+    if(error)return toast('Erreur : '+error.message);['dMt','dDesc','dQui'].forEach(i=>$('#'+i).value='');toast('Dépense ajoutée');load('depenses')}
+  else if(b.dataset.ddel){if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Supprimer ?';return}const{error}=await sb.from('depenses').delete().eq('id',+b.dataset.ddel);if(error)return toast('Erreur : '+error.message);load('depenses')}});
+
 // ---------- mode dev ----------
 const D={site:null,dirty:false,page:'index',fields:{},promos:[]};
 const PAGES={index:'Accueil',story:'Notre histoire',guide:'Mode d\'emploi'};
@@ -391,6 +490,7 @@ async function devOpen(){if(!D.site){const r=await q(sb.from('site_settings').se
   loadPromos();if(!D.fields[D.page])loadFields(D.page);}
 function devForm(){const s=D.site,T={...CK_SITE.DEF,...s.theme};
   $('#bnOn').checked=!!s.banner.on;$('#bnText').value=s.banner.text||'';$('#bnLink').value=s.banner.link||'';
+  $('#thPresets').innerHTML=Object.entries(CK_SITE.PRESETS).map(([n,p])=>`<button class="chip" data-preset="${esc(n)}"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${esc(p.primary)};margin-right:6px;vertical-align:-1px"></span>${esc(n)}</button>`).join('');
   $('#thColors').innerHTML=COLORS.map(([k,l])=>`<label><input type="color" data-th="${k}" value="${esc(T[k])}">${esc(l)}</label>`).join('');
   const opt=v=>CK_SITE.FONTS.map(f=>`<option${f===v?' selected':''}>${esc(f)}</option>`).join('');$('#thFt').innerHTML=opt(T.fontTitle);$('#thFb').innerHTML=opt(T.fontBody);
   $('#pgChips').innerHTML=Object.entries(PAGES).map(([k,l])=>`<button class="chip${D.page===k?' on':''}" data-pg="${k}">${esc(l)}</button>`).join('')}
@@ -416,9 +516,14 @@ $('#v-dev').addEventListener('change',async e=>{const t=e.target;if(t.id==='bnOn
 $('#v-dev').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   if(b.dataset.pg){D.page=b.dataset.pg;devForm();D.fields[D.page]?renderFields():loadFields(D.page)}
   else if(b.dataset.rmimg){delete D.site.images[b.dataset.rmimg];dirty(true);renderFields()}
+  else if(b.dataset.preset){Object.assign(D.site.theme,CK_SITE.PRESETS[b.dataset.preset]);CK_SITE.theme(D.site.theme);devForm();dirty(true)}
   else if(b.id==='thReset'){D.site.theme={};CK_SITE.theme({});devForm();dirty(true)}
   else if(b.id==='devSave')devSave()
   else if(b.id==='pcAdd')promoAdd()
+  else if(b.dataset.pcToggle){const p=D.promos.find(x=>x.code===b.dataset.pcToggle);sb.from('promo_codes').update({actif:!p.actif}).eq('code',p.code).then(({error})=>error?toast('Erreur : '+error.message):loadPromos())}
+  else if(b.dataset.pcDel){if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Confirmer';return}sb.from('promo_codes').delete().eq('code',b.dataset.pcDel).then(({error})=>error?toast('Erreur : '+error.message):loadPromos())}});
+$('#v-promos').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.id==='pcAdd')promoAdd()
   else if(b.dataset.pcToggle){const p=D.promos.find(x=>x.code===b.dataset.pcToggle);sb.from('promo_codes').update({actif:!p.actif}).eq('code',p.code).then(({error})=>error?toast('Erreur : '+error.message):loadPromos())}
   else if(b.dataset.pcDel){if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Confirmer';return}sb.from('promo_codes').delete().eq('code',b.dataset.pcDel).then(({error})=>error?toast('Erreur : '+error.message):loadPromos())}});
 async function devSave(){$('#devSave').disabled=true;const{error}=await sb.from('site_settings').upsert({id:'main',data:D.site,updated_at:new Date().toISOString()});$('#devSave').disabled=false;
@@ -439,7 +544,7 @@ addEventListener('beforeunload',e=>{if(D.dirty){e.preventDefault();e.returnValue
 async function start(user){
   const{data:me}=await sb.from('profiles').select('is_admin,username').eq('id',user.id).maybeSingle();
   if(!me||!me.is_admin){$('#login').style.display='block';$('#le').textContent='Ce compte n\'est pas administrateur.';await sb.auth.signOut();return}
-  $('#login').style.display='none';$('#app').style.display='block';$('#topLogout').hidden=false;$('#nav').style.display='grid';$('#fab').style.display='block';S.started=true;
+  $('#login').style.display='none';$('#app').style.display='block';$('#topLogout').hidden=false;$('#devBtn').hidden=false;$('#nav').style.display='grid';$('#fab').style.display='block';S.started=true;
   await load();route();
   sb.channel('admin').on('postgres_changes',{event:'*',schema:'public',table:'orders'},p=>{if(p.eventType==='INSERT'&&p.new.source==='en_ligne')toast('Nouvelle commande en ligne : '+p.new.client_nom);load('orders');load('profiles')})
     .on('postgres_changes',{event:'*',schema:'public',table:'messages'},p=>{if(p.eventType==='INSERT'&&!p.new.from_admin&&S.conv!==p.new.user_id)toast('Nouveau message de '+(uname(p.new.user_id)||'un client'));load('messages')}).subscribe()}
