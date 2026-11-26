@@ -17,19 +17,25 @@ body{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 .top a.home{display:flex;align-items:center;gap:10px;flex:1;text-decoration:none;color:var(--ink)}
 .top b{font-family:Fredoka;font-size:22px;font-weight:600}
 .top a.btn{display:inline-flex;align-items:center;text-decoration:none;color:var(--ink)}
-@media(max-width:480px){.top .guide{display:none}}
+.top .btn{white-space:nowrap}
+@media(max-width:640px){.top a.guide{display:none}.top b{display:none}.top #topLogout{display:none}}
 .top .btn{background:#fff8ee;border-color:transparent}
 .hero{background:var(--dough);padding:8px max(5vw,16px) 34px;display:grid;gap:18px}
 .hero h1{font-size:clamp(36px,9vw,58px);text-wrap:balance}
 .hero p{margin:10px 0 0;font-size:17px;max-width:34ch}
-.hero .ph{aspect-ratio:4/3;border-radius:24px;background:#c98a3a url(img/hero.jpg) center/cover;box-shadow:0 14px 30px rgba(58,34,24,.22)}
+.hero .ph{aspect-ratio:898/744;width:100%;max-width:460px;justify-self:center;border-radius:24px;background:#c98a3a url(img/hero.jpg) center/cover;box-shadow:0 14px 30px rgba(58,34,24,.22)}
+.hero .where{display:inline-flex;align-items:center;gap:6px;margin-top:14px;background:#fff3df;border-radius:99px;padding:6px 12px;font-size:14px;font-weight:600}
 .hero .cta{margin-top:18px}
-@media(min-width:760px){.hero{grid-template-columns:1.05fr 1fr;align-items:center;padding-block:28px 48px}}
-.strip{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:18px max(5vw,16px) 6px}
+@media(min-width:760px){.hero{grid-template-columns:minmax(0,1fr) minmax(0,460px);align-items:center;padding-block:28px 48px;max-width:1080px;margin:0 auto;column-gap:48px}.herowrap{background:var(--dough)}}
+.strip{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px max(4vw,14px) 6px;max-width:1080px;margin:0 auto}
+@media(min-width:760px){.strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));overflow:visible}.strip img,.strip .insta{width:auto!important;height:auto!important;aspect-ratio:3/4}}
+.gal{margin-top:40px}.gal h2{max-width:1080px;margin:0 auto 12px;padding:0 max(4vw,14px);font-size:clamp(24px,5vw,30px)}
+.story{background:var(--ink);color:#fff;border-radius:22px;padding:22px;display:grid;gap:10px}
+.story p{margin:0;opacity:.92}.story a{color:var(--dough);font-weight:600}
 .strip .insta{flex:none;width:150px;height:200px;border-radius:14px;background:var(--ink);color:#fff;text-decoration:none;display:flex;flex-direction:column;justify-content:flex-end;padding:14px;font-family:Fredoka;font-weight:600;font-size:18px;line-height:1.15;scroll-snap-align:start}
 .strip .insta span{font:500 13px Inter;opacity:.8;margin-top:6px}
 .strip img{flex:none;width:150px;height:200px;object-fit:cover;border-radius:14px;scroll-snap-align:start;background:var(--line)}
-main{max-width:860px;margin:0 auto;padding:10px max(4vw,14px)}
+main{max-width:960px;margin:0 auto;padding:10px max(4vw,14px)}
 section{margin-top:28px}
 section>h2{font-size:clamp(26px,6vw,34px);margin-bottom:12px}
 .prods{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:12px}
@@ -49,7 +55,7 @@ section>h2{font-size:clamp(26px,6vw,34px);margin-bottom:12px}
 .tabs{display:flex;gap:8px;margin:14px 0}
 .tabs button{flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-weight:600}
 .tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-footer{max-width:860px;margin:40px auto 0;padding:20px max(4vw,14px);color:var(--mute);font-size:14px}
+footer{max-width:1080px;margin:40px auto 0;padding:20px max(4vw,14px);color:var(--mute);font-size:14px}
 footer a{color:inherit}
 .stockline{font-size:14px;font-weight:600;margin-top:2px}.stockline.ok{color:var(--ok)}.stockline.next{color:var(--warn)}
 .bake{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
@@ -67,21 +73,23 @@ footer a{color:inherit}
 <body>
 <div class="top">
   <a class="home" href="./" aria-label="Accueil Coolkie"><img class="logo" src="img/coolkie-logo.jpg" alt="" onerror="this.style.visibility='hidden'"><b>Coolkie</b></a>
+  <a class="btn sm guide" href="story.html">Notre histoire</a>
   <a class="btn sm guide" href="guide.html">Mode d'emploi</a>
+  <a class="btn sm" id="adminBtn" href="gestion.html" hidden>Gestion</a>
   <button class="btn sm" id="acctBtn">Se connecter</button>
   <button class="btn sm" id="topLogout" hidden>Déconnexion</button>
 </div>
 
 <div class="view on" id="v-shop">
-  <div class="hero">
+  <div class="herowrap"><div class="hero">
     <div>
       <h1>Frozen cookie dough. Chewy & gooey.</h1>
-      <p>Pâte à cookies aux chunks de chocolat noir, faite main à Bruxelles. Vendue par boîtes de 4, à cuire chez toi.</p>
+      <p>Pâte à cookies aux chunks de chocolat noir belge, faite main à Bruxelles. Vendue par boîtes de 4, à cuire chez toi.</p>
+      <div class="where">📍 Pour l'instant uniquement à Bruxelles</div><br>
       <a class="btn main cta" href="#commander" style="display:inline-flex;align-items:center;text-decoration:none">Commander</a>
     </div>
     <div class="ph" role="img" aria-label="Cookies Coolkie"></div>
-  </div>
-  <div class="strip" id="strip" aria-label="Photos Coolkie"></div>
+  </div></div>
   <main>
     <section id="commander">
       <h2>Choisis tes boîtes</h2>
@@ -92,6 +100,7 @@ footer a{color:inherit}
     </section>
     <section>
       <h2>Où récupérer ta commande ?</h2>
+      <p class="mute" style="margin:-4px 0 12px">On livre uniquement à Bruxelles pour l'instant, sur deux points de retrait.</p>
       <div class="pts" id="pts"></div>
       <div class="two" style="margin-top:4px"><div><label for="date">Date de retrait</label><input type="date" id="date"></div><div><label for="notes">Note (optionnel)</label><input id="notes" placeholder="Heure, remarque…"></div></div>
       <p class="info" style="margin-top:14px">Paiement au retrait. Rien à payer en ligne.</p>
@@ -109,7 +118,13 @@ footer a{color:inherit}
         </ol>
       </div>
     </section>
+    <section>
+      <div class="story"><h2 style="font-size:clamp(24px,5vw,30px)">Fait main, par passion</h2>
+        <p>Coolkie, c'est un couple de jeunes trentenaires fans de bonne nourriture. On fait tout à la main, en petits batchs, selon la demande et notre temps libre. C'est un hobby, pas une usine.</p>
+        <a href="story.html">Lire notre histoire →</a></div>
+    </section>
   </main>
+  <div class="gal"><h2>En images</h2><div class="strip" id="strip" aria-label="Photos Coolkie"></div></div>
 </div>
 
 <div class="view" id="v-account">
@@ -192,9 +207,9 @@ function authForm(mode,after){mode=mode||'signup';
     if(r.error||!r.data.session){$('#aGo').disabled=false;$('#aE').textContent=r.error?msgErr(r.error):'Compte créé, mais la connexion directe est désactivée. Préviens Coolkie.';return}
     closeSheet();await onUser(r.data.session.user);toast(mode==='signup'?'Bienvenue '+u+' !':'Connecté');if(after)after()}}
 
-async function onUser(u){S.user=u;if(!u){S.profile=null;$('#acctBtn').textContent='Se connecter';$('#topLogout').hidden=true;return}
-  const{data}=await sb.from('profiles').select('username,tel').eq('id',u.id).maybeSingle();S.profile=data;
-  $('#acctBtn').textContent='Mes commandes';$('#topLogout').hidden=false;}
+async function onUser(u){S.user=u;if(!u){S.profile=null;$('#acctBtn').textContent='Se connecter';$('#topLogout').hidden=true;$('#adminBtn').hidden=true;return}
+  const{data}=await sb.from('profiles').select('username,tel,is_admin').eq('id',u.id).maybeSingle();S.profile=data;
+  $('#acctBtn').textContent='Mes commandes';$('#topLogout').hidden=false;$('#adminBtn').hidden=!data?.is_admin;}
 $('#acctBtn').onclick=()=>S.user?showAccount():authForm('login',showAccount);
 $('#backShop').onclick=()=>{$('#v-account').classList.remove('on');$('#v-shop').classList.add('on');$('#bar').style.display='flex';scrollTo(0,0)};
 $('#topLogout').onclick=()=>$('#logout').click();
@@ -218,7 +233,7 @@ function confirmOrder(){const l=cartLines(),p=C.points[S.point],tot=l.reduce((a,
 // ---------- mon espace ----------
 async function showAccount(){$('#v-shop').classList.remove('on');$('#v-account').classList.add('on');$('#bar').style.display='none';scrollTo(0,0);
   $('#hello').textContent='Salut '+(S.profile?.username||'')+' !';
-  const{data}=await sb.from('orders').select('id,lignes,total,point,date_retrait,statut,created_at,prochain_batch').order('created_at',{ascending:false});S.orders=data||[];renderOrders();
+  const{data}=await sb.from('orders').select('id,lignes,total,point,date_retrait,statut,created_at,prochain_batch').eq('user_id',S.user.id).order('created_at',{ascending:false});S.orders=data||[];renderOrders();
   if(S.orders.length){$('#chatSec').style.display='block';await loadChat()}}
 function renderOrders(){$('#myOrders').innerHTML=S.orders.length?S.orders.map(o=>{const p=C.points[o.point]||{nom:o.point,lieu:''};return `<div class="card"><div class="row"><b class="grow">Commande n°${esc(o.id)}</b><span class="pill p-${esc(o.statut)}">${esc(ST[o.statut]||o.statut)}</span></div>
   <div style="margin:6px 0">${(o.lignes||[]).map(l=>esc(l.qte)+' × '+esc(l.nom)).join(', ')}</div>

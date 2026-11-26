@@ -258,3 +258,27 @@ grant execute on function public.place_order(jsonb,text,date,text) to authentica
 -- ---------- APRÈS t'être inscrit sur le site avec ton pseudo ----------
 -- Remplace TONPSEUDO puis lance seulement cette ligne pour devenir administrateur :
 -- update public.profiles set is_admin = true where username = 'tonpseudo';
+
+-- ===== v3 : gestion des admins + chiffres publics =====
+create or replace function public.set_admin(p_username text, p_admin boolean) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'Réservé'; end if;
+  if not p_admin and lower(p_username) = (select username from public.profiles where id = auth.uid()) then
+    raise exception 'Tu ne peux pas retirer tes propres droits';
+  end if;
+  update public.profiles set is_admin = p_admin where username = lower(p_username);
+  if not found then raise exception 'Pseudo introuvable'; end if;
+end $$;
+revoke all on function public.set_admin(text, boolean) from public, anon;
+grant execute on function public.set_admin(text, boolean) to authenticated;
+
+-- chiffres agrégés (aucune donnée personnelle) pour la page Story
+create or replace function public.public_stats() returns table(boites bigint, commandes bigint, clients bigint, fideles bigint)
+language sql stable security definer set search_path = public as $$
+  with o as (select coalesce(user_id::text, lower(trim(client_nom))) as c, lignes from public.orders where statut = 'livree'),
+  per as (select c, count(*) n from o group by c)
+  select (select coalesce(sum((l->>'qte')::int),0) from o, jsonb_array_elements(o.lignes) l),
+         (select count(*) from o), (select count(*) from per), (select count(*) from per where n >= 2);
+$$;
+grant execute on function public.public_stats() to anon, authenticated;
