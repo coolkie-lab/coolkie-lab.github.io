@@ -75,6 +75,15 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
 .savebar{position:sticky;bottom:calc(64px + env(safe-area-inset-bottom));z-index:4;background:var(--ink);color:#fff;border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-top:16px}
 .savebar .btn{background:#fff;color:var(--ink);border-color:#fff}
 @media(max-width:520px){.brand>a{flex:0 0 auto!important;font-size:0}.brand>a img{width:32px;height:32px}.brand{justify-content:space-between}}
+#report{display:none}
+@media print{@page{size:A4;margin:14mm}body{background:#fff!important;padding:0!important}body>*:not(#report){display:none!important}
+#report{display:block;color:#111;font:10.5pt/1.45 var(--fB)}#report h1{font-size:24pt;margin:0}#report h2{font-size:13pt;margin:18px 0 8px;break-after:avoid;color:#123047}#report h2 small{font:400 9pt var(--fB);color:#666}
+#report .rp-h{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--ice);padding-bottom:10px}#report .rp-h p{margin:2px 0 0;font-size:12pt;color:#444}#report .rp-h img{width:56px;height:56px;border-radius:50%}
+#report .rp-m{color:#555;font-size:9pt;margin:6px 0}
+#report .rp-k{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}#report .rp-k div{border:1px solid #d8e6ee;border-radius:8px;padding:8px;break-inside:avoid}#report .rp-k b{display:block;font:600 14pt var(--fT)}#report .rp-k span{font-size:8.5pt;color:#555}
+#report table{width:100%;border-collapse:collapse;margin:4px 0}#report th{text-align:left;font-size:8.5pt;color:#555;border-bottom:1.5px solid #123047;padding:4px 6px}#report td{padding:4px 6px;border-bottom:1px solid #e3e9ee;vertical-align:top}#report tr{break-inside:avoid}
+#report .r{text-align:right;white-space:nowrap}#report tr.t td{border-top:1.5px solid #123047;background:#f2f8fb}#report table.sm{font-size:9pt}
+#report .rp-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}}
 #login{max-width:420px;margin:30px auto;padding:0 16px}
 </style>
 </head>
@@ -157,6 +166,13 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
       <section><h2>Ingrédients <small>pour un batch</small></h2><div id="cIng"></div><button class="btn sm" data-cadd="ing">+ Ingrédient</button></section>
       <section><h2>Packaging <small>par boîte</small></h2><div id="cPack"></div><button class="btn sm" data-cadd="pack">+ Élément</button></section>
       <div class="savebar"><span class="grow" id="cState">Tout est enregistré</span><button class="btn sm" id="cSave">Enregistrer</button></div>
+    </div>
+    <div class="chv" id="ch-liasse">
+      <div class="card"><b>Liasse financière mensuelle</b>
+        <p class="mute" style="margin:6px 0 0">Un document PDF de plusieurs pages avec tous les chiffres du mois : synthèse, comparaison avec le mois précédent, compte de résultat simplifié, répartition des ventes, production, détail des commandes et des dépenses, montants à encaisser et coût de revient.</p>
+        <label for="rMonth">Mois</label><select id="rMonth"></select>
+        <div class="acts"><button class="btn ice" id="rGo">Télécharger le PDF</button></div>
+        <p class="mute" style="margin:10px 0 0">La fenêtre d'impression s'ouvre : choisis « Enregistrer au format PDF » (sur iPhone : Partager › Enregistrer dans Fichiers).</p></div>
     </div>
     <div class="chv" id="ch-depenses">
       <div class="card"><b>Nouvelle dépense</b>
@@ -264,7 +280,7 @@ function render(){
   $('#kpis').innerHTML=[[eur(ca),'Ventes ce mois'],[eur(marge),'Marge brute ce mois',ca?Math.round(marge/ca*100)+' % du chiffre d\'affaires':''],[stockT+' boîtes','En stock',(stockT-resT)+' libres après commandes'],[eur(due),'À encaisser']].map(k=>`<div class="kpi"><b>${esc(k[0])}</b><span>${k[1]}</span>${k[2]?'<small>'+esc(k[2])+'</small>':''}</div>`).join('');
   {const PER={mois:'Ce mois',trim:'3 derniers mois',annee:'Cette année',tout:'Depuis le début'};
    document.querySelectorAll('.perc').forEach(e=>e.innerHTML=Object.entries(PER).map(([k,l])=>`<button class="chip${S.per===k?' on':''}" data-per="${k}">${l}</button>`).join(''));
-   const CH={apercu:'Vue d\'ensemble',finances:'Finances',couts:'Coûts de revient',depenses:'Dépenses'};
+   const CH={apercu:'Vue d\'ensemble',finances:'Finances',couts:'Coûts de revient',depenses:'Dépenses',liasse:'Liasse PDF'};
    $('#chTabs').innerHTML=Object.entries(CH).map(([k,l])=>`<button class="chip${S.ch===k?' on':''}" data-ch="${k}">${l}</button>`).join('');
    document.querySelectorAll('.chv').forEach(e=>e.classList.toggle('on',e.id==='ch-'+S.ch));
    const t=today(),y=t.slice(0,4),d90=new Date(Date.now()-91*864e5).toISOString().slice(0,10);
@@ -276,7 +292,7 @@ function render(){
    const K=[[eur(caP),'Chiffre d\'affaires',po.length+' commandes','hl'],[eur(mP),'Marge brute',caP?Math.round(mP/caP*100)+' % du CA':''],[bxP,'Boîtes vendues',(bxP*4)+' coolkies'],[eur(po.length?caP/po.length:0),'Panier moyen',(po.length?(bxP/po.length).toFixed(1).replace('.',','):0)+' boîtes / commande'],
      [cliP,'Clients servis',regP+' commandes de clients enregistrés'],[Math.round(cs.length?fid/cs.length*100:0)+' %','Clients fidèles',fid+' clients sur '+cs.length+' ont commandé 2 fois ou plus'],[eur(cost),'Valeur du stock','au coût de revient'],[paidP+' / '+po.length,'Commandes payées',eur(po.filter(o=>!o.paye).reduce((a,o)=>a+(+o.total||0),0))+' restant']];
    $('#kpis2').innerHTML=K.map(k=>`<div class="kpi${k[3]?' '+k[3]:''}"><b>${esc(k[0])}</b><span>${esc(k[1])}</span>${k[2]?'<small>'+esc(k[2])+'</small>':''}</div>`).join('');
-   renderFin(po,inP);
+   renderFin(po,inP);renderRep();
    const noCost=S.products.filter(p=>p.actif&&!(+p.cout));$('#kpiNote').textContent=noCost.length?'Ajoute le coût de revient de '+noCost.map(p=>p.nom).join(', ')+' (Chiffres › Coûts de revient) pour une marge exacte.':'Marge brute = prix de vente moins coût de revient ('+S.products.filter(p=>p.actif).map(p=>eur(p.cout)+' par '+(p.unite||'boîte')).join(', ')+').'}
   $('#prepCount').textContent=pend.length?pend.length+' en cours':'';
   $('#prep').innerHTML=pend.length?pend.map(orderCard).join(''):'<div class="card empty">Rien à préparer pour l\'instant.</div>';
@@ -479,6 +495,63 @@ $('#ch-depenses').addEventListener('click',async e=>{const b=e.target.closest('b
     if(!d.description)return toast('Description ?');if(d.montant<=0)return toast('Montant ?');b.disabled=true;const{error}=await sb.from('depenses').insert(d);b.disabled=false;
     if(error)return toast('Erreur : '+error.message);['dMt','dDesc','dQui'].forEach(i=>$('#'+i).value='');toast('Dépense ajoutée');load('depenses')}
   else if(b.dataset.ddel){if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Supprimer ?';return}const{error}=await sb.from('depenses').delete().eq('id',+b.dataset.ddel);if(error)return toast('Erreur : '+error.message);load('depenses')}});
+
+// ---------- liasse financière mensuelle (PDF via impression) ----------
+function monthsList(){const s=new Set([today().slice(0,7)]);S.orders.forEach(o=>o.date_retrait&&s.add(o.date_retrait.slice(0,7)));S.depenses.forEach(d=>d.date&&s.add(d.date.slice(0,7)));return[...s].sort().reverse()}
+const mLabel=ym=>new Date(ym+'-15T12:00').toLocaleDateString('fr-BE',{month:'long',year:'numeric'});
+function renderRep(){const sel=$('#rMonth');if(!sel)return;const cur=sel.value,ms=monthsList();
+  sel.innerHTML=ms.map(m=>`<option value="${m}"${m===cur?' selected':''}>${esc(mLabel(m))}</option>`).join('');if(!cur){const prev=new Date();prev.setDate(1);prev.setMonth(prev.getMonth()-1);const pm=prev.toISOString().slice(0,7);if(ms.includes(pm))sel.value=pm}}
+async function buildReport(ym){
+  const pd=new Date(ym+'-15T12:00');pd.setMonth(pd.getMonth()-1);const pym=pd.toISOString().slice(0,7);
+  const inM=(d,m)=>(d||'').slice(0,7)===m,os=S.orders.filter(active);
+  const po=os.filter(o=>inM(o.date_retrait,ym)),pp=os.filter(o=>inM(o.date_retrait,pym));
+  const k=costCalc(),perBox={ing:k.ing/k.bx,pack:k.pack};
+  const stat=arr=>{const brut=arr.reduce((a,o)=>a+(o.lignes||[]).reduce((b,l)=>b+l.qte*(+l.prix||0),0),0),net=arr.reduce((a,o)=>a+(+o.total||0),0),bx=arr.reduce((a,o)=>a+boxes(o),0);
+    const cogs=arr.reduce((a,o)=>a+(o.lignes||[]).reduce((b,l)=>b+l.qte*(+(prod(l.pid)?.cout)||0),0),0);
+    return{brut,net,rem:brut-net,bx,cogs,mb:net-cogs,n:arr.length,enc:arr.filter(o=>o.paye).reduce((a,o)=>a+(+o.total||0),0)}};
+  const A=stat(po),B=stat(pp);
+  const dm=S.depenses.filter(d=>inM(d.date,ym)),dep=dm.reduce((a,d)=>a+(+d.montant||0),0),depP=S.depenses.filter(d=>inM(d.date,pym)).reduce((a,d)=>a+(+d.montant||0),0);
+  const key=o=>o.user_id||('n:'+(o.client_nom||'').trim().toLowerCase());
+  const firstBy={};[...os].sort((a,b)=>(a.date_retrait||'').localeCompare(b.date_retrait||'')).forEach(o=>{const c=key(o);if(!firstBy[c])firstBy[c]=o.date_retrait});
+  const cli=new Set(po.map(key)),nouv=[...cli].filter(c=>inM(firstBy[c],ym)).length;
+  const prodM=(await q(sb.from('production').select('*').gte('date',ym+'-01').lte('date',ym+'-31').order('date')))||[];
+  const g=(arr,kf,vf)=>{const m={};arr.forEach(x=>{const kk=kf(x);m[kk]=(m[kk]||0)+vf(x)});return Object.entries(m).sort((a,b)=>b[1]-a[1])};
+  const vr=(a,b)=>b?((a-b)/Math.abs(b)*100>=0?'+':'')+Math.round((a-b)/Math.abs(b)*100)+' %':'–';
+  const tr=(l,v,c)=>`<tr${c?' class="'+c+'"':''}><td>${l}</td><td class="r">${v}</td></tr>`;
+  const unpaid=os.filter(o=>!o.paye&&(+o.total)>0&&o.date_retrait<=ym+'-31').sort((a,b)=>(a.date_retrait||'').localeCompare(b.date_retrait||''));
+  const kp=[[eur(A.net),'Chiffre d\'affaires'],[eur(A.mb),'Marge brute · '+pct(A.mb,A.net)],[eur(A.enc-dep),'Résultat (encaissé − dépenses)'],[A.bx+' boîtes','Vendues · '+A.n+' commandes'],
+    [eur(A.n?A.net/A.n:0),'Panier moyen'],[eur(A.bx?A.net/A.bx:0),'Prix moyen par boîte'],[cli.size,'Clients servis · '+nouv+' nouveaux'],[eur(A.net-A.enc),'Reste à encaisser (mois)']];
+  return `<div class="rp-h"><div><h1>Liasse financière</h1><p>Coolkie Lab · ${esc(mLabel(ym))}</p></div><img src="img/coolkie-logo.jpg" alt=""></div>
+  <p class="rp-m">Généré le ${esc(new Date().toLocaleDateString('fr-BE',{day:'numeric',month:'long',year:'numeric'}))}. Ventes comptées à la date de retrait, hors commandes annulées. Coût de revient actuel : ${eur(k.box)} par boîte.</p>
+  <h2>1. Synthèse</h2><div class="rp-k">${kp.map(x=>`<div><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div>`).join('')}</div>
+  <h2>2. Comparaison avec ${esc(mLabel(pym))}</h2><table><thead><tr><th></th><th class="r">${esc(mLabel(ym))}</th><th class="r">${esc(mLabel(pym))}</th><th class="r">Évolution</th></tr></thead><tbody>
+  ${[['Chiffre d\'affaires',A.net,B.net,1],['Marge brute',A.mb,B.mb,1],['Dépenses',dep,depP,1],['Commandes',A.n,B.n],['Boîtes vendues',A.bx,B.bx]].map(r=>`<tr><td>${r[0]}</td><td class="r">${r[3]?eur(r[1]):r[1]}</td><td class="r">${r[3]?eur(r[2]):r[2]}</td><td class="r">${vr(r[1],r[2])}</td></tr>`).join('')}</tbody></table>
+  <h2>3. Compte de résultat simplifié</h2><table><tbody>
+  ${tr('Ventes brutes (prix catalogue)',eur(A.brut))}${tr('Remises et offerts',(A.rem?'− ':'')+eur(A.rem))}${tr('<b>Chiffre d\'affaires net</b>','<b>'+eur(A.net)+'</b>','t')}
+  ${tr('Coût des ingrédients ('+A.bx+' boîtes)','− '+eur(A.cogs*(k.box?perBox.ing/k.box:0)))}${tr('Coût du packaging ('+A.bx+' boîtes)','− '+eur(A.cogs*(k.box?perBox.pack/k.box:1)))}
+  ${tr('<b>Marge brute</b> · '+pct(A.mb,A.net),'<b>'+eur(A.mb)+'</b>','t')}
+  ${g(dm,d=>CATS[d.categorie]||d.categorie,d=>+d.montant||0).map(([c,v])=>tr('Dépenses : '+esc(c),'− '+eur(v))).join('')||tr('Dépenses','0,00 €')}
+  ${tr('<b>Encaissé sur le mois</b>','<b>'+eur(A.enc)+'</b>')}${tr('<b>Résultat de trésorerie</b> (encaissé − dépenses)','<b>'+eur(A.enc-dep)+'</b>','t')}</tbody></table>
+  <p class="rp-m">La marge brute compare les ventes au coût des ingrédients et du packaging des boîtes vendues. Les dépenses sont les achats réellement payés ce mois-ci (courses, matériel, marketing).</p>
+  <h2>4. Répartition des ventes</h2><div class="rp-2"><table><thead><tr><th>Point de retrait</th><th class="r">CA</th></tr></thead><tbody>${g(po,o=>(C.points[o.point]||{}).nom||PTS[o.point]||o.point,o=>+o.total||0).map(([l,v])=>tr(esc(l),eur(v))).join('')||tr('–','')}</tbody></table>
+  <table><thead><tr><th>Paiement (encaissé)</th><th class="r">Montant</th></tr></thead><tbody>${g(po.filter(o=>o.paye),o=>PAY[o.paiement]||o.paiement||'Autre',o=>+o.total||0).map(([l,v])=>tr(esc(l),eur(v))).join('')||tr('–','')}</tbody></table></div>
+  <h2>5. Production et stock</h2><table><thead><tr><th>Date</th><th>Produit</th><th class="r">Boîtes produites</th></tr></thead><tbody>${prodM.map(x=>`<tr><td>${esc(fdate(x.date))}</td><td>${esc(x.nom)}</td><td class="r">${esc(x.qte)}</td></tr>`).join('')||'<tr><td colspan="3">Aucune production enregistrée ce mois-ci.</td></tr>'}</tbody></table>
+  <p class="rp-m">Stock au ${esc(new Date().toLocaleDateString('fr-BE'))} : ${S.products.filter(p=>p.actif).map(p=>esc(p.nom)+' '+(+p.stock||0)+' boîtes').join(', ')} (valeur ${eur(S.products.filter(p=>p.actif).reduce((a,p)=>a+(+p.stock||0)*(+p.cout||0),0))} au coût de revient).</p>
+  <h2>6. Détail des commandes</h2><table class="sm"><thead><tr><th>Retrait</th><th>N°</th><th>Client</th><th class="r">Boîtes</th><th class="r">Total</th><th>Statut</th><th>Payé</th></tr></thead><tbody>
+  ${po.sort((a,b)=>(a.date_retrait||'').localeCompare(b.date_retrait||'')).map(o=>`<tr><td>${esc(fdate(o.date_retrait))}</td><td>${esc(o.id)}</td><td>${esc(o.client_nom)}${o.promo_code?' <i>('+esc(o.promo_code)+')</i>':''}</td><td class="r">${boxes(o)}</td><td class="r">${eur(o.total)}</td><td>${esc(ST[o.statut]||o.statut)}</td><td>${o.paye?'Oui':'Non'}</td></tr>`).join('')||'<tr><td colspan="7">Aucune commande.</td></tr>'}</tbody></table>
+  <h2>7. Détail des dépenses</h2><table class="sm"><thead><tr><th>Date</th><th>Description</th><th>Catégorie</th><th>Payé par</th><th class="r">Montant</th></tr></thead><tbody>
+  ${dm.map(d=>`<tr><td>${esc(fdate(d.date))}</td><td>${esc(d.description)}</td><td>${esc(CATS[d.categorie]||d.categorie)}</td><td>${esc(d.qui)}</td><td class="r">${eur(d.montant)}</td></tr>`).join('')||'<tr><td colspan="5">Aucune dépense notée ce mois-ci.</td></tr>'}</tbody></table>
+  <h2>8. Montants restant à encaisser <small>commandes jusqu'à fin ${esc(mLabel(ym))}, non payées à ce jour</small></h2><table class="sm"><thead><tr><th>Retrait</th><th>N°</th><th>Client</th><th class="r">Montant</th></tr></thead><tbody>
+  ${unpaid.map(o=>`<tr><td>${esc(fdate(o.date_retrait))}</td><td>${esc(o.id)}</td><td>${esc(o.client_nom)}</td><td class="r">${eur(o.total)}</td></tr>`).join('')||'<tr><td colspan="4">Tout est encaissé.</td></tr>'}
+  ${unpaid.length?`<tr class="t"><td colspan="3"><b>Total</b></td><td class="r"><b>${eur(unpaid.reduce((a,o)=>a+(+o.total||0),0))}</b></td></tr>`:''}</tbody></table>
+  <h2>9. Coût de revient d'une boîte</h2><table class="sm"><thead><tr><th>Élément</th><th class="r">Achat</th><th class="r">Utilisé</th><th class="r">Coût</th></tr></thead><tbody>
+  ${(S.costs?.items||[]).map(i=>`<tr><td>${esc(i.nom)}${i.cat==='pack'?' <i>(par boîte)</i>':''}</td><td class="r">${esc(i.pack_qty)} ${esc(i.unit||'')} · ${eur(i.pack_price)}</td><td class="r">${esc(i.used)} ${esc(i.unit||'')}</td><td class="r">${eur(k.line(i))}</td></tr>`).join('')}
+  <tr class="t"><td colspan="3">Ingrédients par batch (${esc(S.costs?.batch_cookies)} coolkies, ${k.bx.toFixed(0)} boîtes)</td><td class="r">${eur(k.ing)}</td></tr><tr class="t"><td colspan="3"><b>Coût par boîte</b></td><td class="r"><b>${eur(k.box)}</b></td></tr></tbody></table>`}
+$('#rGo')?.addEventListener('click',async()=>{const ym=$('#rMonth').value;if(!ym)return;const b=$('#rGo');b.disabled=true;
+  try{if(!S.costs)await load('costs');let r=$('#report');if(!r){r=document.createElement('div');r.id='report';document.body.appendChild(r)}r.innerHTML=await buildReport(ym);
+    const t=document.title;document.title='Coolkie - Liasse financiere - '+ym;
+    await new Promise(ok=>{const im=r.querySelector('img');if(!im||im.complete)ok();else{im.onload=im.onerror=ok}});
+    setTimeout(()=>{window.print();setTimeout(()=>document.title=t,1500)},100)}finally{b.disabled=false}});
 
 // ---------- mode dev ----------
 const D={site:null,dirty:false,page:'index',fields:{},promos:[]};
