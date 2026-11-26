@@ -48,7 +48,7 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
 </head>
 <body>
 <header>
-  <div class="brand"><img src="img/coolkie-logo.jpg" alt="" onerror="this.remove()">Coolkie Lab · Gestion</div>
+  <div class="brand"><img src="img/coolkie-logo.jpg" alt="" onerror="this.remove()"><span style="flex:1">Coolkie Lab · Gestion</span><button class="btn sm" id="topLogout" hidden style="background:#fff8ee;border-color:transparent">Déconnexion</button></div>
   <h1 id="title">Aujourd'hui</h1>
   <p id="sub">Chargement…</p>
 </header>
@@ -273,13 +273,13 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(d.cli)cliSheet(d.cli)});
 $('#fab').onclick=()=>orderForm();$('#addProd').onclick=()=>prodForm();
 $('#ordSearch').oninput=render;$('#cliSearch').oninput=render;
-$('#logout').onclick=async()=>{await sb.auth.signOut();location.reload()};
+$('#logout').onclick=$('#topLogout').onclick=async()=>{await sb.auth.signOut();location.reload()};
 
 // ---------- connexion ----------
 async function start(user){
   const{data:me}=await sb.from('profiles').select('is_admin,username').eq('id',user.id).maybeSingle();
   if(!me||!me.is_admin){$('#login').style.display='block';$('#le').textContent='Ce compte n\'est pas administrateur.';await sb.auth.signOut();return}
-  $('#login').style.display='none';$('#app').style.display='block';$('#nav').style.display='grid';$('#fab').style.display='block';
+  $('#login').style.display='none';$('#app').style.display='block';$('#topLogout').hidden=false;$('#nav').style.display='grid';$('#fab').style.display='block';
   await load();route();
   sb.channel('admin').on('postgres_changes',{event:'*',schema:'public',table:'orders'},p=>{if(p.eventType==='INSERT'&&p.new.source==='en_ligne')toast('Nouvelle commande en ligne : '+p.new.client_nom);load('orders');load('profiles')})
     .on('postgres_changes',{event:'*',schema:'public',table:'messages'},p=>{if(p.eventType==='INSERT'&&!p.new.from_admin&&S.conv!==p.new.user_id)toast('Nouveau message de '+(uname(p.new.user_id)||'un client'));load('messages')}).subscribe()}

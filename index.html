@@ -62,6 +62,7 @@ footer a{color:inherit}
   <img class="logo" src="img/coolkie-logo.jpg" alt="" onerror="this.style.visibility='hidden'">
   <b>Coolkie</b>
   <button class="btn sm" id="acctBtn">Se connecter</button>
+  <button class="btn sm" id="topLogout" hidden>Déconnexion</button>
 </div>
 
 <div class="view on" id="v-shop">
@@ -179,11 +180,12 @@ function authForm(mode,after){mode=mode||'signup';
     if(r.error||!r.data.session){$('#aGo').disabled=false;$('#aE').textContent=r.error?msgErr(r.error):'Compte créé, mais la connexion directe est désactivée. Préviens Coolkie.';return}
     closeSheet();await onUser(r.data.session.user);toast(mode==='signup'?'Bienvenue '+u+' !':'Connecté');if(after)after()}}
 
-async function onUser(u){S.user=u;if(!u){S.profile=null;$('#acctBtn').textContent='Se connecter';return}
+async function onUser(u){S.user=u;if(!u){S.profile=null;$('#acctBtn').textContent='Se connecter';$('#topLogout').hidden=true;return}
   const{data}=await sb.from('profiles').select('username,tel').eq('id',u.id).maybeSingle();S.profile=data;
-  $('#acctBtn').textContent='Mes commandes';}
+  $('#acctBtn').textContent='Mes commandes';$('#topLogout').hidden=false;}
 $('#acctBtn').onclick=()=>S.user?showAccount():authForm('login',showAccount);
 $('#backShop').onclick=()=>{$('#v-account').classList.remove('on');$('#v-shop').classList.add('on');$('#bar').style.display='flex';scrollTo(0,0)};
+$('#topLogout').onclick=()=>$('#logout').click();
 $('#logout').onclick=async()=>{await sb.auth.signOut();if(S.chan){sb.removeChannel(S.chan);S.chan=null}await onUser(null);$('#backShop').click();toast('À bientôt !')};
 
 // ---------- commande ----------
