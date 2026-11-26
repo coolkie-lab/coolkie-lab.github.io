@@ -9,9 +9,9 @@
 <link rel="icon" href="img/coolkie-logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=11">
+<link rel="stylesheet" href="common.css?v=12">
 <script src="config.js?v=5"></script>
-<script src="i18n.js?v=1"></script>
+<script src="i18n.js?v=2"></script>
 <script src="site.js?v=6"></script>
 <style>
 body{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
@@ -58,6 +58,7 @@ section>.sub{color:var(--mute);margin:0 0 16px}
 .strip .insta{background:var(--ink);color:#fff;text-decoration:none;display:flex;flex-direction:column;justify-content:flex-end;padding:12px;font-family:var(--fT);font-weight:600;font-size:16px;line-height:1.2}
 .strip .insta span{font:500 12px var(--fB);opacity:.75;margin-top:4px}
 @media(max-width:700px){.strip{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 calc(-1*max(4vw,14px));padding:0 max(4vw,14px)}.strip a,.strip .insta{flex:none;width:140px;scroll-snap-align:start}}
+.guest{border-top:1px solid var(--line);margin-top:14px;padding-top:12px;position:relative}
 </style>
 </head>
 <body>
@@ -143,7 +144,7 @@ const eur=n=>new Intl.NumberFormat(LOC,{style:'currency',currency:'EUR'}).format
 const iso=d=>d.toISOString().slice(0,10);
 const fdate=d=>d?new Date(d+'T12:00').toLocaleDateString(LOC,{weekday:'long',day:'numeric',month:'long'}):'';
 const ST={a_preparer:T('Reçue'),prete:T('Prête à récupérer'),livree:T('Récupérée'),annulee:T('Annulée')};
-const S={prods:[],cart:{},point:'',user:null,profile:null,orders:[],msgs:[],chan:null,promo:null};
+const S={prods:[],cart:{},point:'',user:null,profile:null,orders:[],msgs:[],chan:null,promo:null,guest:(()=>{try{return JSON.parse(localStorage.getItem('ck_guest')||'null')}catch(e){return null}})()};
 const sub=()=>cartLines().reduce((a,x)=>a+x.q*x.p.prix,0);
 const remise=t=>!S.promo?0:S.promo.type==='pct'?Math.round(t*Math.min(100,+S.promo.valeur))/100:Math.min(+S.promo.valeur,t);
 const promoTxt=()=>S.promo?(S.promo.type==='pct'?'−'+(+S.promo.valeur)+' %':'−'+eur(S.promo.valeur)):'';
@@ -152,7 +153,7 @@ function openSheet(h){$('#sheetIn').innerHTML=h;$('#sheet').classList.add('on')}
 function closeSheet(){$('#sheet').classList.remove('on')}
 $('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet'||e.target.dataset.close!==undefined)closeSheet()});
 addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
-const msgErr=e=>{const m=(e&&e.message)||'';if(/Invalid login/i.test(m))return T('Pseudo ou mot de passe incorrect.');if(/already registered|already exists|duplicate/i.test(m))return T('Ce pseudo est déjà pris.');if(/Password/i.test(m))return T('Mot de passe trop court (6 caractères minimum).');return m||T('Une erreur est survenue.')};
+const msgErr=e=>{const m=(e&&e.message)||'';if(/Invalid login/i.test(m))return T('Pseudo ou mot de passe incorrect.');if(/already registered|already exists|duplicate/i.test(m))return T('Ce pseudo est déjà pris.');if(/Password/i.test(m))return T('Mot de passe trop court (6 caractères minimum).');return m?T(m):T('Une erreur est survenue.')};
 
 
 // points & date
@@ -206,16 +207,32 @@ $('#logout').onclick=async()=>{await sb.auth.signOut();if(S.chan){sb.removeChann
 $('#checkout').onclick=()=>{const l=cartLines();
   if(!l.length){toast(T('Ajoute au moins un parfum'));location.hash='commander';return}
   if(!S.point){toast(T('Choisis un point de retrait'));$('#pts').scrollIntoView({behavior:'smooth',block:'center'});return}
-  if(!S.user)return authForm('signup',confirmOrder);confirmOrder()};
-function confirmOrder(){const l=cartLines(),p=C.points[S.point],st=sub(),rm=remise(st),tot=st-rm;
+  confirmOrder()};
+function confirmOrder(){const l=cartLines(),p=C.points[S.point],st=sub(),rm=remise(st),tot=st-rm,tot0=tot;
   openSheet(`<h2>${T('Ta commande')}</h2>${l.map(x=>`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span class="grow">${x.q} × ${esc(x.p.nom)}</span><span class="price">${eur(x.q*x.p.prix)}</span></div>`).join('')}
   ${rm?`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span class="grow">${T('Code')} ${esc(S.promo.code)}</span><span class="price" style="color:var(--ok)">−${eur(rm)}</span></div>`:''}<div class="row" style="margin-top:10px"><b class="grow">${T('Total à payer au retrait')}</b><span class="price" style="font-size:20px">${eur(tot)}</span></div>
-  <p>${T('Retrait à')} <b>${esc(T(p.nom))} (${esc(p.lieu)})</b>, ${esc(fdate($('#date').value))}.</p>${overflow()?'<p class="info">'+T('{o} boîte(s) seront pour le prochain batch : on te confirme la date par le chat.',{o:overflow()})+'</p>':''}
+  <p>${T('Retrait à')} <b>${esc(T(p.nom))} (${esc(p.lieu)})</b>, ${esc(fdate($('#date').value))}.</p>${overflow()?'<p class="info">'+(S.user?T('{o} boîte(s) seront pour le prochain batch : on te confirme la date par le chat.',{o:overflow()}):T('{o} boîte(s) seront pour le prochain batch : on te confirme la date par téléphone.',{o:overflow()}))+'</p>':''}
+  ${S.user?'':`<div class="guest"><b>${T('Tes coordonnées')}</b><p class="mute" style="margin:2px 0 8px">${T('Pas besoin de compte : juste ton nom et ton téléphone, pour te prévenir si besoin.')}</p>
+  <label for="gN">${T('Nom et prénom')}</label><input id="gN" autocomplete="name" maxlength="40" required value="${esc(S.guest?.nom||'')}">
+  <label for="gT">${T('Téléphone')}</label><input id="gT" type="tel" autocomplete="tel" maxlength="25" required placeholder="04xx xx xx xx" value="${esc(S.guest?.tel||'')}">
+  <input id="gW" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+  <p class="mute" style="margin:10px 0 0">${T('Tu préfères suivre ta commande et discuter avec nous ?')} <a href="#" id="gAcc">${T('Se connecter ou créer un compte')}</a></p></div>`}
   <div class="err" id="oE"></div><div class="acts"><button class="btn" data-close>${T('Modifier')}</button><button class="btn main" id="oGo">${T('Confirmer la commande')}</button></div>`);
-  $('#oGo').onclick=async()=>{$('#oGo').disabled=true;
-    const{data,error}=await sb.rpc('place_order',{items:l.map(x=>({pid:x.p.id,qte:x.q})),p_point:S.point,p_date:$('#date').value,p_notes:$('#notes').value.trim(),p_code:S.promo?S.promo.code:''});
+  const ga=$('#gAcc');if(ga)ga.onclick=e=>{e.preventDefault();authForm('signup',confirmOrder)};
+  $('#oGo').onclick=async()=>{const base={items:l.map(x=>({pid:x.p.id,qte:x.q})),p_point:S.point,p_date:$('#date').value,p_notes:$('#notes').value.trim(),p_code:S.promo?S.promo.code:''};let g=null;
+    if(!S.user){g={nom:$('#gN').value.trim(),tel:$('#gT').value.trim()};
+      if(g.nom.length<2||!g.tel){$('#oE').textContent=T('Indique ton nom et ton téléphone.');return}
+      if(!/^\+?[0-9 .\/()-]{8,25}$/.test(g.tel)){$('#oE').textContent=T('Numéro de téléphone invalide.');return}}
+    $('#oGo').disabled=true;
+    const{data,error}=g?await sb.rpc('place_guest_order',{...base,p_nom:g.nom,p_tel:g.tel,p_hp:$('#gW').value}):await sb.rpc('place_order',base);
     if(error){$('#oGo').disabled=false;$('#oE').textContent=msgErr(error);return}
-    S.cart={};S.promo=null;$('#promoIn').value='';$('#promoMsg').innerHTML='';loadProds();$('#notes').value='';closeSheet();toast(T('Commande n°{id} envoyée !',{id:data}));showAccount()}}
+    const tot=eur(tot0);S.cart={};S.promo=null;$('#promoIn').value='';$('#promoMsg').innerHTML='';loadProds();$('#notes').value='';renderBar&&renderBar();
+    if(!g){closeSheet();toast(T('Commande n°{id} envoyée !',{id:data}));return showAccount()}
+    S.guest=g;try{localStorage.setItem('ck_guest',JSON.stringify(g))}catch(e){}
+    openSheet(`<h2>${T('Commande n°{id} envoyée !',{id:esc(data)})}</h2><p>${T('Merci {n} ! On prépare tes coolkies.',{n:esc(g.nom.split(' ')[0])})}</p>
+      <p>${T('Retrait à')} <b>${esc(T(p.nom))} (${esc(p.lieu)})</b>, ${esc(fdate(base.p_date))}. ${T('{m} au retrait',{m:tot})}.</p>
+      <p class="mute">${T('Si besoin, on te contacte au {t}.',{t:esc(g.tel)})}</p>
+      <div class="acts"><button class="btn main" data-close>${T('Parfait')}</button></div>`)}}
 
 // ---------- mon espace ----------
 async function showAccount(){$('#v-shop').classList.remove('on');$('#v-account').classList.add('on');$('#bar').style.display='none';scrollTo(0,0);

@@ -9,9 +9,9 @@
 <link rel="icon" href="img/coolkie-logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=11">
+<link rel="stylesheet" href="common.css?v=12">
 <script src="config.js?v=5"></script>
-<script src="i18n.js?v=1"></script>
+<script src="i18n.js?v=2"></script>
 <script src="site.js?v=6"></script>
 <style>
 body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
@@ -190,7 +190,13 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
   </div>
   <div class="view" id="v-clients">
     <input id="cliSearch" type="search" placeholder="Chercher un client…" aria-label="Chercher un client" style="margin-bottom:12px">
+    <div class="chips" id="cliKind" style="flex-wrap:wrap"></div>
+    <div class="mute" id="cliSum" style="margin:-2px 0 10px"></div>
     <div id="cliList"></div>
+    <section style="margin-top:22px"><h2>Sauvegarde des données</h2><div class="card">
+      <p class="mute" style="margin:0 0 10px">Télécharge une copie de toutes les données (commandes, clients, messages, stock, promos, coûts, dépenses, réglages du site). Garde-la en lieu sûr : elle contient des données personnelles.</p>
+      <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn ice" id="expAll">Tout exporter (JSON)</button><button class="btn" id="expOrders">Commandes (Excel CSV)</button><button class="btn" id="expClients">Clients (Excel CSV)</button></div>
+      <div class="mute" id="expMsg" style="margin-top:8px"></div></div></section>
     <div class="acts"><button class="btn" id="logout">Se déconnecter</button></div>
   </div>
 </main>
@@ -223,7 +229,7 @@ const NEXT={a_preparer:'prete',prete:'livree'};
 const PAY={cash:'Cash',payconiq:'Payconiq',virement:'Virement',carte:'Carte',autre:'Autre'};
 const PTS={...Object.fromEntries(Object.entries(C.points).map(([k,p])=>[k,p.nom+' ('+p.lieu+')'])),livraison:'Livraison',autre:'Autre'};
 const views={accueil:'Aujourd\'hui',commandes:'Commandes',stock:'Stock & produits',messages:'Messages',clients:'Clients',dev:'Mode dev',chiffres:'Chiffres',promos:'Codes promo'};
-const S={products:[],orders:[],messages:[],profiles:[],production:[],depenses:[],costs:null,cDirty:false,ch:'apercu',filter:'actifs',pay:'tous',reg:'tous',pt:'tous',ov:'liste',per:'mois',conv:null};
+const S={products:[],orders:[],messages:[],profiles:[],production:[],depenses:[],costs:null,cDirty:false,ch:'apercu',filter:'actifs',pay:'tous',reg:'tous',pt:'tous',ck:'tous',ov:'liste',per:'mois',conv:null};
 try{S.ov=localStorage.getItem('ck_ov')||'liste';S.per=localStorage.getItem('ck_per')||'mois'}catch(e){}
 function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',2400)}
 function openSheet(h){$('#sheetIn').innerHTML=h;$('#sheet').classList.add('on')}
@@ -237,7 +243,7 @@ const sb=window.supabase.createClient(C.supabaseUrl,C.supabaseKey);
 function route(){const v=views[location.hash.slice(1)]?location.hash.slice(1):'accueil';
   document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+v));
   document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));
-  $('#title').textContent=views[v];if(v==='dev')devOpen();if(v==='promos')loadPromos();if(S.started)$('#fab').style.display=['commandes','dev','chiffres','promos'].includes(v)?'none':'block';scrollTo(0,0);render()}
+  $('#title').textContent=views[v];if(v==='dev')devOpen();if(v==='promos')loadPromos();if(S.started)$('#fab').style.display=['commandes','dev','chiffres','promos','clients'].includes(v)?'none':'block';scrollTo(0,0);render()}
 addEventListener('hashchange',route);
 
 // ---------- data ----------
@@ -267,8 +273,9 @@ function orderCard(o){const items=(o.lignes||[]).map(l=>esc(l.qte)+'× '+esc(l.n
   <div class="row"><span class="price grow">${eur(o.total)}${+o.remise?' <span class="mute">(code '+esc(o.promo_code)+', −'+eur(o.remise)+')</span>':''} ${o.paye?'<span class="pill p-livree">Payé</span>':'<span class="pill p-a_preparer">À encaisser</span>'}</span>
   <button class="btn sm" data-edit-o="${esc(o.id)}">Ouvrir</button>${nx?`<button class="btn sm main" data-next="${esc(o.id)}">${esc(ST[nx])} →</button>`:''}</div></div>`}
 
+const lastD=c=>{const d=c.os.map(o=>o.date_retrait).filter(Boolean).sort().pop();return d?new Date(d+'T12:00').toLocaleDateString('fr-BE'):''};
 function clients(){const m=new Map();
-  S.profiles.forEach(p=>m.set('u:'+p.id,{key:'u:'+p.id,uid:p.id,nom:p.username,tel:p.tel,online:true,admin:p.is_admin,os:[]}));
+  S.profiles.forEach(p=>m.set('u:'+p.id,{key:'u:'+p.id,uid:p.id,nom:p.username,tel:p.tel,online:true,admin:p.is_admin,since:p.created_at,os:[]}));
   S.orders.forEach(o=>{const k=o.user_id?'u:'+o.user_id:'n:'+(o.client_nom||'').trim().toLowerCase();if(!m.has(k))m.set(k,{key:k,nom:o.client_nom,tel:o.client_tel,online:false,os:[]});const c=m.get(k);c.os.push(o);if(!c.tel&&o.client_tel)c.tel=o.client_tel});
   return[...m.values()].map(c=>({...c,n:c.os.filter(active).length,t:c.os.filter(active).reduce((a,o)=>a+(+o.total||0),0)}))}
 
@@ -358,8 +365,11 @@ function render(){
   $('#convList').innerHTML=cl.length?cl.map(c=>`<button class="card row" style="width:100%;text-align:left" data-conv="${esc(c.u)}"><div class="grow"><b>${esc(uname(c.u)||'Client')}</b><div class="mute" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.last.from_admin?'Toi : ':''}${esc(c.last.body)}</div></div><span class="mute">${esc(ftime(c.last.created_at))}</span>${c.un?`<span class="pill p-a_preparer">${c.un}</span>`:''}</button>`).join(''):'<div class="card empty">Aucun message. Les clients qui ont commandé en ligne peuvent t\'écrire depuis leur espace.</div>';
   // clients
   const cq=$('#cliSearch').value.trim().toLowerCase();
-  const cs=clients().filter(c=>!cq||((c.nom||'')+' '+(c.tel||'')).toLowerCase().includes(cq)).sort((a,b)=>b.t-a.t);
-  $('#cliList').innerHTML=cs.length?cs.map(c=>`<div class="card row"><div class="grow"><b>${esc(c.nom)}</b> ${c.online?'<span class="reg">● enregistré</span>':'<span class="nreg">○ non enregistré</span>'} ${c.admin?'<span class="adm">admin</span>':''}<div class="mute">${esc(c.tel||'Pas de téléphone')}</div></div><div style="text-align:right"><div class="price">${eur(c.t)}</div><div class="mute">${c.n} cmd</div></div><button class="btn sm" data-cli="${esc(c.key)}">Ouvrir</button></div>`).join(''):'<div class="card empty">Aucun client pour l\'instant.</div>';
+  const CK={tous:'Tous',comptes:'Avec compte',admins:'Admins',sans:'Sans compte'},all=clients();
+  $('#cliKind').innerHTML=Object.entries(CK).map(([k,l])=>`<button class="chip${S.ck===k?' on':''}" data-ck="${k}">${l}</button>`).join('');
+  const nA=all.filter(c=>c.online).length;$('#cliSum').textContent=`${all.length} clients · ${nA} avec un compte · ${all.filter(c=>c.admin).length} admin(s) · ${all.length-nA} sans compte`;
+  const cs=all.filter(c=>S.ck==='tous'||(S.ck==='comptes'&&c.online)||(S.ck==='admins'&&c.admin)||(S.ck==='sans'&&!c.online)).filter(c=>!cq||((c.nom||'')+' '+(c.tel||'')).toLowerCase().includes(cq)).sort((a,b)=>b.t-a.t);
+  $('#cliList').innerHTML=cs.length?cs.map(c=>`<div class="card row"><div class="grow"><b>${esc(c.nom)}</b> ${c.online?'<span class="reg">● enregistré</span>':'<span class="nreg">○ non enregistré</span>'} ${c.admin?'<span class="adm">admin</span>':''}<div class="mute">${esc(c.tel||'Pas de téléphone')}${c.since?' · inscrit le '+esc(new Date(c.since).toLocaleDateString('fr-BE')):''}${lastD(c)?' · dernière cmd '+esc(lastD(c)):''}</div></div><div style="text-align:right"><div class="price">${eur(c.t)}</div><div class="mute">${c.n} cmd</div></div><button class="btn sm" data-cli="${esc(c.key)}">Ouvrir</button></div>`).join(''):'<div class="card empty">Aucun client pour l\'instant.</div>';
 }
 
 // ---------- actions ----------
@@ -447,6 +457,21 @@ document.addEventListener('click',e=>{const a=e.target.closest('[data-goch]');if
 $('#fab').onclick=$('#newOrd').onclick=()=>orderForm();
 $('#ordList').addEventListener('click',e=>{const r=e.target.closest('tr[data-row]');if(r)orderForm(S.orders.find(o=>String(o.id)===r.dataset.row))});$('#addProd').onclick=()=>prodForm();
 $('#ordSearch').oninput=render;try{const l=localStorage.getItem('ck_lead');if(l!==null)$('#lead').value=l}catch(e){}$('#lead').oninput=render;$('#cliSearch').oninput=render;
+$('#cliKind').onclick=e=>{const b=e.target.closest('[data-ck]');if(b){S.ck=b.dataset.ck;render()}};
+function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+const csv=rows=>'\ufeff'+rows.map(r=>r.map(v=>{v=v==null?'':String(v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return /[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(';')).join('\r\n');
+const stamp=()=>today();
+$('#expAll').onclick=async()=>{const b=$('#expAll'),m=$('#expMsg');b.disabled=true;m.textContent='Export en cours…';
+  const T=['orders','profiles','messages','products','production','promo_codes','depenses','admin_settings','site_settings'],out={exporte_le:new Date().toISOString(),tables:{}};
+  try{for(const t of T){const{data,error}=await sb.from(t).select('*').range(0,49999);if(error)throw new Error(t+' : '+error.message);out.tables[t]=data}
+    dl('coolkie-sauvegarde-'+stamp()+'.json',JSON.stringify(out,null,1),'application/json');
+    m.textContent='Sauvegarde téléchargée : '+T.map(t=>out.tables[t].length+' '+t).join(', ')+'.'}
+  catch(e){m.textContent='Erreur : '+e.message}b.disabled=false};
+$('#expOrders').onclick=()=>{const P={uccle:'Uccle',woluwe:'Woluwe'};
+  dl('coolkie-commandes-'+stamp()+'.csv',csv([['N°','Créée le','Retrait','Point','Client','Téléphone','Compte','Articles','Boîtes','Total','Code promo','Remise','Statut','Payé','Notes'],
+    ...[...S.orders].sort((a,b)=>a.id-b.id).map(o=>[o.id,(o.created_at||'').slice(0,10),o.date_retrait,P[o.point]||o.point,o.client_nom,o.client_tel,o.user_id?'oui':'non',(o.lignes||[]).map(l=>l.qte+' x '+l.nom).join(', '),(o.lignes||[]).reduce((a,l)=>a+(+l.qte||0),0),String(o.total).replace('.',','),o.promo_code,String(o.remise||0).replace('.',','),ST[o.statut]||o.statut,o.paye?'oui':'non',o.notes])]),'text/csv;charset=utf-8')};
+$('#expClients').onclick=()=>{dl('coolkie-clients-'+stamp()+'.csv',csv([['Client','Téléphone','Compte','Admin','Inscrit le','Commandes','Total dépensé','Dernière commande'],
+    ...clients().map(c=>[c.nom,c.tel,c.online?'oui':'non',c.admin?'oui':'non',c.since?c.since.slice(0,10):'',c.n,c.t.toFixed(2).replace('.',','),lastD(c)])]),'text/csv;charset=utf-8')};
 $('#logout').onclick=$('#topLogout').onclick=async()=>{await sb.auth.signOut();location.reload()};
 
 // ---------- chiffres : finances, coûts, dépenses ----------
