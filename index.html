@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Coolkie · Commander</title>
+<meta name="description" content="Coolkie : pâte à cookies surgelée, chewy & gooey, faite main à Bruxelles. Commande en ligne, retrait à Uccle ou Woluwe.">
+<meta name="theme-color" content="#e8b264">
+<link rel="icon" href="img/coolkie-logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common.css">
+<style>
+body{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+.top{position:sticky;top:0;z-index:20;background:var(--dough);padding:calc(10px + env(safe-area-inset-top)) max(5vw,16px) 10px;display:flex;align-items:center;gap:10px}
+.top .logo{width:40px;height:40px;border-radius:50%;object-fit:cover;background:#fff3df;flex:none}
+.top b{font-family:Fredoka;font-size:22px;font-weight:600;flex:1}
+.top .btn{background:#fff8ee;border-color:transparent}
+.hero{background:var(--dough);padding:8px max(5vw,16px) 34px;display:grid;gap:18px}
+.hero h1{font-size:clamp(36px,9vw,58px);text-wrap:balance}
+.hero p{margin:10px 0 0;font-size:17px;max-width:34ch}
+.hero .ph{aspect-ratio:4/3;border-radius:24px;background:#c98a3a url(img/hero.jpg) center/cover;box-shadow:0 14px 30px rgba(58,34,24,.22)}
+.hero .cta{margin-top:18px}
+@media(min-width:760px){.hero{grid-template-columns:1.05fr 1fr;align-items:center;padding-block:28px 48px}}
+.strip{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:18px max(5vw,16px) 6px}
+.strip img{flex:none;width:150px;height:200px;object-fit:cover;border-radius:14px;scroll-snap-align:start;background:var(--line)}
+main{max-width:860px;margin:0 auto;padding:10px max(4vw,14px)}
+section{margin-top:28px}
+section>h2{font-size:clamp(26px,6vw,34px);margin-bottom:12px}
+.prods{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:12px}
+.prod{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+.prod .im{aspect-ratio:4/3;background:linear-gradient(135deg,#f3cf96,#c98a3a);background-size:cover;background-position:center}
+.prod .bd{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.prod h3{font-size:20px}
+.prod .row{margin-top:auto}
+.pts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.pt{border:2px solid var(--line);background:var(--card);border-radius:16px;padding:14px;text-align:left;min-height:84px}
+.pt b{display:block;font-family:Fredoka;font-size:20px;font-weight:600}
+.pt.on{border-color:var(--ice);background:var(--iceBg)}
+.bar{position:fixed;inset:auto 0 0 0;z-index:25;background:var(--ink);color:#fff;padding:12px max(5vw,16px) calc(12px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px}
+.bar .t{flex:1;font-size:14px}.bar .t b{display:block;font-family:Fredoka;font-size:24px;font-weight:600}
+.bar .btn{background:var(--dough);border-color:var(--dough);color:var(--ink);min-height:50px;padding:0 22px}
+.view{display:none}.view.on{display:block}
+.tabs{display:flex;gap:8px;margin:14px 0}
+.tabs button{flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-weight:600}
+.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+footer{max-width:860px;margin:40px auto 0;padding:20px max(4vw,14px);color:var(--mute);font-size:14px}
+footer a{color:inherit}
+.info{background:var(--iceBg);color:var(--ice);border-radius:14px;padding:12px 14px;font-size:15px;font-weight:500}
+</style>
+</head>
+<body>
+<div class="top">
+  <img class="logo" src="img/coolkie-logo.jpg" alt="" onerror="this.style.visibility='hidden'">
+  <b>Coolkie</b>
+  <button class="btn sm" id="acctBtn">Se connecter</button>
+</div>
+
+<div class="view on" id="v-shop">
+  <div class="hero">
+    <div>
+      <h1>Frozen cookie dough. Chewy & gooey.</h1>
+      <p>Pâte à cookies faite main à Bruxelles. Tu cuis 12 minutes, et c'est prêt.</p>
+      <a class="btn main cta" href="#commander" style="display:inline-flex;align-items:center;text-decoration:none">Commander</a>
+    </div>
+    <div class="ph" role="img" aria-label="Cookies Coolkie"></div>
+  </div>
+  <div class="strip" id="strip" aria-label="Photos Coolkie"></div>
+  <main>
+    <section id="commander">
+      <h2>Choisis tes parfums</h2>
+      <div class="prods" id="prods"><div class="card empty">Chargement des parfums…</div></div>
+    </section>
+    <section>
+      <h2>Où récupérer ta commande ?</h2>
+      <div class="pts" id="pts"></div>
+      <div class="two" style="margin-top:4px"><div><label for="date">Date de retrait</label><input type="date" id="date"></div><div><label for="notes">Note (optionnel)</label><input id="notes" placeholder="Heure, remarque…"></div></div>
+      <p class="info" style="margin-top:14px">Paiement au retrait. Rien à payer en ligne.</p>
+    </section>
+  </main>
+</div>
+
+<div class="view" id="v-account">
+  <main>
+    <section>
+      <h2 id="hello">Mes commandes</h2>
+      <div id="myOrders"></div>
+    </section>
+    <section id="chatSec" style="display:none">
+      <h2>Discuter avec Coolkie</h2>
+      <div class="card"><div class="chat" id="chat"></div>
+        <form class="send" id="sendForm"><input id="msgIn" placeholder="Écris ton message…" aria-label="Message" maxlength="2000"><button class="btn ice">Envoyer</button></form></div>
+    </section>
+    <div class="acts"><button class="btn" id="backShop">Nouvelle commande</button><button class="btn" id="logout">Se déconnecter</button></div>
+  </main>
+</div>
+
+<footer>Coolkie · Bruxelles · <a href="https://www.instagram.com/coolkie_lab/">Instagram @coolkie_lab</a></footer>
+
+<div class="bar" id="bar"><div class="t"><span id="barCount">Panier vide</span><b id="barTot">0,00 €</b></div><button class="btn" id="checkout">Valider</button></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="in" id="sheetIn"></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+{
+const C=window.COOLKIE,$=s=>document.querySelector(s);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const eur=n=>new Intl.NumberFormat('fr-BE',{style:'currency',currency:'EUR'}).format(+n||0);
+const iso=d=>d.toISOString().slice(0,10);
+const fdate=d=>d?new Date(d+'T12:00').toLocaleDateString('fr-BE',{weekday:'long',day:'numeric',month:'long'}):'';
+const ST={a_preparer:'Reçue',prete:'Prête à récupérer',livree:'Récupérée',annulee:'Annulée'};
+const S={prods:[],cart:{},point:'',user:null,profile:null,orders:[],msgs:[],chan:null};
+function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',2600)}
+function openSheet(h){$('#sheetIn').innerHTML=h;$('#sheet').classList.add('on')}
+function closeSheet(){$('#sheet').classList.remove('on')}
+$('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet'||e.target.dataset.close!==undefined)closeSheet()});
+addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+const msgErr=e=>{const m=(e&&e.message)||'';if(/Invalid login/i.test(m))return'Pseudo ou mot de passe incorrect.';if(/already registered|already exists|duplicate/i.test(m))return'Ce pseudo est déjà pris.';if(/Password/i.test(m))return'Mot de passe trop court (6 caractères minimum).';return m||'Une erreur est survenue.'};
+
+// photos
+const pics=Array.from({length:12},(_,i)=>'img/coolkie-'+String(i+1).padStart(2,'0')+'.jpg');
+$('#strip').innerHTML=pics.map(p=>`<img src="${p}" alt="" loading="lazy" onerror="this.remove()">`).join('');
+
+// points & date
+const tmr=new Date();tmr.setDate(tmr.getDate()+1);$('#date').min=iso(tmr);$('#date').value=iso(tmr);
+function renderPts(){$('#pts').innerHTML=Object.entries(C.points).map(([k,p])=>`<button class="pt${S.point===k?' on':''}" data-pt="${k}" aria-pressed="${S.point===k}"><b>${esc(p.nom)}</b><span class="mute">${esc(p.lieu)}</span></button>`).join('')}
+$('#pts').addEventListener('click',e=>{const b=e.target.closest('[data-pt]');if(b){S.point=b.dataset.pt;renderPts()}});renderPts();
+
+function renderProds(){
+  $('#prods').innerHTML=S.prods.length?S.prods.map(p=>{const q=S.cart[p.id]||0,out=(+p.stock||0)<=0;return `<div class="prod"><div class="im"${p.photo&&/^img\/[\w.-]+$/.test(p.photo)?` style="background-image:url('${esc(p.photo)}')"`:''}></div><div class="bd"><h3>${esc(p.nom)}</h3>${p.description?`<div class="mute">${esc(p.description)}</div>`:''}
+  <div class="row"><span class="price grow">${eur(p.prix)}${p.unite?' <span class="mute">/ '+esc(p.unite)+'</span>':''}</span><div class="step"><button data-q="${esc(p.id)}" data-d="-1" aria-label="Retirer ${esc(p.nom)}">−</button><output>${q}</output><button data-q="${esc(p.id)}" data-d="1" aria-label="Ajouter ${esc(p.nom)}">+</button></div></div>${out?'<div class="mute">Bientôt de retour en stock, commande quand même : on te prépare ça.</div>':''}</div></div>`}).join(''):'<div class="card empty">Les parfums arrivent bientôt.</div>';
+  renderBar()}
+function cartLines(){return S.prods.filter(p=>S.cart[p.id]>0).map(p=>({p,q:S.cart[p.id]}))}
+function renderBar(){const l=cartLines(),n=l.reduce((a,x)=>a+x.q,0);$('#barCount').textContent=n?n+' article'+(n>1?'s':''):'Panier vide';$('#barTot').textContent=eur(l.reduce((a,x)=>a+x.q*x.p.prix,0))}
+$('#prods').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;const id=b.dataset.q;S.cart[id]=Math.max(0,Math.min(50,(S.cart[id]||0)+ +b.dataset.d));renderProds()});
+
+if(!C.supabaseUrl||!C.supabaseKey||!window.supabase){$('#prods').innerHTML='<div class="card empty">Le site est en cours d\'installation. Reviens très vite !</div>';return}
+const sb=window.supabase.createClient(C.supabaseUrl,C.supabaseKey);
+
+async function loadProds(){const{data,error}=await sb.from('products').select('id,nom,description,photo,prix,unite,stock').eq('actif',true).order('nom');if(error){$('#prods').innerHTML='<div class="card empty">Impossible de charger les parfums. Réessaie dans un instant.</div>';return}S.prods=data||[];renderProds()}
+
+// ---------- compte ----------
+function authForm(mode,after){mode=mode||'signup';
+  openSheet(`<h2>${mode==='signup'?'Crée ton compte':'Connexion'}</h2><p class="mute">${mode==='signup'?'Juste un pseudo et un mot de passe, pour suivre ta commande et discuter avec nous.':'Content de te revoir.'}</p>
+  <div class="tabs"><button data-m="signup" class="${mode==='signup'?'on':''}">Nouveau</button><button data-m="login" class="${mode==='login'?'on':''}">J'ai un compte</button></div>
+  <form id="authF"><label for="aU">Pseudo</label><input id="aU" autocomplete="username" autocapitalize="none" required placeholder="ex. julie.b">
+  <label for="aP">Mot de passe</label><input id="aP" type="password" autocomplete="${mode==='signup'?'new-password':'current-password'}" required minlength="6">
+  ${mode==='signup'?'<label for="aT">Téléphone (optionnel)</label><input id="aT" type="tel" autocomplete="tel" placeholder="Pour te prévenir si besoin">':''}
+  <div class="err" id="aE"></div><div class="acts"><button type="button" class="btn" data-close>Annuler</button><button class="btn main" id="aGo">${mode==='signup'?'Créer mon compte':'Me connecter'}</button></div></form>`);
+  $('#sheetIn').querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>authForm(b.dataset.m,after));
+  $('#authF').onsubmit=async e=>{e.preventDefault();const u=$('#aU').value.trim().toLowerCase(),pw=$('#aP').value;
+    if(!/^[a-z0-9._-]{3,20}$/.test(u))return $('#aE').textContent='Pseudo : 3 à 20 caractères (lettres, chiffres, . _ -).';
+    $('#aGo').disabled=true;$('#aE').textContent='';const email=u+'@'+C.emailDomain;
+    const r=mode==='signup'?await sb.auth.signUp({email,password:pw,options:{data:{username:u,tel:($('#aT')?.value||'').trim()}}}):await sb.auth.signInWithPassword({email,password:pw});
+    if(r.error||!r.data.session){$('#aGo').disabled=false;$('#aE').textContent=r.error?msgErr(r.error):'Compte créé, mais la connexion directe est désactivée. Préviens Coolkie.';return}
+    closeSheet();await onUser(r.data.session.user);toast(mode==='signup'?'Bienvenue '+u+' !':'Connecté');if(after)after()}}
+
+async function onUser(u){S.user=u;if(!u){S.profile=null;$('#acctBtn').textContent='Se connecter';return}
+  const{data}=await sb.from('profiles').select('username,tel').eq('id',u.id).maybeSingle();S.profile=data;
+  $('#acctBtn').textContent='Mes commandes';}
+$('#acctBtn').onclick=()=>S.user?showAccount():authForm('login',showAccount);
+$('#backShop').onclick=()=>{$('#v-account').classList.remove('on');$('#v-shop').classList.add('on');$('#bar').style.display='flex';scrollTo(0,0)};
+$('#logout').onclick=async()=>{await sb.auth.signOut();if(S.chan){sb.removeChannel(S.chan);S.chan=null}await onUser(null);$('#backShop').click();toast('À bientôt !')};
+
+// ---------- commande ----------
+$('#checkout').onclick=()=>{const l=cartLines();
+  if(!l.length){toast('Ajoute au moins un parfum');location.hash='commander';return}
+  if(!S.point){toast('Choisis un point de retrait');$('#pts').scrollIntoView({behavior:'smooth',block:'center'});return}
+  if(!S.user)return authForm('signup',confirmOrder);confirmOrder()};
+function confirmOrder(){const l=cartLines(),p=C.points[S.point],tot=l.reduce((a,x)=>a+x.q*x.p.prix,0);
+  openSheet(`<h2>Ta commande</h2>${l.map(x=>`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span class="grow">${x.q} × ${esc(x.p.nom)}</span><span class="price">${eur(x.q*x.p.prix)}</span></div>`).join('')}
+  <div class="row" style="margin-top:10px"><b class="grow">Total à payer au retrait</b><span class="price" style="font-size:20px">${eur(tot)}</span></div>
+  <p>Retrait à <b>${esc(p.nom)} (${esc(p.lieu)})</b>, ${esc(fdate($('#date').value))}.</p>
+  <div class="err" id="oE"></div><div class="acts"><button class="btn" data-close>Modifier</button><button class="btn main" id="oGo">Confirmer la commande</button></div>`);
+  $('#oGo').onclick=async()=>{$('#oGo').disabled=true;
+    const{data,error}=await sb.rpc('place_order',{items:l.map(x=>({pid:x.p.id,qte:x.q})),p_point:S.point,p_date:$('#date').value,p_notes:$('#notes').value.trim()});
+    if(error){$('#oGo').disabled=false;$('#oE').textContent=msgErr(error);return}
+    S.cart={};renderProds();$('#notes').value='';closeSheet();toast('Commande n°'+data+' envoyée !');showAccount()}}
+
+// ---------- mon espace ----------
+async function showAccount(){$('#v-shop').classList.remove('on');$('#v-account').classList.add('on');$('#bar').style.display='none';scrollTo(0,0);
+  $('#hello').textContent='Salut '+(S.profile?.username||'')+' !';
+  const{data}=await sb.from('orders').select('id,lignes,total,point,date_retrait,statut,created_at').order('created_at',{ascending:false});S.orders=data||[];renderOrders();
+  if(S.orders.length){$('#chatSec').style.display='block';await loadChat()}}
+function renderOrders(){$('#myOrders').innerHTML=S.orders.length?S.orders.map(o=>{const p=C.points[o.point]||{nom:o.point,lieu:''};return `<div class="card"><div class="row"><b class="grow">Commande n°${esc(o.id)}</b><span class="pill p-${esc(o.statut)}">${esc(ST[o.statut]||o.statut)}</span></div>
+  <div style="margin:6px 0">${(o.lignes||[]).map(l=>esc(l.qte)+' × '+esc(l.nom)).join(', ')}</div>
+  <div class="mute">Retrait ${esc(p.nom)} (${esc(p.lieu)}) · ${esc(fdate(o.date_retrait))}</div>
+  <div class="row" style="margin-top:8px"><span class="price grow">${eur(o.total)} au retrait</span>${o.statut==='a_preparer'?`<button class="btn sm danger" data-cancel="${esc(o.id)}">Annuler</button>`:''}</div></div>`}).join(''):'<div class="card empty">Pas encore de commande. Le chat s\'ouvre après ta première commande.</div>'}
+$('#myOrders').addEventListener('click',async e=>{const b=e.target.closest('[data-cancel]');if(!b)return;b.disabled=true;const{error}=await sb.rpc('cancel_my_order',{p_id:+b.dataset.cancel});if(error){b.disabled=false;return toast(msgErr(error))}toast('Commande annulée');showAccount()});
+
+async function loadChat(){const{data}=await sb.from('messages').select('id,from_admin,body,created_at').eq('user_id',S.user.id).order('created_at');S.msgs=data||[];renderChat();
+  if(!S.chan)S.chan=sb.channel('chat-'+S.user.id).on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:'user_id=eq.'+S.user.id},p=>{if(p.new&&p.new.id&&!S.msgs.some(m=>m.id===p.new.id)){S.msgs.push(p.new);renderChat()}})
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'orders',filter:'user_id=eq.'+S.user.id},p=>{const o=S.orders.find(x=>x.id===p.new.id);if(o){Object.assign(o,p.new);renderOrders()}}).subscribe()}
+function renderChat(){const c=$('#chat');c.innerHTML=S.msgs.length?S.msgs.map(m=>`<div class="msg ${m.from_admin?'them':'me'}">${esc(m.body)}<small>${m.from_admin?'Coolkie · ':''}${esc(new Date(m.created_at).toLocaleString('fr-BE',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))}</small></div>`).join(''):'<div class="empty">Une question sur ta commande ? Écris-nous ici.</div>';c.scrollTop=c.scrollHeight}
+$('#sendForm').onsubmit=async e=>{e.preventDefault();const t=$('#msgIn').value.trim();if(!t)return;$('#msgIn').value='';
+  const{data,error}=await sb.from('messages').insert({user_id:S.user.id,body:t}).select().single();if(error){$('#msgIn').value=t;return toast('Message non envoyé')}
+  if(!S.msgs.some(m=>m.id===data.id)){S.msgs.push(data);renderChat()}};
+
+loadProds();
+sb.auth.getSession().then(({data})=>onUser(data.session?.user||null));
+}
+</script>
+</body>
+</html>
