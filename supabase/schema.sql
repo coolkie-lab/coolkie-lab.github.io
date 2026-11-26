@@ -192,6 +192,28 @@ do $$ begin
   alter publication supabase_realtime add table public.orders;
 exception when others then null; end $$;
 
+-- ---------- Accès aux tables et fonctions (la sécurité RLS s'applique toujours) ----------
+grant usage on schema public to anon, authenticated;
+grant select on public.products to anon, authenticated;
+grant insert, update, delete on public.products to authenticated;
+grant select, insert, update, delete on public.orders, public.messages, public.production to authenticated;
+grant select on public.profiles to authenticated;
+grant usage, select on all sequences in schema public to authenticated;
+revoke execute on function public.adjust_stock(uuid,int) from public;
+revoke execute on function public.set_order_status(bigint,text) from public;
+revoke execute on function public.place_order(jsonb,text,date,text) from public;
+revoke execute on function public.cancel_my_order(bigint) from public;
+grant execute on function public.adjust_stock(uuid,int) to authenticated;
+grant execute on function public.set_order_status(bigint,text) to authenticated;
+grant execute on function public.place_order(jsonb,text,date,text) to authenticated;
+grant execute on function public.cancel_my_order(bigint) to authenticated;
+
+-- ---------- Bucket photos (gestion) ----------
+insert into storage.buckets (id, name, public) values ('photos','photos',true) on conflict (id) do nothing;
+drop policy if exists photos_admin on storage.objects;
+create policy photos_admin on storage.objects for all to authenticated
+  using (bucket_id = 'photos' and public.is_admin()) with check (bucket_id = 'photos' and public.is_admin());
+
 -- ---------- APRÈS t'être inscrit sur le site avec ton pseudo ----------
 -- Remplace TONPSEUDO puis lance seulement cette ligne pour devenir administrateur :
 -- update public.profiles set is_admin = true where username = 'tonpseudo';
