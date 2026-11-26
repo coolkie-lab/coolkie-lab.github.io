@@ -1,8 +1,8 @@
 /* Coolkie : thème et contenus modifiables depuis la gestion (table site_settings). */
 (function(){
 const C=window.COOLKIE||{};
-const DEF={primary:'#2f8fd0',ink:'#123047',surface:'#dcf1f9',bg:'#ffffff',fontTitle:'Outfit',fontBody:'Inter'};
-const PRESETS={'Ciel (conseillé)':{primary:'#2f8fd0',ink:'#123047',surface:'#dcf1f9',bg:'#ffffff'},'Glacier, plus clair':{primary:'#62b9e6',ink:'#123047',surface:'#dcf1f9',bg:'#ffffff'},'Lagon':{primary:'#1d9bb2',ink:'#0f2f3a',surface:'#dcf1f9',bg:'#ffffff'},'Bleu nuit':{primary:'#2554d9',ink:'#0f1f3d',surface:'#f1f5ff',bg:'#ffffff'}};
+const DEF={primary:'#2f8fd0',ink:'#123047',surface:'#d9f2fe',bg:'#ffffff',fontTitle:'Outfit',fontBody:'Inter'};
+const PRESETS={'Ciel (conseillé)':{primary:'#2f8fd0',ink:'#123047',surface:'#d9f2fe',bg:'#ffffff'},'Glacier, plus clair':{primary:'#62b9e6',ink:'#123047',surface:'#d9f2fe',bg:'#ffffff'},'Lagon':{primary:'#1d9bb2',ink:'#0f2f3a',surface:'#d9f2fe',bg:'#ffffff'},'Bleu nuit':{primary:'#2554d9',ink:'#0f1f3d',surface:'#f1f5ff',bg:'#ffffff'}};
 function lum(hex){const n=parseInt(hex.slice(1),16),f=c=>{c/=255;return c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4)};return .2126*f(n>>16)+.7152*f(n>>8&255)+.0722*f(n&255)}
 const FONTS=['Outfit','Inter','Fredoka','Poppins','DM Sans','Nunito','Playfair Display','DM Serif Display'];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

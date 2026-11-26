@@ -1,5 +1,5 @@
 /* Coolkie : thème minimaliste bleu. Couleurs et polices modifiables depuis la gestion (site.js). */
-:root{color-scheme:light;--bg:#ffffff;--card:#fff;--ink:#123047;--mute:#5d6f80;--line:#d5e9f6;--dough:#dcf1f9;--doughDeep:#2f8fd0;--ice:#2f8fd0;--iceBg:#e0f0fa;--onP:#fff;--ok:#1f8a4c;--okBg:#e3f5ea;--warn:#c2410c;--warnBg:#fde9dd;--fT:"Outfit",system-ui,sans-serif;--fB:"Inter",system-ui,sans-serif}
+:root{color-scheme:light;--bg:#ffffff;--card:#fff;--ink:#123047;--mute:#5d6f80;--line:#d5e9f6;--dough:#d9f2fe;--doughDeep:#2f8fd0;--ice:#2f8fd0;--iceBg:#e0f0fa;--onP:#fff;--ok:#1f8a4c;--okBg:#e3f5ea;--warn:#c2410c;--warnBg:#fde9dd;--fT:"Outfit",system-ui,sans-serif;--fB:"Inter",system-ui,sans-serif}
 *{box-sizing:border-box;min-width:0}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--fB);overflow-x:clip}
 h1,h2,h3{font-family:var(--fT);font-weight:600;line-height:1.1;margin:0;letter-spacing:-.01em}
