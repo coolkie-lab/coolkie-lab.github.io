@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="common.css?v=12">
 <script src="config.js?v=5"></script>
-<script src="i18n.js?v=2"></script>
+<script src="i18n.js?v=3"></script>
 <script src="site.js?v=6"></script>
 <style>
 body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
@@ -125,6 +125,9 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
   <div class="view" id="v-messages"><div id="convList"></div></div>
   <div class="view" id="v-dev">
     <p class="mute" style="margin:0 0 4px">Modifie le site toi-même. Rien n'est visible tant que tu n'as pas cliqué sur « Publier ».</p>
+    <section><h2>Boutique</h2><div class="card">
+      <label style="display:flex;gap:10px;align-items:center;margin:0"><input id="guestOn" type="checkbox" style="width:24px;min-height:24px"> Autoriser les commandes sans compte</label>
+      <p class="mute" style="margin:6px 0 0">Décoché : il faut se connecter ou créer un compte pour commander. Prend effet après « Publier ».</p></div></section>
     <section><h2>Bandeau d'annonce</h2><div class="card">
       <label style="display:flex;gap:10px;align-items:center;margin:0"><input id="bnOn" type="checkbox" style="width:24px;min-height:24px"> Afficher un bandeau en haut du site</label>
       <label for="bnText">Texte</label><input id="bnText" maxlength="140" placeholder="Nouveau site ! Commande en ligne, retrait à Uccle ou Woluwe">
@@ -611,7 +614,7 @@ async function devOpen(){if(!D.site){const r=await q(sb.from('site_settings').se
   ['texts','images','theme','banner'].forEach(k=>D.site[k]=D.site[k]||{});devForm();dirty(false)}
   loadPromos();if(!D.fields[D.page])loadFields(D.page);}
 function devForm(){const s=D.site,T={...CK_SITE.DEF,...s.theme};
-  $('#bnOn').checked=!!s.banner.on;$('#bnText').value=s.banner.text||'';$('#bnTextNl').value=s.banner.text_nl||'';$('#bnTextEn').value=s.banner.text_en||'';$('#bnLink').value=s.banner.link||'';
+  $('#guestOn').checked=s.guest!==false;$('#bnOn').checked=!!s.banner.on;$('#bnText').value=s.banner.text||'';$('#bnTextNl').value=s.banner.text_nl||'';$('#bnTextEn').value=s.banner.text_en||'';$('#bnLink').value=s.banner.link||'';
   $('#thPresets').innerHTML=Object.entries(CK_SITE.PRESETS).map(([n,p])=>`<button class="chip" data-preset="${esc(n)}"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${esc(p.primary)};margin-right:6px;vertical-align:-1px"></span>${esc(n)}</button>`).join('');
   $('#thColors').innerHTML=COLORS.map(([k,l])=>`<label><input type="color" data-th="${k}" value="${esc(T[k])}">${esc(l)}</label>`).join('');
   const opt=v=>CK_SITE.FONTS.map(f=>`<option${f===v?' selected':''}>${esc(f)}</option>`).join('');$('#thFt').innerHTML=opt(T.fontTitle);$('#thFb').innerHTML=opt(T.fontBody);
@@ -631,6 +634,7 @@ $('#v-dev').addEventListener('input',e=>{const t=e.target,s=D.site;if(!s)return;
   if(t.dataset.ed!==undefined){const v=t.value;const k=edKey(t.dataset.ed);if(v.trim())s.texts[k]=v;else delete s.texts[k];dirty(true)}
   else if(t.dataset.th){s.theme[t.dataset.th]=t.value;CK_SITE.theme(s.theme);dirty(true)}
   else if(t.id==='thFt'||t.id==='thFb'){s.theme[t.id==='thFt'?'fontTitle':'fontBody']=t.value;CK_SITE.theme(s.theme);dirty(true)}
+  else if(t.id==='guestOn'){s.guest=t.checked;dirty(true)}
   else if(/^bn(On|Text|TextNl|TextEn|Link)$/.test(t.id)){s.banner=bnRead();dirty(true)}});
 $('#v-dev').addEventListener('change',async e=>{const t=e.target;if(t.id==='bnOn'){if(t.checked&&!$('#bnText').value.trim())$('#bnText').value='Nouveau site ! Commande en ligne, retrait à Uccle ou Woluwe';D.site.banner=bnRead();dirty(true)}
   if(!t.dataset.up||!t.files[0])return;const k=t.dataset.up;toast('Envoi de la photo…');

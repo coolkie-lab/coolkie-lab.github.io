@@ -479,3 +479,55 @@ begin
 end $$;
 revoke all on function public.place_guest_order(jsonb, text, date, text, text, text, text, text) from public;
 grant execute on function public.place_guest_order(jsonb, text, date, text, text, text, text, text) to anon, authenticated;
+
+-- v8 : interrupteur commande sans compte (site_settings.data.guest)
+create or replace function public.place_guest_order(items jsonb, p_point text, p_date date, p_notes text, p_code text, p_nom text, p_tel text, p_hp text default '')
+returns bigint language plpgsql security definer set search_path = public as $$
+declare
+  v_lignes jsonb := '[]'; v_total numeric := 0; v_id bigint; it jsonb; pr record; q int; v_next int := 0; v_av int;
+  pc record; v_remise numeric := 0; v_code text := null; v_nom text; v_tel text; v_digits text;
+begin
+  if coalesce(p_hp,'') <> '' then raise exception 'Une erreur est survenue.'; end if;
+  if exists (select 1 from site_settings where id = 'main' and data->>'guest' = 'false') then
+    raise exception 'Commande sans compte désactivée. Connecte-toi pour commander.';
+  end if;
+  v_nom := left(regexp_replace(trim(coalesce(p_nom,'')), '\s+', ' ', 'g'), 40);
+  v_tel := left(trim(coalesce(p_tel,'')), 25);
+  v_digits := regexp_replace(v_tel, '\D', '', 'g');
+  if char_length(v_nom) < 2 or v_tel = '' then raise exception 'Indique ton nom et ton téléphone.'; end if;
+  if v_tel !~ '^\+?[0-9 ./()-]{8,25}$' or char_length(v_digits) not between 8 and 15 then raise exception 'Numéro de téléphone invalide.'; end if;
+  if p_point not in ('uccle','woluwe') then raise exception 'Point de retrait inconnu'; end if;
+  if p_date is null or p_date < current_date then raise exception 'Date passée'; end if;
+  if (select count(*) from orders where user_id is null and source = 'en_ligne' and statut in ('a_preparer','prete')
+        and regexp_replace(coalesce(client_tel,''), '\D', '', 'g') = v_digits) >= 3 then
+    raise exception 'Trop de commandes en cours pour ce numéro. Contacte-nous sur Instagram.';
+  end if;
+  if (select count(*) from orders where user_id is null and source = 'en_ligne' and created_at > now() - interval '1 hour') >= 15 then
+    raise exception 'Beaucoup de commandes en ce moment, réessaie dans un instant.';
+  end if;
+  for it in select * from jsonb_array_elements(items) loop
+    q := (it->>'qte')::int;
+    if q is null or q <= 0 then continue; end if;
+    if q > 50 then raise exception 'Quantité trop grande'; end if;
+    select * into pr from products where id = (it->>'pid')::uuid and actif;
+    if not found then raise exception 'Produit indisponible'; end if;
+    select dispo into v_av from available_stock() where pid = pr.id;
+    v_next := v_next + greatest(0, q - greatest(0, coalesce(v_av,0)));
+    v_lignes := v_lignes || jsonb_build_object('pid', pr.id, 'nom', pr.nom, 'prix', pr.prix, 'qte', q);
+    v_total := v_total + pr.prix * q;
+  end loop;
+  if jsonb_array_length(v_lignes) = 0 then raise exception 'Panier vide'; end if;
+  if coalesce(trim(p_code),'') <> '' then
+    select * into pc from check_promo(p_code);
+    if not found then raise exception 'Code promo invalide ou expiré'; end if;
+    v_code := pc.code;
+    v_remise := case when pc.type = 'pct' then round(v_total * least(pc.valeur,100) / 100, 2) else least(pc.valeur, v_total) end;
+    update promo_codes set uses = uses + 1 where code = pc.code;
+  end if;
+  insert into orders (user_id, client_nom, client_tel, lignes, total, point, date_retrait, notes, source, paiement, prochain_batch, promo_code, remise)
+  values (null, v_nom, v_tel, v_lignes, v_total - v_remise, p_point, p_date, left(coalesce(p_notes,''), 500), 'en_ligne', 'cash', v_next, v_code, v_remise)
+  returning id into v_id;
+  return v_id;
+end $$;
+revoke all on function public.place_guest_order(jsonb, text, date, text, text, text, text, text) from public;
+grant execute on function public.place_guest_order(jsonb, text, date, text, text, text, text, text) to anon, authenticated;

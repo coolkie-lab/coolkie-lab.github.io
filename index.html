@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="common.css?v=12">
 <script src="config.js?v=5"></script>
-<script src="i18n.js?v=2"></script>
+<script src="i18n.js?v=3"></script>
 <script src="site.js?v=6"></script>
 <style>
 body{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
@@ -207,7 +207,8 @@ $('#logout').onclick=async()=>{await sb.auth.signOut();if(S.chan){sb.removeChann
 $('#checkout').onclick=()=>{const l=cartLines();
   if(!l.length){toast(T('Ajoute au moins un parfum'));location.hash='commander';return}
   if(!S.point){toast(T('Choisis un point de retrait'));$('#pts').scrollIntoView({behavior:'smooth',block:'center'});return}
-  confirmOrder()};
+  if(!S.user&&!guestOk())return authForm('signup',confirmOrder);confirmOrder()};
+const guestOk=()=>{try{return(JSON.parse(localStorage.getItem('ck_site')||'{}')||{}).guest!==false}catch(e){return true}};
 function confirmOrder(){const l=cartLines(),p=C.points[S.point],st=sub(),rm=remise(st),tot=st-rm,tot0=tot;
   openSheet(`<h2>${T('Ta commande')}</h2>${l.map(x=>`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span class="grow">${x.q} × ${esc(x.p.nom)}</span><span class="price">${eur(x.q*x.p.prix)}</span></div>`).join('')}
   ${rm?`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span class="grow">${T('Code')} ${esc(S.promo.code)}</span><span class="price" style="color:var(--ok)">−${eur(rm)}</span></div>`:''}<div class="row" style="margin-top:10px"><b class="grow">${T('Total à payer au retrait')}</b><span class="price" style="font-size:20px">${eur(tot)}</span></div>
