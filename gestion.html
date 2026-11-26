@@ -93,10 +93,10 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
 <div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="in" id="sheetIn"></div></div>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="config.js"></script>
+<script src="config.js?v=3"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
-{
+(()=>{
 const C=window.COOLKIE,$=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const eur=n=>new Intl.NumberFormat('fr-BE',{style:'currency',currency:'EUR'}).format(+n||0);
@@ -287,7 +287,7 @@ $('#lf').onsubmit=async e=>{e.preventDefault();$('#le').textContent='';const u=v
   const{data,error}=await sb.auth.signInWithPassword({email:u+'@'+C.emailDomain,password:val('lp')});
   if(error)return $('#le').textContent='Pseudo ou mot de passe incorrect.';start(data.user)};
 sb.auth.getSession().then(({data})=>{if(data.session)start(data.session.user);else{$('#login').style.display='block';$('#sub').textContent='Espace réservé'}});
-}
+})();
 </script>
 </body>
 </html>
