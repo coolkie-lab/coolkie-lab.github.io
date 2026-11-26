@@ -9,9 +9,10 @@
 <link rel="icon" href="img/coolkie-logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=9">
+<link rel="stylesheet" href="common.css?v=10">
 <script src="config.js?v=5"></script>
-<script src="site.js?v=4"></script>
+<script src="i18n.js?v=1"></script>
+<script src="site.js?v=5"></script>
 <style>
 .hero{background:var(--dough);padding:40px max(4vw,16px) 44px}.hero>*{max-width:900px;margin-left:auto;margin-right:auto}
 .hero h1{font-size:clamp(36px,9vw,56px);max-width:16ch;text-wrap:balance}
@@ -37,63 +38,63 @@ main{max-width:900px;margin:0 auto;padding:12px max(4vw,14px) 40px}
 </head>
 <body>
 <header class="nav">
-  <a class="home" href="./" aria-label="Accueil Coolkie"><img class="logo" src="img/coolkie-logo.jpg" alt=""><b>Coolkie</b></a>
-  <nav class="links" aria-label="Pages"><a href="./#commander">Commander</a><a href="story.html">Notre histoire</a><a href="guide.html" class="on">Mode d'emploi</a></nav>
-  <div class="acct"><a class="btn sm" href="./#compte">Mon compte</a></div>
+  <a class="home" href="./" aria-label="Accueil Coolkie"><img class="logo" src="img/coolkie-logo.jpg" alt=""><b data-i>Coolkie</b></a>
+  <nav class="links" aria-label="Pages"><a href="./#commander" data-i>Commander</a><a href="story.html" data-i>Notre histoire</a><a href="guide.html" class="on" data-i>Mode d'emploi</a></nav>
+  <div class="acct"><a class="btn sm" href="./#compte" data-i>Mon compte</a></div>
 </header>
 <div class="hero">
-  <h1 data-c="guide.title" data-label="Titre">Du congélateur au cookie parfait</h1>
-  <p data-c="guide.subtitle" data-label="Sous-titre">Tout ce qu'il faut savoir pour réussir tes coolkies : conservation, cuisson et dégustation.</p>
-  <div class="quick"><span>3 mois au congélo</span><span>Direct au four</span><span>170°</span><span>17 min</span><span>5 min de repos</span><span>Fleur de sel</span></div>
+  <h1 data-c="guide.title" data-label="Titre" data-i>Du congélateur au cookie parfait</h1>
+  <p data-c="guide.subtitle" data-label="Sous-titre" data-i>Tout ce qu'il faut savoir pour réussir tes coolkies : conservation, cuisson et dégustation.</p>
+  <div class="quick"><span data-i>3 mois au congélo</span><span data-i>Direct au four</span><span>170°</span><span data-i>17 min</span><span data-i>5 min de repos</span><span data-i>Fleur de sel</span></div>
 </div>
 <main>
 
 <div class="step">
   <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="13" y="5" width="22" height="38" rx="4"/><path d="M13 17h22M30 9v4M30 21v5"/><path d="M22 27v12M16.8 30l10.4 6M16.8 36l10.4-6" stroke="#2f8fd0"/></svg></span>
-  <div><div class="n">Étape 1</div><h2 data-c="guide.s1.t" data-label="Étape 1 : titre">Conserve au congélateur</h2>
-  <p data-c="guide.s1.p" data-label="Étape 1 : texte">Range ta boîte au congélateur dès que tu rentres. Les coolkies y gardent tout leur goût pendant <b>3 mois</b>.</p>
-  <span class="tip">Au-delà, aucun risque : le goût peut juste être un peu moins intense.</span></div>
+  <div><div class="n" data-i>Étape 1</div><h2 data-c="guide.s1.t" data-label="Étape 1 : titre" data-i>Conserve au congélateur</h2>
+  <p data-c="guide.s1.p" data-label="Étape 1 : texte" data-i>Range ta boîte au congélateur dès que tu rentres. Les coolkies y gardent tout leur goût pendant <b>3 mois</b>.</p>
+  <span class="tip" data-i>Au-delà, aucun risque : le goût peut juste être un peu moins intense.</span></div>
 </div>
 
 <div class="step">
   <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="8" width="36" height="32" rx="4"/><path d="M6 16h36"/><circle cx="12" cy="12" r="1.2" fill="#123047" stroke="none"/><circle cx="17" cy="12" r="1.2" fill="#123047" stroke="none"/><rect x="12" y="21" width="24" height="13" rx="2.5" fill="#ffffff"/><text x="24" y="30.6" text-anchor="middle" font-family="Outfit,Inter,sans-serif" font-size="8" font-weight="600" fill="#123047" stroke="none">170°</text></svg></span>
-  <div><div class="n">Étape 2</div><h2 data-c="guide.s2.t" data-label="Étape 2 : titre">Préchauffe à 170°</h2>
-  <p data-c="guide.s2.p" data-label="Étape 2 : texte">170° dans un four classique. Si ton four chauffe très fort, descends à 160°. S'il chauffe moins, monte jusqu'à 180°.</p></div>
+  <div><div class="n" data-i>Étape 2</div><h2 data-c="guide.s2.t" data-label="Étape 2 : titre" data-i>Préchauffe à 170°</h2>
+  <p data-c="guide.s2.p" data-label="Étape 2 : texte" data-i>170° dans un four classique. Si ton four chauffe très fort, descends à 160°. S'il chauffe moins, monte jusqu'à 180°.</p></div>
 </div>
 
 <div class="step">
   <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 33h38l-3 6H8z"/><path d="M8 33h32" stroke="#2f8fd0" stroke-width="2.5"/><circle cx="13" cy="26" r="5" fill="#e8b264"/><circle cx="24" cy="26" r="5" fill="#e8b264"/><circle cx="35" cy="26" r="5" fill="#e8b264"/><rect x="10.4" y="23.4" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="22.4" y="22.9" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="34.4" y="24.4" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/></svg></span>
-  <div><div class="n">Étape 3</div><h2 data-c="guide.s3.t" data-label="Étape 3 : titre">Sur du papier cuisson</h2>
-  <p data-c="guide.s3.p" data-label="Étape 3 : texte"><b>From freezer to oven</b> : pas besoin de décongeler. Pose les coolkies encore surgelés sur une plaque recouverte de papier cuisson, en les espaçant bien.</p>
-  <span class="tip warn">Évite le papier siliconé : le coolkie risque de trop s'étaler.</span></div>
+  <div><div class="n" data-i>Étape 3</div><h2 data-c="guide.s3.t" data-label="Étape 3 : titre" data-i>Sur du papier cuisson</h2>
+  <p data-c="guide.s3.p" data-label="Étape 3 : texte" data-i><b>From freezer to oven</b> : pas besoin de décongeler. Pose les coolkies encore surgelés sur une plaque recouverte de papier cuisson, en les espaçant bien.</p>
+  <span class="tip warn" data-i>Évite le papier siliconé : le coolkie risque de trop s'étaler.</span></div>
 </div>
 
 <div class="step">
   <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M24 26V12A14 14 0 0 1 37.3 30.3Z" fill="#ffffff" stroke="none"/><circle cx="24" cy="26" r="14"/><path d="M21 6h6M24 6v6M24 26l7 4"/><path d="M36 11l2.5-2.5"/></svg></span>
-  <div><div class="n">Étape 4</div><h2>Choisis ta cuisson</h2>
-  <div class="times"><div><b>14-15'</b><small>bien coulant</small></div><div class="rec"><b>17'</b><small>notre conseil</small></div></div></div>
+  <div><div class="n" data-i>Étape 4</div><h2 data-i>Choisis ta cuisson</h2>
+  <div class="times"><div><b>14-15'</b><small data-i>bien coulant</small></div><div class="rec"><b>17'</b><small data-i>notre conseil</small></div></div></div>
 </div>
 
 <div class="step">
   <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 34h34M11 34v6M37 34v6"/><ellipse cx="24" cy="30" rx="12" ry="4" fill="#e8b264"/><path d="M18 22c-1.5-1.8 1.5-3.2 0-5s1.5-3.2 0-5" stroke="#2f8fd0"/><path d="M24 21c-1.5-1.8 1.5-3.2 0-5s1.5-3.2 0-5" stroke="#2f8fd0"/><path d="M30 22c-1.5-1.8 1.5-3.2 0-5s1.5-3.2 0-5" stroke="#2f8fd0"/></svg></span>
-  <div><div class="n">Étape 5</div><h2 data-c="guide.s4.t" data-label="Étape 4 : titre">Laisse reposer 5 min</h2>
-  <p data-c="guide.s4.p" data-label="Étape 4 : texte">Sors-les de la plaque dès la fin de la cuisson et laisse-les reposer 5 minutes. Ils continuent de prendre leur texture parfaite.</p></div>
+  <div><div class="n" data-i>Étape 5</div><h2 data-c="guide.s4.t" data-label="Étape 4 : titre" data-i>Laisse reposer 5 min</h2>
+  <p data-c="guide.s4.p" data-label="Étape 4 : texte" data-i>Sors-les de la plaque dès la fin de la cuisson et laisse-les reposer 5 minutes. Ils continuent de prendre leur texture parfaite.</p></div>
 </div>
 
 <div class="step">
   <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9h12l2 15H16z" fill="#fff"/><path d="M17 14h14"/><rect x="20" y="28" width="2.4" height="2.4" rx=".6" fill="#2f8fd0" stroke="none"/><rect x="25" y="30.5" width="2.4" height="2.4" rx=".6" fill="#2f8fd0" stroke="none"/><rect x="22.5" y="33.5" width="2.4" height="2.4" rx=".6" fill="#2f8fd0" stroke="none"/><ellipse cx="24" cy="40" rx="13" ry="3.5" fill="#e8b264"/></svg></span>
-  <div><div class="n">Étape 6</div><h2 data-c="guide.s5.t" data-label="Étape 5 : titre">Une pincée de fleur de sel</h2>
-  <p data-c="guide.s5.p" data-label="Étape 5 : texte">5 minutes après la sortie du four, parsème un peu de fleur de sel sur chaque coolkie. C'est ce qui fait toute la différence avec le chocolat noir.</p></div>
+  <div><div class="n" data-i>Étape 6</div><h2 data-c="guide.s5.t" data-label="Étape 5 : titre" data-i>Une pincée de fleur de sel</h2>
+  <p data-c="guide.s5.p" data-label="Étape 5 : texte" data-i>5 minutes après la sortie du four, parsème un peu de fleur de sel sur chaque coolkie. C'est ce qui fait toute la différence avec le chocolat noir.</p></div>
 </div>
 
 <div class="step">
   <span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="28" r="11" fill="#e8b264"/><rect x="12.0" y="23.099999999999998" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="20.25" y="21.45" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="19.7" y="30.25" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="13.1" y="31.35" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><path d="M33 12h9l-1.5 28h-6z" fill="#fff"/><path d="M33.6 21h7.8" /><path d="M34 21.5h7l-1.3 18h-4.4z" fill="#ffffff" stroke="none"/><path d="M33 12h9l-1.5 28h-6z"/><path d="M39 12l3-7" stroke="#2f8fd0"/></svg></span>
-  <div><div class="n">Étape 7</div><h2 data-c="guide.s6.t" data-label="Étape 6 : titre">Déguste</h2>
-  <p data-c="guide.s6.p" data-label="Étape 6 : texte">Tièdes, ils sont fondants. Tu peux aussi les laisser reposer plus longtemps et les déguster tièdes ou froids. Un verre de lait à côté ne fait jamais de mal.</p></div>
+  <div><div class="n" data-i>Étape 7</div><h2 data-c="guide.s6.t" data-label="Étape 6 : titre" data-i>Déguste</h2>
+  <p data-c="guide.s6.p" data-label="Étape 6 : texte" data-i>Tièdes, ils sont fondants. Tu peux aussi les laisser reposer plus longtemps et les déguster tièdes ou froids. Un verre de lait à côté ne fait jamais de mal.</p></div>
 </div>
 
-<div class="cta"><a class="btn main" href="./#commander" style="display:inline-flex;align-items:center;text-decoration:none">Commander mes coolkies</a></div>
+<div class="cta"><a class="btn main" href="./#commander" style="display:inline-flex;align-items:center;text-decoration:none" data-i>Commander mes coolkies</a></div>
 </main>
-<footer class="foot"><span>Coolkie · Bruxelles</span><a href="story.html">Notre histoire</a><a href="guide.html">Mode d'emploi</a><a href="https://www.instagram.com/coolkie_lab/">Instagram</a></footer>
+<footer class="foot"><span data-i>Coolkie · Bruxelles</span><a href="story.html" data-i>Notre histoire</a><a href="guide.html" data-i>Mode d'emploi</a><a href="https://www.instagram.com/coolkie_lab/" data-i>Instagram</a></footer>
 </body>
 </html>

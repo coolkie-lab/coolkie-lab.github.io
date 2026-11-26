@@ -9,9 +9,10 @@
 <link rel="icon" href="img/coolkie-logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=9">
+<link rel="stylesheet" href="common.css?v=10">
 <script src="config.js?v=5"></script>
-<script src="site.js?v=4"></script>
+<script src="i18n.js?v=1"></script>
+<script src="site.js?v=5"></script>
 <style>
 .hero{background:var(--dough)}
 .hero .in{max-width:1080px;margin:0 auto;padding:36px max(4vw,16px) 44px;display:grid;gap:22px;align-items:center}
@@ -45,88 +46,88 @@ a.fig{display:block;text-decoration:none;color:inherit}.fig{background:var(--car
 </head>
 <body>
 <header class="nav">
-  <a class="home" href="./" aria-label="Accueil Coolkie"><img class="logo" src="img/coolkie-logo.jpg" alt=""><b>Coolkie</b></a>
-  <nav class="links" aria-label="Pages"><a href="./#commander">Commander</a><a href="story.html" class="on">Notre histoire</a><a href="guide.html">Mode d'emploi</a></nav>
-  <div class="acct"><a class="btn sm" href="./#compte">Mon compte</a></div>
+  <a class="home" href="./" aria-label="Accueil Coolkie"><img class="logo" src="img/coolkie-logo.jpg" alt=""><b data-i>Coolkie</b></a>
+  <nav class="links" aria-label="Pages"><a href="./#commander" data-i>Commander</a><a href="story.html" class="on" data-i>Notre histoire</a><a href="guide.html" data-i>Mode d'emploi</a></nav>
+  <div class="acct"><a class="btn sm" href="./#compte" data-i>Mon compte</a></div>
 </header>
 
 <div class="hero"><div class="in">
   <div>
-    <h1 data-c="story.title" data-label="Titre">De la pâte à cookies, toujours sous la main</h1>
-    <p data-c="story.intro" data-label="Introduction">Coolkie, c'est l'histoire d'un couple de jeunes trentenaires, passionnés de bonne nourriture et de petits plaisirs coupables.</p>
+    <h1 data-c="story.title" data-label="Titre" data-i>De la pâte à cookies, toujours sous la main</h1>
+    <p data-c="story.intro" data-label="Introduction" data-i>Coolkie, c'est l'histoire d'un couple de jeunes trentenaires, passionnés de bonne nourriture et de petits plaisirs coupables.</p>
   </div>
   <a class="ph" href="https://www.instagram.com/coolkie_lab/" aria-label="Une boîte de coolkies, voir sur Instagram" data-img="story.hero" data-label="Photo" data-def="img/boite.jpg"></a>
 </div></div>
 
 <main>
   <section>
-    <h2>Pourquoi Coolkie ?</h2>
-    <p class="lead" data-c="story.why" data-label="Pourquoi Coolkie">On rêvait d'avoir toujours de la pâte à cookies au congélateur, prête à cuire, avec une vraie qualité maison. Alors on a peaufiné notre recette, encore et encore. Puis on a eu envie d'en faire profiter nos amis… et les amis de nos amis.</p>
+    <h2 data-i>Pourquoi Coolkie ?</h2>
+    <p class="lead" data-c="story.why" data-label="Pourquoi Coolkie" data-i>On rêvait d'avoir toujours de la pâte à cookies au congélateur, prête à cuire, avec une vraie qualité maison. Alors on a peaufiné notre recette, encore et encore. Puis on a eu envie d'en faire profiter nos amis… et les amis de nos amis.</p>
   </section>
 
   <section>
-    <h2>Notre coolkie</h2>
+    <h2 data-i>Notre coolkie</h2>
     <div class="cols">
       <div class="box"><span class="ico s"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="15" fill="#e8b264"/><rect x="16.4" y="17.9" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="27.65" y="15.65" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="26.9" y="27.65" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="17.9" y="29.15" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/></svg></span>
-        <h3 data-c="story.b1_t" data-label="Atout : titre">Gourmand</h3><p data-c="story.b1" data-label="Atout : texte">Croustillant autour, fondant au cœur, avec de gros chunks de chocolat noir.</p></div>
+        <h3 data-c="story.b1_t" data-label="Atout : titre" data-i>Gourmand</h3><p data-c="story.b1" data-label="Atout : texte" data-i>Croustillant autour, fondant au cœur, avec de gros chunks de chocolat noir.</p></div>
       <div class="box"><span class="ico s"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="11" width="28" height="26" rx="3" fill="#6b4433"/><path d="M10 19.7h28M10 28.3h28M19.3 11v26M28.7 11v26" stroke="#8a5d48"/><rect x="10" y="11" width="28" height="26" rx="3"/></svg></span>
-        <h3 data-c="story.b2_t" data-label="Atout : titre">Chocolat belge</h3><p data-c="story.b2" data-label="Atout : texte">Des produits et des ingrédients frais et premium, choisis avec soin.</p></div>
+        <h3 data-c="story.b2_t" data-label="Atout : titre" data-i>Chocolat belge</h3><p data-c="story.b2" data-label="Atout : texte" data-i>Des produits et des ingrédients frais et premium, choisis avec soin.</p></div>
       <div class="box"><span class="ico s"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M24 38C11 30 8 22 12 16.5c3.6-4.8 9.6-3.6 12 .8 2.4-4.4 8.4-5.6 12-.8C40 22 37 30 24 38z" fill="#ffffff"/><path d="M19 23l3.5 3.5L29.5 19.5" stroke="#2f8fd0"/></svg></span>
-        <h3 data-c="story.b3_t" data-label="Atout : titre">Fait main</h3><p data-c="story.b3" data-label="Atout : texte">Chaque boule est façonnée à la main, chez nous, à Bruxelles.</p></div>
+        <h3 data-c="story.b3_t" data-label="Atout : titre" data-i>Fait main</h3><p data-c="story.b3" data-label="Atout : texte" data-i>Chaque boule est façonnée à la main, chez nous, à Bruxelles.</p></div>
       <div class="box"><span class="ico s"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 24L23 8h16v16L23 40z" fill="#ffffff"/><circle cx="32" cy="15" r="2.5"/><text x="22.5" y="29" text-anchor="middle" font-family="Outfit,Inter,sans-serif" font-size="11" font-weight="600" fill="#123047" stroke="none">€</text></svg></span>
-        <h3 data-c="story.b4_t" data-label="Atout : titre">Prix raisonnable</h3><p data-c="story.b4" data-label="Atout : texte">De la très bonne qualité, à un prix qui reste doux.</p></div>
+        <h3 data-c="story.b4_t" data-label="Atout : titre" data-i>Prix raisonnable</h3><p data-c="story.b4" data-label="Atout : texte" data-i>De la très bonne qualité, à un prix qui reste doux.</p></div>
     </div>
   </section>
 
   <section>
-    <h2>Il y a toujours un moment pour un coolkie</h2>
+    <h2 data-i>Il y a toujours un moment pour un coolkie</h2>
     <div class="moments">
-      <div class="mo"><span class="ico s"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="17" cy="16" r="5" fill="#ffffff"/><circle cx="31" cy="16" r="5" fill="#ffffff"/><path d="M7 38c0-6.5 4.5-10.5 10-10.5S27 31.5 27 38M21 38c0-6.5 4.5-10.5 10-10.5S41 31.5 41 38"/></svg></span>En dessert, entre amis</div>
-      <div class="mo"><span class="ico s"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="15" fill="#ffffff"/><path d="M24 15v9l6 4"/></svg></span>Pour le goûter</div>
-      <div class="mo"><span class="ico s"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="16" width="32" height="23" rx="3" fill="#ffffff"/><path d="M18 16v-3a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3M8 26h32"/><path d="M22 26v3h4v-3"/></svg></span>Dans le sac, pour la journée de travail</div>
-      <div class="mo"><span class="ico s"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 33.5c0-2.8 1.8-4.5 4.5-4.5h3.5l5-8 6 3c1.5 3.5 5 5.5 10 6.5 3.5.7 7 2.3 7 5.5v1.5H6z" fill="#ffffff"/><path d="M6 37h36M27 26l-2.5 3M31 27.5l-2 3"/></svg></span>Après un run</div>
-      <div class="mo"><span class="ico s"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 19h22v9a9 9 0 0 1-9 9h-4a9 9 0 0 1-9-9z" fill="#ffffff"/><path d="M32 22h2.5a4 4 0 0 1 0 8H32M8 41h28"/><path d="M17 15c-1.5-1.8 1.5-3.2 0-5s1.5-3.2 0-5" stroke="#2f8fd0"/><path d="M24 15c-1.5-1.8 1.5-3.2 0-5s1.5-3.2 0-5" stroke="#2f8fd0"/></svg></span>Avec un bon café ou un matcha</div>
-      <div class="mo"><span class="ico s"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10a14 14 0 0 0 0 28z" fill="#e8b264"/><path d="M26 10a14 14 0 0 1 0 28z" fill="#e8b264"/><rect x="13.4" y="16.4" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="15.4" y="28.4" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="30.4" y="15.4" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="29.4" y="26.4" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="32.4" y="22.4" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/></svg></span>À partager… ou pas, pour les plus gourmands</div>
+      <div class="mo"><span class="ico s"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="17" cy="16" r="5" fill="#ffffff"/><circle cx="31" cy="16" r="5" fill="#ffffff"/><path d="M7 38c0-6.5 4.5-10.5 10-10.5S27 31.5 27 38M21 38c0-6.5 4.5-10.5 10-10.5S41 31.5 41 38"/></svg></span><span data-i>En dessert, entre amis</span></div>
+      <div class="mo"><span class="ico s"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="15" fill="#ffffff"/><path d="M24 15v9l6 4"/></svg></span><span data-i>Pour le goûter</span></div>
+      <div class="mo"><span class="ico s"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="16" width="32" height="23" rx="3" fill="#ffffff"/><path d="M18 16v-3a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3M8 26h32"/><path d="M22 26v3h4v-3"/></svg></span><span data-i>Dans le sac, pour la journée de travail</span></div>
+      <div class="mo"><span class="ico s"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 33.5c0-2.8 1.8-4.5 4.5-4.5h3.5l5-8 6 3c1.5 3.5 5 5.5 10 6.5 3.5.7 7 2.3 7 5.5v1.5H6z" fill="#ffffff"/><path d="M6 37h36M27 26l-2.5 3M31 27.5l-2 3"/></svg></span><span data-i>Après un run</span></div>
+      <div class="mo"><span class="ico s"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 19h22v9a9 9 0 0 1-9 9h-4a9 9 0 0 1-9-9z" fill="#ffffff"/><path d="M32 22h2.5a4 4 0 0 1 0 8H32M8 41h28"/><path d="M17 15c-1.5-1.8 1.5-3.2 0-5s1.5-3.2 0-5" stroke="#2f8fd0"/><path d="M24 15c-1.5-1.8 1.5-3.2 0-5s1.5-3.2 0-5" stroke="#2f8fd0"/></svg></span><span data-i>Avec un bon café ou un matcha</span></div>
+      <div class="mo"><span class="ico s"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="#123047" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10a14 14 0 0 0 0 28z" fill="#e8b264"/><path d="M26 10a14 14 0 0 1 0 28z" fill="#e8b264"/><rect x="13.4" y="16.4" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="15.4" y="28.4" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="30.4" y="15.4" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="29.4" y="26.4" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/><rect x="32.4" y="22.4" width="3.2" height="3.2" rx=".8" fill="#123047" stroke="none"/></svg></span><span data-i>À partager… ou pas, pour les plus gourmands</span></div>
     </div>
   </section>
 
   <section>
     <div class="hobby">
-      <h2 data-c="story.hobby_t" data-label="Artisanal : titre">Très, très artisanal</h2>
-      <p data-c="story.hobby" data-label="Artisanal : texte">Coolkie n'est pas une entreprise : c'est notre passion, un hobby. Tout est fait à la main, avec des produits premium. On produit en petits batchs, selon la demande et le temps qu'on a. Si ta commande doit attendre le prochain batch, merci pour ta patience, ça en vaut la peine.</p>
+      <h2 data-c="story.hobby_t" data-label="Artisanal : titre" data-i>Très, très artisanal</h2>
+      <p data-c="story.hobby" data-label="Artisanal : texte" data-i>Coolkie n'est pas une entreprise : c'est notre passion, un hobby. Tout est fait à la main, avec des produits premium. On produit en petits batchs, selon la demande et le temps qu'on a. Si ta commande doit attendre le prochain batch, merci pour ta patience, ça en vaut la peine.</p>
     </div>
   </section>
 
   <section>
-    <h2>Quelques réussites</h2>
+    <h2 data-i>Quelques réussites</h2>
     <div class="figs">
-      <a class="fig" href="https://www.instagram.com/coolkie_lab/"><b>~4 000</b><span>abonnés sur Instagram</span></a>
-      <a class="fig" href="https://www.instagram.com/coolkie_lab/"><b>700 000</b><span>vues pour une seule vidéo</span></a>
-      <a class="fig" href="https://www.instagram.com/coolkie_lab/"><b>21 000</b><span>likes sur Instagram</span></a>
-      <div class="fig ice" id="fBoxes" hidden><b></b><span>boîtes déjà dégustées</span></div>
-      <div class="fig ice" id="fCoolkies" hidden><b></b><span>coolkies faits main</span></div>
-      <div class="fig ice" id="fClients" hidden><b></b><span>clients, dont beaucoup qui recommandent</span></div>
+      <a class="fig" href="https://www.instagram.com/coolkie_lab/"><b>~4 000</b><span data-i>abonnés sur Instagram</span></a>
+      <a class="fig" href="https://www.instagram.com/coolkie_lab/"><b>700 000</b><span data-i>vues pour une seule vidéo</span></a>
+      <a class="fig" href="https://www.instagram.com/coolkie_lab/"><b>21 000</b><span data-i>likes sur Instagram</span></a>
+      <div class="fig ice" id="fBoxes" hidden><b></b><span data-i>boîtes déjà dégustées</span></div>
+      <div class="fig ice" id="fCoolkies" hidden><b></b><span data-i>coolkies faits main</span></div>
+      <div class="fig ice" id="fClients" hidden><b></b><span data-i>clients, dont beaucoup qui recommandent</span></div>
     </div>
   </section>
 
   <section>
-    <div class="where" data-c="story.zone" data-label="Zone">📍 Pour l'instant, Coolkie est disponible uniquement à Bruxelles, avec retrait à Uccle (Churchill) ou à Woluwe (Georges-Henri).</div>
+    <div class="where" data-c="story.zone" data-label="Zone" data-i>📍 Pour l'instant, Coolkie est disponible uniquement à Bruxelles, avec retrait à Uccle (Churchill) ou à Woluwe (Georges-Henri).</div>
   </section>
 
-  <div class="cta"><a class="btn main" href="./#commander" style="display:inline-flex;align-items:center;text-decoration:none;min-height:52px;padding:0 26px">Commander mes coolkies</a></div>
+  <div class="cta"><a class="btn main" href="./#commander" style="display:inline-flex;align-items:center;text-decoration:none;min-height:52px;padding:0 26px" data-i>Commander mes coolkies</a></div>
 </main>
-<footer class="foot"><span>Coolkie · Bruxelles</span><a href="story.html">Notre histoire</a><a href="guide.html">Mode d'emploi</a><a href="https://www.instagram.com/coolkie_lab/">Instagram</a></footer>
+<footer class="foot"><span data-i>Coolkie · Bruxelles</span><a href="story.html" data-i>Notre histoire</a><a href="guide.html" data-i>Mode d'emploi</a><a href="https://www.instagram.com/coolkie_lab/" data-i>Instagram</a></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 (()=>{
 const C=window.COOLKIE;if(!C||!window.supabase)return;
 const sb=window.supabase.createClient(C.supabaseUrl,C.supabaseKey);
-const n=v=>new Intl.NumberFormat('fr-BE').format(v);
+const n=v=>new Intl.NumberFormat(window.CK_LOC||'fr-BE').format(v);
 sb.rpc('public_stats').then(({data,error})=>{if(error||!data||!data[0])return;const s=data[0];
   const set=(id,v)=>{if(v>0){const e=document.getElementById(id);e.querySelector('b').textContent=n(v);e.hidden=false}};
   set('fBoxes',+s.boites);set('fCoolkies',+s.boites*4);set('fClients',+s.clients);
-  if(+s.fideles>0)document.querySelector('#fClients span').textContent='clients, dont '+n(+s.fideles)+' qui ont déjà recommandé';});
+  if(+s.fideles>0)document.querySelector('#fClients span').textContent=(window.t||((x,v)=>x.replace('{n}',v.n)))('clients, dont {n} qui ont déjà recommandé',{n:n(+s.fideles)});});
 })();
 </script>
 </body>

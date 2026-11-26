@@ -9,9 +9,10 @@
 <link rel="icon" href="img/coolkie-logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="common.css?v=9">
+<link rel="stylesheet" href="common.css?v=10">
 <script src="config.js?v=5"></script>
-<script src="site.js?v=4"></script>
+<script src="i18n.js?v=1"></script>
+<script src="site.js?v=5"></script>
 <style>
 body{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 .hero{background:var(--dough)}
@@ -61,43 +62,43 @@ section>.sub{color:var(--mute);margin:0 0 16px}
 </head>
 <body>
 <header class="nav">
-  <a class="home" href="./" aria-label="Accueil Coolkie"><img class="logo" src="img/coolkie-logo.jpg" alt=""><b>Coolkie</b></a>
-  <nav class="links" aria-label="Pages"><a href="./#commander" class="on">Commander</a><a href="story.html">Notre histoire</a><a href="guide.html">Mode d'emploi</a></nav>
-  <div class="acct"><a class="btn sm" id="adminBtn" href="gestion.html" hidden>Gestion</a><button class="btn sm" id="acctBtn">Se connecter</button></div>
+  <a class="home" href="./" aria-label="Accueil Coolkie"><img class="logo" src="img/coolkie-logo.jpg" alt=""><b data-i>Coolkie</b></a>
+  <nav class="links" aria-label="Pages"><a href="./#commander" class="on" data-i>Commander</a><a href="story.html" data-i>Notre histoire</a><a href="guide.html" data-i>Mode d'emploi</a></nav>
+  <div class="acct"><a class="btn sm" id="adminBtn" href="gestion.html" hidden data-i>Gestion</a><button class="btn sm" id="acctBtn" data-i>Se connecter</button></div>
 </header>
 
 <div class="view on" id="v-shop">
   <div class="hero"><div class="in">
     <div>
-      <h1 data-c="home.title" data-label="Titre principal">Frozen cookie dough. Chewy & gooey.</h1>
-      <p data-c="home.subtitle" data-label="Sous-titre">Pâte à cookies aux chunks de chocolat noir belge, faite main. Vendue par boîtes de 4, à cuire chez toi.</p>
-      <div class="act"><a class="btn main" href="#commander">Commander</a><span class="where" data-c="home.zone" data-label="Zone de retrait">📍 Uniquement à Bruxelles pour l'instant</span></div>
+      <h1 data-c="home.title" data-label="Titre principal" data-i>Frozen cookie dough. Chewy & gooey.</h1>
+      <p data-c="home.subtitle" data-label="Sous-titre" data-i>Pâte à cookies aux chunks de chocolat noir belge, faite main. Vendue par boîtes de 4, à cuire chez toi.</p>
+      <div class="act"><a class="btn main" href="#commander" data-i>Commander</a><span class="where" data-c="home.zone" data-label="Zone de retrait" data-i>📍 Uniquement à Bruxelles pour l'instant</span></div>
     </div>
     <a class="ph" href="https://www.instagram.com/coolkie_lab/" aria-label="Pâte à cookies Coolkie, voir sur Instagram" data-img="home.hero" data-label="Grande photo d'accueil" data-def="img/hero.jpg"></a>
   </div></div>
   <main>
     <section id="commander">
-      <h2 data-c="home.order_title" data-label="Titre commande">Choisis tes boîtes</h2>
-      <p class="sub" data-c="home.order_text" data-label="Texte commande">Un seul parfum pour l'instant : chocolat noir, par boîtes de 4. Commande autant de boîtes que tu veux.</p>
-      <div class="prods" id="prods"><div class="card empty">Chargement…</div></div>
+      <h2 data-c="home.order_title" data-label="Titre commande" data-i>Choisis tes boîtes</h2>
+      <p class="sub" data-c="home.order_text" data-label="Texte commande" data-i>Un seul parfum pour l'instant : chocolat noir, par boîtes de 4. Commande autant de boîtes que tu veux.</p>
+      <div class="prods" id="prods"><div class="card empty" data-i>Chargement…</div></div>
       <p class="info" id="nextb" style="display:none;margin-top:12px"></p>
-      <p class="info" id="special" style="display:none;margin-top:12px">Plus de 20 coolkies : c'est une commande spéciale. On te confirme la date par le chat.</p>
+      <p class="info" id="special" style="display:none;margin-top:12px" data-i>Plus de 20 coolkies : c'est une commande spéciale. On te confirme la date par le chat.</p>
     </section>
     <section>
-      <h2>Retrait</h2>
-      <p class="sub">Paiement sur place, rien à payer en ligne.</p>
+      <h2 data-i>Retrait</h2>
+      <p class="sub" data-i>Paiement sur place, rien à payer en ligne.</p>
       <div class="pts" id="pts"></div>
-      <div class="two" style="margin-top:4px"><div><label for="date">Date</label><input type="date" id="date"></div><div><label for="notes">Note (optionnel)</label><input id="notes" placeholder="Heure, remarque…"></div></div>
-      <label for="promoIn">Code promo</label>
-      <div class="promo"><input id="promoIn" placeholder="Ex. BIENVENUE" autocapitalize="characters" maxlength="20"><button class="btn" id="promoGo">Appliquer</button></div>
+      <div class="two" style="margin-top:4px"><div><label for="date" data-i>Date</label><input type="date" id="date"></div><div><label for="notes" data-i>Note (optionnel)</label><input id="notes" placeholder="Heure, remarque…" data-ip></div></div>
+      <label for="promoIn" data-i>Code promo</label>
+      <div class="promo"><input id="promoIn" placeholder="Ex. BIENVENUE" autocapitalize="characters" maxlength="20"><button class="btn" id="promoGo" data-i>Appliquer</button></div>
       <div id="promoMsg"></div>
     </section>
     <section>
-      <div class="bake"><div class="k"><div><b>170°</b><span>four classique</span></div><div><b>17 min</b><span>direct du congélateur</span></div><div><b>5 min</b><span>de repos</span></div></div><a href="guide.html">Mode d'emploi →</a></div>
+      <div class="bake"><div class="k"><div><b>170°</b><span data-i>four classique</span></div><div><b data-i>17 min</b><span data-i>direct du congélateur</span></div><div><b data-i>5 min</b><span data-i>de repos</span></div></div><a href="guide.html" data-i>Mode d'emploi →</a></div>
     </section>
     <section>
-      <h2>En images</h2>
-      <p class="sub">Toutes nos photos et vidéos sont sur Instagram.</p>
+      <h2 data-i>En images</h2>
+      <p class="sub" data-i>Toutes nos photos et vidéos sont sur Instagram.</p>
       <div class="strip" aria-label="Photos Coolkie">
         <a href="https://www.instagram.com/coolkie_lab/" aria-label="Voir sur Instagram"><img src="img/coolkie-02.jpg" alt="" loading="lazy" data-img="home.gal1" data-label="Photo galerie 1"></a>
         <a href="https://www.instagram.com/coolkie_lab/" aria-label="Voir sur Instagram"><img src="img/coolkie-05.jpg" alt="" loading="lazy" data-img="home.gal2" data-label="Photo galerie 2"></a>
@@ -105,7 +106,7 @@ section>.sub{color:var(--mute);margin:0 0 16px}
         <a href="https://www.instagram.com/coolkie_lab/" aria-label="Voir sur Instagram"><img src="img/coolkie-10.jpg" alt="" loading="lazy" data-img="home.gal4" data-label="Photo galerie 4"></a>
         <a href="https://www.instagram.com/coolkie_lab/" aria-label="Voir sur Instagram"><img src="img/coolkie-09.jpg" alt="" loading="lazy" data-img="home.gal5" data-label="Photo galerie 5"></a>
         <a href="https://www.instagram.com/coolkie_lab/" aria-label="Voir sur Instagram"><img src="img/coolkie-07.jpg" alt="" loading="lazy" data-img="home.gal6" data-label="Photo galerie 6"></a>
-        <a class="insta" href="https://www.instagram.com/coolkie_lab/">Voir sur Instagram<span>@coolkie_lab</span></a>
+        <a class="insta" href="https://www.instagram.com/coolkie_lab/"><b data-i style="font-weight:600">Voir sur Instagram</b><span>@coolkie_lab</span></a>
       </div>
     </section>
   </main>
@@ -114,21 +115,21 @@ section>.sub{color:var(--mute);margin:0 0 16px}
 <div class="view" id="v-account">
   <main>
     <section>
-      <h2 id="hello">Mes commandes</h2>
+      <h2 id="hello" data-i>Mes commandes</h2>
       <div id="myOrders"></div>
     </section>
     <section id="chatSec" style="display:none">
-      <h2>Discuter avec Coolkie</h2>
+      <h2 data-i>Discuter avec Coolkie</h2>
       <div class="card"><div class="chat" id="chat"></div>
-        <form class="send" id="sendForm"><input id="msgIn" placeholder="Écris ton message…" aria-label="Message" maxlength="2000"><button class="btn ice">Envoyer</button></form></div>
+        <form class="send" id="sendForm"><input id="msgIn" placeholder="Écris ton message…" data-ip aria-label="Message" maxlength="2000"><button class="btn ice" data-i>Envoyer</button></form></div>
     </section>
-    <div class="acts"><button class="btn" id="backShop">Nouvelle commande</button><button class="btn" id="logout">Se déconnecter</button></div>
+    <div class="acts"><button class="btn" id="backShop" data-i>Nouvelle commande</button><button class="btn" id="logout" data-i>Se déconnecter</button></div>
   </main>
 </div>
 
-<footer class="foot"><span>Coolkie · Bruxelles</span><a href="story.html">Notre histoire</a><a href="guide.html">Mode d'emploi</a><a href="https://www.instagram.com/coolkie_lab/">Instagram</a></footer>
+<footer class="foot"><span data-i>Coolkie · Bruxelles</span><a href="story.html" data-i>Notre histoire</a><a href="guide.html" data-i>Mode d'emploi</a><a href="https://www.instagram.com/coolkie_lab/" data-i>Instagram</a></footer>
 
-<div class="bar" id="bar"><div class="t"><span id="barCount">Panier vide</span><b id="barTot">0,00 €</b></div><button class="btn" id="checkout">Valider</button></div>
+<div class="bar" id="bar"><div class="t"><span id="barCount" data-i>Panier vide</span><b id="barTot">0,00 €</b></div><button class="btn" id="checkout" data-i>Valider</button></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="in" id="sheetIn"></div></div>
 <div class="toast" id="toast" role="status"></div>
 
@@ -137,10 +138,11 @@ section>.sub{color:var(--mute);margin:0 0 16px}
 (()=>{
 const C=window.COOLKIE,$=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const eur=n=>new Intl.NumberFormat('fr-BE',{style:'currency',currency:'EUR'}).format(+n||0);
+const T=window.t||((x,v)=>x.replace(/\{(\w+)\}/g,(_,k)=>v[k])),LOC=window.CK_LOC||'fr-BE';
+const eur=n=>new Intl.NumberFormat(LOC,{style:'currency',currency:'EUR'}).format(+n||0);
 const iso=d=>d.toISOString().slice(0,10);
-const fdate=d=>d?new Date(d+'T12:00').toLocaleDateString('fr-BE',{weekday:'long',day:'numeric',month:'long'}):'';
-const ST={a_preparer:'Reçue',prete:'Prête à récupérer',livree:'Récupérée',annulee:'Annulée'};
+const fdate=d=>d?new Date(d+'T12:00').toLocaleDateString(LOC,{weekday:'long',day:'numeric',month:'long'}):'';
+const ST={a_preparer:T('Reçue'),prete:T('Prête à récupérer'),livree:T('Récupérée'),annulee:T('Annulée')};
 const S={prods:[],cart:{},point:'',user:null,profile:null,orders:[],msgs:[],chan:null,promo:null};
 const sub=()=>cartLines().reduce((a,x)=>a+x.q*x.p.prix,0);
 const remise=t=>!S.promo?0:S.promo.type==='pct'?Math.round(t*Math.min(100,+S.promo.valeur))/100:Math.min(+S.promo.valeur,t);
@@ -150,88 +152,88 @@ function openSheet(h){$('#sheetIn').innerHTML=h;$('#sheet').classList.add('on')}
 function closeSheet(){$('#sheet').classList.remove('on')}
 $('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet'||e.target.dataset.close!==undefined)closeSheet()});
 addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
-const msgErr=e=>{const m=(e&&e.message)||'';if(/Invalid login/i.test(m))return'Pseudo ou mot de passe incorrect.';if(/already registered|already exists|duplicate/i.test(m))return'Ce pseudo est déjà pris.';if(/Password/i.test(m))return'Mot de passe trop court (6 caractères minimum).';return m||'Une erreur est survenue.'};
+const msgErr=e=>{const m=(e&&e.message)||'';if(/Invalid login/i.test(m))return T('Pseudo ou mot de passe incorrect.');if(/already registered|already exists|duplicate/i.test(m))return T('Ce pseudo est déjà pris.');if(/Password/i.test(m))return T('Mot de passe trop court (6 caractères minimum).');return m||T('Une erreur est survenue.')};
 
 
 // points & date
 const tmr=new Date();tmr.setDate(tmr.getDate()+1);$('#date').min=iso(tmr);$('#date').value=iso(tmr);
-function renderPts(){$('#pts').innerHTML=Object.entries(C.points).map(([k,p])=>`<button class="pt${S.point===k?' on':''}" data-pt="${k}" aria-pressed="${S.point===k}"><b>${esc(p.nom)}</b><span class="mute">${esc(p.lieu)}</span></button>`).join('')}
+function renderPts(){$('#pts').innerHTML=Object.entries(C.points).map(([k,p])=>`<button class="pt${S.point===k?' on':''}" data-pt="${k}" aria-pressed="${S.point===k}"><b>${esc(T(p.nom))}</b><span class="mute">${esc(p.lieu)}</span></button>`).join('')}
 $('#pts').addEventListener('click',e=>{const b=e.target.closest('[data-pt]');if(b){S.point=b.dataset.pt;renderPts()}});renderPts();
 
 const dispo=p=>S.dispo&&p.id in S.dispo?Math.max(0,S.dispo[p.id]):null;
-function dispoLine(p){const d=dispo(p);if(d===null)return'';return d>0?`<div class="stockline ok">${d} boîte${d>1?'s':''} disponible${d>1?'s':''} tout de suite</div>`:`<div class="stockline next">Stock épuisé : ta commande sera pour le prochain batch</div>`}
+function dispoLine(p){const d=dispo(p);if(d===null)return'';return d>0?`<div class="stockline ok">${T(d>1?'{n} boîtes disponibles tout de suite':'{n} boîte disponible tout de suite',{n:d})}</div>`:`<div class="stockline next">${T('Stock épuisé : ta commande sera pour le prochain batch')}</div>`}
 function overflow(){return cartLines().reduce((a,x)=>{const d=dispo(x.p);return a+(d===null?0:Math.max(0,x.q-d))},0)}
 function renderProds(){
-  $('#prods').innerHTML=S.prods.length?S.prods.map(p=>{const q=S.cart[p.id]||0,out=(+p.stock||0)<=0;return `<div class="prod"><a class="im" href="${esc(C.instagram)}" aria-label="Voir sur Instagram"${p.photo&&/^img\/[\w.-]+$/.test(p.photo)?` style="background-image:url('${esc(p.photo)}')"`:''}></a><div class="bd"><h3>${esc(p.nom)}</h3>${p.description?`<div class="mute">${esc(p.description)}</div>`:''}
-  <div class="row"><span class="price grow">${eur(p.prix)}${p.unite?' <span class="mute">/ '+esc(p.unite)+'</span>':''}</span><div class="step"><button data-q="${esc(p.id)}" data-d="-1" aria-label="Retirer ${esc(p.nom)}">−</button><output>${q}</output><button data-q="${esc(p.id)}" data-d="1" aria-label="Ajouter ${esc(p.nom)}">+</button></div></div>${dispoLine(p)}</div></div>`}).join(''):'<div class="card empty">Les parfums arrivent bientôt.</div>';
+  $('#prods').innerHTML=S.prods.length?S.prods.map(p=>{const q=S.cart[p.id]||0,out=(+p.stock||0)<=0;return `<div class="prod"><a class="im" href="${esc(C.instagram)}" aria-label="${T('Voir sur Instagram')}"${p.photo&&/^img\/[\w.-]+$/.test(p.photo)?` style="background-image:url('${esc(p.photo)}')"`:''}></a><div class="bd"><h3>${esc(T(p.nom))}</h3>${p.description?`<div class="mute">${esc(T(p.description||""))}</div>`:''}
+  <div class="row"><span class="price grow">${eur(p.prix)}${p.unite?' <span class="mute">/ '+esc(T(p.unite))+'</span>':''}</span><div class="step"><button data-q="${esc(p.id)}" data-d="-1" aria-label="${T('Retirer')} ${esc(T(p.nom))}">−</button><output>${q}</output><button data-q="${esc(p.id)}" data-d="1" aria-label="${T('Ajouter')} ${esc(T(p.nom))}">+</button></div></div>${dispoLine(p)}</div></div>`}).join(''):'<div class="card empty">'+T('Les parfums arrivent bientôt.')+'</div>';
   renderBar()}
 function cartLines(){return S.prods.filter(p=>S.cart[p.id]>0).map(p=>({p,q:S.cart[p.id]}))}
-function renderBar(){const l=cartLines(),n=l.reduce((a,x)=>a+x.q,0);$('#barCount').textContent=n?n+' boîte'+(n>1?'s':'')+' · '+n*4+' coolkies':'Panier vide';$('#special').style.display=n*4>20?'block':'none';const ov=overflow();$('#nextb').style.display=ov?'block':'none';$('#nextb').textContent=ov?(ov===n?'Ta commande sera préparée avec le prochain batch. On te confirme la date par le chat.':ov+' boîte'+(ov>1?'s':'')+' sur '+n+' seront pour le prochain batch. On te confirme la date par le chat.'):'';const t=sub();$('#barTot').textContent=eur(t-remise(t));if(S.promo&&t)$('#barCount').textContent+=' · '+S.promo.code+' '+promoTxt()}
+function renderBar(){const l=cartLines(),n=l.reduce((a,x)=>a+x.q,0);$('#barCount').textContent=n?T(n>1?'{n} boîtes':'{n} boîte',{n})+' · '+n*4+' coolkies':T('Panier vide');$('#special').style.display=n*4>20?'block':'none';const ov=overflow();$('#nextb').style.display=ov?'block':'none';$('#nextb').textContent=ov?(ov===n?T('Ta commande sera préparée avec le prochain batch. On te confirme la date par le chat.'):T('{o} boîte(s) sur {n} seront pour le prochain batch. On te confirme la date par le chat.',{o:ov,n})):'';const t=sub();$('#barTot').textContent=eur(t-remise(t));if(S.promo&&t)$('#barCount').textContent+=' · '+S.promo.code+' '+promoTxt()}
 $('#prods').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;const id=b.dataset.q;S.cart[id]=Math.max(0,Math.min(50,(S.cart[id]||0)+ +b.dataset.d));renderProds()});
 
-if(!C.supabaseUrl||!C.supabaseKey||!window.supabase){$('#prods').innerHTML='<div class="card empty">Le site est en cours d\'installation. Reviens très vite !</div>';return}
+if(!C.supabaseUrl||!C.supabaseKey||!window.supabase){$('#prods').innerHTML='<div class="card empty">'+T('Le site est en cours d\'installation. Reviens très vite !')+'</div>';return}
 const sb=window.supabase.createClient(C.supabaseUrl,C.supabaseKey);
 $('#promoGo').onclick=async()=>{const c=$('#promoIn').value.trim().toUpperCase();if(!c){S.promo=null;$('#promoMsg').innerHTML='';return renderBar()}
   $('#promoGo').disabled=true;const{data,error}=await sb.rpc('check_promo',{p_code:c});$('#promoGo').disabled=false;
-  if(error||!data||!data.length){S.promo=null;$('#promoMsg').innerHTML='<div class="err">Ce code n\'est pas valide.</div>'}else{S.promo=data[0];$('#promoMsg').innerHTML='<div class="promo-ok">Code '+esc(S.promo.code)+' appliqué : '+esc(promoTxt())+'</div>'}renderBar()};
+  if(error||!data||!data.length){S.promo=null;$('#promoMsg').innerHTML='<div class="err">'+T('Ce code n\'est pas valide.')+'</div>'}else{S.promo=data[0];$('#promoMsg').innerHTML='<div class="promo-ok">'+esc(T('Code {c} appliqué : {r}',{c:S.promo.code,r:promoTxt()}))+'</div>'}renderBar()};
 
-async function loadProds(){const{data,error}=await sb.from('products').select('id,nom,description,photo,prix,unite,stock').eq('actif',true).order('nom');if(error){$('#prods').innerHTML='<div class="card empty">Impossible de charger les parfums. Réessaie dans un instant.</div>';return}S.prods=data||[];const r=await sb.rpc('available_stock');if(!r.error&&r.data){S.dispo={};r.data.forEach(x=>S.dispo[x.pid]=x.dispo)}renderProds()}
+async function loadProds(){const{data,error}=await sb.from('products').select('id,nom,description,photo,prix,unite,stock').eq('actif',true).order('nom');if(error){$('#prods').innerHTML='<div class="card empty">'+T('Impossible de charger les parfums. Réessaie dans un instant.')+'</div>';return}S.prods=data||[];const r=await sb.rpc('available_stock');if(!r.error&&r.data){S.dispo={};r.data.forEach(x=>S.dispo[x.pid]=x.dispo)}renderProds()}
 
 // ---------- compte ----------
 function authForm(mode,after){mode=mode||'signup';
-  openSheet(`<h2>${mode==='signup'?'Crée ton compte':'Connexion'}</h2><p class="mute">${mode==='signup'?'Juste un pseudo et un mot de passe, pour suivre ta commande et discuter avec nous.':'Content de te revoir.'}</p>
-  <div class="tabs"><button data-m="signup" class="${mode==='signup'?'on':''}">Nouveau</button><button data-m="login" class="${mode==='login'?'on':''}">J'ai un compte</button></div>
-  <form id="authF"><label for="aU">Pseudo</label><input id="aU" autocomplete="username" autocapitalize="none" required placeholder="ex. julie.b">
-  <label for="aP">Mot de passe</label><input id="aP" type="password" autocomplete="${mode==='signup'?'new-password':'current-password'}" required minlength="6">
-  ${mode==='signup'?'<label for="aT">Téléphone (optionnel)</label><input id="aT" type="tel" autocomplete="tel" placeholder="Pour te prévenir si besoin">':''}
-  <div class="err" id="aE"></div><div class="acts"><button type="button" class="btn" data-close>Annuler</button><button class="btn main" id="aGo">${mode==='signup'?'Créer mon compte':'Me connecter'}</button></div></form>`);
+  openSheet(`<h2>${mode==='signup'?T('Crée ton compte'):T('Connexion')}</h2><p class="mute">${mode==='signup'?T('Juste un pseudo et un mot de passe, pour suivre ta commande et discuter avec nous.'):T('Content de te revoir.')}</p>
+  <div class="tabs"><button data-m="signup" class="${mode==='signup'?'on':''}">${T('Nouveau')}</button><button data-m="login" class="${mode==='login'?'on':''}">${T("J'ai un compte")}</button></div>
+  <form id="authF"><label for="aU">${T('Pseudo')}</label><input id="aU" autocomplete="username" autocapitalize="none" required placeholder="ex. julie.b">
+  <label for="aP">${T('Mot de passe')}</label><input id="aP" type="password" autocomplete="${mode==='signup'?'new-password':'current-password'}" required minlength="6">
+  ${mode==='signup'?'<label for="aT">'+T('Téléphone (optionnel)')+'</label><input id="aT" type="tel" autocomplete="tel" placeholder="'+T('Pour te prévenir si besoin')+'">':''}
+  <div class="err" id="aE"></div><div class="acts"><button type="button" class="btn" data-close>${T('Annuler')}</button><button class="btn main" id="aGo">${mode==='signup'?T('Créer mon compte'):T('Me connecter')}</button></div></form>`);
   $('#sheetIn').querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>authForm(b.dataset.m,after));
   $('#authF').onsubmit=async e=>{e.preventDefault();const u=$('#aU').value.trim().toLowerCase(),pw=$('#aP').value;
-    if(!/^[a-z0-9._-]{3,20}$/.test(u))return $('#aE').textContent='Pseudo : 3 à 20 caractères (lettres, chiffres, . _ -).';
+    if(!/^[a-z0-9._-]{3,20}$/.test(u))return $('#aE').textContent=T('Pseudo : 3 à 20 caractères (lettres, chiffres, . _ -).');
     $('#aGo').disabled=true;$('#aE').textContent='';const email=u+'@'+C.emailDomain;
     const r=mode==='signup'?await sb.auth.signUp({email,password:pw,options:{data:{username:u,tel:($('#aT')?.value||'').trim()}}}):await sb.auth.signInWithPassword({email,password:pw});
-    if(r.error||!r.data.session){$('#aGo').disabled=false;$('#aE').textContent=r.error?msgErr(r.error):'Compte créé, mais la connexion directe est désactivée. Préviens Coolkie.';return}
-    closeSheet();await onUser(r.data.session.user);toast(mode==='signup'?'Bienvenue '+u+' !':'Connecté');if(after)after()}}
+    if(r.error||!r.data.session){$('#aGo').disabled=false;$('#aE').textContent=r.error?msgErr(r.error):T('Compte créé, mais la connexion directe est désactivée. Préviens Coolkie.');return}
+    closeSheet();await onUser(r.data.session.user);toast(mode==='signup'?T('Bienvenue {u} !',{u}):T('Connecté'));if(after)after()}}
 
-async function onUser(u){S.user=u;if(!u){S.profile=null;$('#acctBtn').textContent='Se connecter';$('#adminBtn').hidden=true;return}
+async function onUser(u){S.user=u;if(!u){S.profile=null;$('#acctBtn').textContent=T('Se connecter');$('#adminBtn').hidden=true;return}
   const{data}=await sb.from('profiles').select('username,tel,is_admin').eq('id',u.id).maybeSingle();S.profile=data;
-  $('#acctBtn').textContent='Mon compte';$('#adminBtn').hidden=!data?.is_admin;}
+  $('#acctBtn').textContent=T('Mon compte');$('#adminBtn').hidden=!data?.is_admin;}
 $('#acctBtn').onclick=()=>S.user?showAccount():authForm('login',showAccount);
 $('#backShop').onclick=()=>{if(location.hash==='#compte')history.replaceState(null,'','./');$('#v-account').classList.remove('on');$('#v-shop').classList.add('on');$('#bar').style.display='flex';scrollTo(0,0)};
-$('#logout').onclick=async()=>{await sb.auth.signOut();if(S.chan){sb.removeChannel(S.chan);S.chan=null}await onUser(null);$('#backShop').click();toast('À bientôt !')};
+$('#logout').onclick=async()=>{await sb.auth.signOut();if(S.chan){sb.removeChannel(S.chan);S.chan=null}await onUser(null);$('#backShop').click();toast(T('À bientôt !'))};
 
 // ---------- commande ----------
 $('#checkout').onclick=()=>{const l=cartLines();
-  if(!l.length){toast('Ajoute au moins un parfum');location.hash='commander';return}
-  if(!S.point){toast('Choisis un point de retrait');$('#pts').scrollIntoView({behavior:'smooth',block:'center'});return}
+  if(!l.length){toast(T('Ajoute au moins un parfum'));location.hash='commander';return}
+  if(!S.point){toast(T('Choisis un point de retrait'));$('#pts').scrollIntoView({behavior:'smooth',block:'center'});return}
   if(!S.user)return authForm('signup',confirmOrder);confirmOrder()};
 function confirmOrder(){const l=cartLines(),p=C.points[S.point],st=sub(),rm=remise(st),tot=st-rm;
-  openSheet(`<h2>Ta commande</h2>${l.map(x=>`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span class="grow">${x.q} × ${esc(x.p.nom)}</span><span class="price">${eur(x.q*x.p.prix)}</span></div>`).join('')}
-  ${rm?`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span class="grow">Code ${esc(S.promo.code)}</span><span class="price" style="color:var(--ok)">−${eur(rm)}</span></div>`:''}<div class="row" style="margin-top:10px"><b class="grow">Total à payer au retrait</b><span class="price" style="font-size:20px">${eur(tot)}</span></div>
-  <p>Retrait à <b>${esc(p.nom)} (${esc(p.lieu)})</b>, ${esc(fdate($('#date').value))}.</p>${overflow()?'<p class="info">'+overflow()+' boîte(s) seront pour le prochain batch : on te confirme la date par le chat.</p>':''}
-  <div class="err" id="oE"></div><div class="acts"><button class="btn" data-close>Modifier</button><button class="btn main" id="oGo">Confirmer la commande</button></div>`);
+  openSheet(`<h2>${T('Ta commande')}</h2>${l.map(x=>`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span class="grow">${x.q} × ${esc(x.p.nom)}</span><span class="price">${eur(x.q*x.p.prix)}</span></div>`).join('')}
+  ${rm?`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span class="grow">${T('Code')} ${esc(S.promo.code)}</span><span class="price" style="color:var(--ok)">−${eur(rm)}</span></div>`:''}<div class="row" style="margin-top:10px"><b class="grow">${T('Total à payer au retrait')}</b><span class="price" style="font-size:20px">${eur(tot)}</span></div>
+  <p>${T('Retrait à')} <b>${esc(T(p.nom))} (${esc(p.lieu)})</b>, ${esc(fdate($('#date').value))}.</p>${overflow()?'<p class="info">'+T('{o} boîte(s) seront pour le prochain batch : on te confirme la date par le chat.',{o:overflow()})+'</p>':''}
+  <div class="err" id="oE"></div><div class="acts"><button class="btn" data-close>${T('Modifier')}</button><button class="btn main" id="oGo">${T('Confirmer la commande')}</button></div>`);
   $('#oGo').onclick=async()=>{$('#oGo').disabled=true;
     const{data,error}=await sb.rpc('place_order',{items:l.map(x=>({pid:x.p.id,qte:x.q})),p_point:S.point,p_date:$('#date').value,p_notes:$('#notes').value.trim(),p_code:S.promo?S.promo.code:''});
     if(error){$('#oGo').disabled=false;$('#oE').textContent=msgErr(error);return}
-    S.cart={};S.promo=null;$('#promoIn').value='';$('#promoMsg').innerHTML='';loadProds();$('#notes').value='';closeSheet();toast('Commande n°'+data+' envoyée !');showAccount()}}
+    S.cart={};S.promo=null;$('#promoIn').value='';$('#promoMsg').innerHTML='';loadProds();$('#notes').value='';closeSheet();toast(T('Commande n°{id} envoyée !',{id:data}));showAccount()}}
 
 // ---------- mon espace ----------
 async function showAccount(){$('#v-shop').classList.remove('on');$('#v-account').classList.add('on');$('#bar').style.display='none';scrollTo(0,0);
-  $('#hello').textContent='Salut '+(S.profile?.username||'')+' !';
+  $('#hello').textContent=T('Salut {u} !',{u:S.profile?.username||''});
   const{data}=await sb.from('orders').select('id,lignes,total,point,date_retrait,statut,created_at,prochain_batch,promo_code,remise').eq('user_id',S.user.id).order('created_at',{ascending:false});S.orders=data||[];renderOrders();
   if(S.orders.length){$('#chatSec').style.display='block';await loadChat()}}
-function renderOrders(){$('#myOrders').innerHTML=S.orders.length?S.orders.map(o=>{const p=C.points[o.point]||{nom:o.point,lieu:''};return `<div class="card"><div class="row"><b class="grow">Commande n°${esc(o.id)}</b><span class="pill p-${esc(o.statut)}">${esc(ST[o.statut]||o.statut)}</span></div>
-  <div style="margin:6px 0">${(o.lignes||[]).map(l=>esc(l.qte)+' × '+esc(l.nom)).join(', ')}</div>
-  <div class="mute">Retrait ${esc(p.nom)} (${esc(p.lieu)}) · ${esc(fdate(o.date_retrait))}</div>${o.prochain_batch>0&&o.statut==='a_preparer'?`<div class="stockline next">${esc(o.prochain_batch)} boîte(s) avec le prochain batch</div>`:''}
-  <div class="row" style="margin-top:8px"><span class="price grow">${eur(o.total)} au retrait${+o.remise?' <span class="mute">(code '+esc(o.promo_code)+')</span>':''}</span>${o.statut==='a_preparer'?`<button class="btn sm danger" data-cancel="${esc(o.id)}">Annuler</button>`:''}</div></div>`}).join(''):'<div class="card empty">Pas encore de commande. Le chat s\'ouvre après ta première commande.</div>'}
-$('#myOrders').addEventListener('click',async e=>{const b=e.target.closest('[data-cancel]');if(!b)return;b.disabled=true;const{error}=await sb.rpc('cancel_my_order',{p_id:+b.dataset.cancel});if(error){b.disabled=false;return toast(msgErr(error))}toast('Commande annulée');showAccount()});
+function renderOrders(){$('#myOrders').innerHTML=S.orders.length?S.orders.map(o=>{const p=C.points[o.point]||{nom:o.point,lieu:''};return `<div class="card"><div class="row"><b class="grow">${T('Commande n°{id}',{id:esc(o.id)})}</b><span class="pill p-${esc(o.statut)}">${esc(ST[o.statut]||o.statut)}</span></div>
+  <div style="margin:6px 0">${(o.lignes||[]).map(l=>esc(l.qte)+' × '+esc(T(l.nom||""))).join(', ')}</div>
+  <div class="mute">${T('Retrait')} ${esc(T(p.nom))} (${esc(p.lieu)}) · ${esc(fdate(o.date_retrait))}</div>${o.prochain_batch>0&&o.statut==='a_preparer'?`<div class="stockline next">${T('{n} boîte(s) avec le prochain batch',{n:esc(o.prochain_batch)})}</div>`:''}
+  <div class="row" style="margin-top:8px"><span class="price grow">${T('{m} au retrait',{m:eur(o.total)})}${+o.remise?' <span class="mute">('+T('code')+' '+esc(o.promo_code)+')</span>':''}</span>${o.statut==='a_preparer'?`<button class="btn sm danger" data-cancel="${esc(o.id)}">${T('Annuler')}</button>`:''}</div></div>`}).join(''):'<div class="card empty">'+T('Pas encore de commande. Le chat s\'ouvre après ta première commande.')+'</div>'}
+$('#myOrders').addEventListener('click',async e=>{const b=e.target.closest('[data-cancel]');if(!b)return;b.disabled=true;const{error}=await sb.rpc('cancel_my_order',{p_id:+b.dataset.cancel});if(error){b.disabled=false;return toast(msgErr(error))}toast(T('Commande annulée'));showAccount()});
 
 async function loadChat(){const{data}=await sb.from('messages').select('id,from_admin,body,created_at').eq('user_id',S.user.id).order('created_at');S.msgs=data||[];renderChat();
   if(!S.chan)S.chan=sb.channel('chat-'+S.user.id).on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:'user_id=eq.'+S.user.id},p=>{if(p.new&&p.new.id&&!S.msgs.some(m=>m.id===p.new.id)){S.msgs.push(p.new);renderChat()}})
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'orders',filter:'user_id=eq.'+S.user.id},p=>{const o=S.orders.find(x=>x.id===p.new.id);if(o){Object.assign(o,p.new);renderOrders()}}).subscribe()}
-function renderChat(){const c=$('#chat');c.innerHTML=S.msgs.length?S.msgs.map(m=>`<div class="msg ${m.from_admin?'them':'me'}">${esc(m.body)}<small>${m.from_admin?'Coolkie · ':''}${esc(new Date(m.created_at).toLocaleString('fr-BE',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))}</small></div>`).join(''):'<div class="empty">Une question sur ta commande ? Écris-nous ici.</div>';c.scrollTop=c.scrollHeight}
+function renderChat(){const c=$('#chat');c.innerHTML=S.msgs.length?S.msgs.map(m=>`<div class="msg ${m.from_admin?'them':'me'}">${esc(m.body)}<small>${m.from_admin?'Coolkie · ':''}${esc(new Date(m.created_at).toLocaleString(LOC,{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))}</small></div>`).join(''):'<div class="empty">'+T('Une question sur ta commande ? Écris-nous ici.')+'</div>';c.scrollTop=c.scrollHeight}
 $('#sendForm').onsubmit=async e=>{e.preventDefault();const t=$('#msgIn').value.trim();if(!t)return;$('#msgIn').value='';
-  const{data,error}=await sb.from('messages').insert({user_id:S.user.id,body:t}).select().single();if(error){$('#msgIn').value=t;return toast('Message non envoyé')}
+  const{data,error}=await sb.from('messages').insert({user_id:S.user.id,body:t}).select().single();if(error){$('#msgIn').value=t;return toast(T('Message non envoyé'))}
   if(!S.msgs.some(m=>m.id===data.id)){S.msgs.push(data);renderChat()}};
 
 loadProds();
