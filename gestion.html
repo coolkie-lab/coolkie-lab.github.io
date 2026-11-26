@@ -41,6 +41,7 @@ nav a.on{color:var(--ink)}nav a.on svg{stroke:var(--ink)}
 nav svg{width:24px;height:24px;fill:none;stroke:var(--mute);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--warn);color:#fff;font-size:11px;line-height:18px;text-align:center}
 .fab{position:fixed;right:16px;bottom:calc(72px + env(safe-area-inset-bottom));z-index:6;min-height:54px;padding:0 20px;border-radius:99px;border:0;background:var(--ice);color:#fff;font-weight:600;font-size:16px;box-shadow:0 6px 18px rgba(38,103,224,.35)}
+.kp3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.kp3 div{background:var(--bg);border-radius:12px;padding:8px 10px}.kp3 b{display:block;font-family:Fredoka;font-size:24px;font-weight:600}.kp3 b.neg{color:var(--warn)}.kp3 span{font-size:13px;color:var(--mute)}
 .tot{font-family:Fredoka;font-size:26px;font-weight:600}
 .src{font-size:12px;font-weight:600;color:var(--ice)}
 #login{max-width:420px;margin:30px auto;padding:0 16px}
@@ -48,7 +49,7 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
 </head>
 <body>
 <header>
-  <div class="brand"><img src="img/coolkie-logo.jpg" alt="" onerror="this.remove()"><span style="flex:1">Coolkie Lab · Gestion</span><button class="btn sm" id="topLogout" hidden style="background:#fff8ee;border-color:transparent">Déconnexion</button></div>
+  <div class="brand"><a href="gestion.html" style="display:flex;align-items:center;gap:10px;flex:1;color:inherit;text-decoration:none"><img src="img/coolkie-logo.jpg" alt="" onerror="this.remove()">Coolkie Lab · Gestion</a><a href="./" class="btn sm" style="background:#fff8ee;border-color:transparent;display:inline-flex;align-items:center;text-decoration:none;color:inherit">Boutique</a><button class="btn sm" id="topLogout" hidden style="background:#fff8ee;border-color:transparent">Déconnexion</button></div>
   <h1 id="title">Aujourd'hui</h1>
   <p id="sub">Chargement…</p>
 </header>
@@ -60,6 +61,7 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
   <div class="view" id="v-accueil">
     <div class="kpis" id="kpis"></div>
     <section><h2>À préparer <small id="prepCount"></small></h2><div id="prep"></div></section>
+    <section><h2>Planning de production <small>délai <input id="lead" type="number" min="0" max="14" value="2" style="width:56px;min-height:32px;padding:2px 6px;font-size:14px" aria-label="Délai de production en jours"> j</small></h2><div id="plan"></div></section>
     <section><h2>À produire <small>commandes en cours vs stock</small></h2><div id="toMake"></div></section>
     <section><h2>Ventes des 6 derniers mois</h2><div class="card bars" id="bars"></div></section>
     <section><h2>Top produits <small>ce mois</small></h2><div class="card bars" id="top"></div></section>
@@ -141,7 +143,7 @@ const uname=id=>S.profiles.find(p=>p.id===id)?.username;
 
 function orderCard(o){const items=(o.lignes||[]).map(l=>esc(l.qte)+'× '+esc(l.nom)).join(', '),nx=NEXT[o.statut];
   return `<div class="card"><div class="row"><div class="grow"><b>${esc(o.client_nom||'Client')}</b> <span class="mute">n°${esc(o.id)}</span> ${o.source==='en_ligne'?'<span class="src">en ligne</span>':''}<div class="mute">${esc(fdate(o.date_retrait))} · ${esc(PTS[o.point]||o.point)}</div></div><span class="pill p-${esc(o.statut)}">${esc(ST[o.statut]||o.statut)}</span></div>
-  <div style="margin:8px 0">${items}</div>${o.notes?`<div class="mute" style="margin-bottom:8px">« ${esc(o.notes)} »</div>`:''}
+  <div style="margin:8px 0">${items}</div>${o.prochain_batch>0&&(o.statut==='a_preparer'||o.statut==='prete')?`<div class="mute" style="color:var(--warn);font-weight:600;margin-bottom:8px">${esc(o.prochain_batch)} boîte(s) pour le prochain batch</div>`:''}${o.notes?`<div class="mute" style="margin-bottom:8px">« ${esc(o.notes)} »</div>`:''}
   <div class="row"><span class="price grow">${eur(o.total)} ${o.paye?'<span class="pill p-livree">Payé</span>':'<span class="pill p-a_preparer">À encaisser</span>'}</span>
   <button class="btn sm" data-edit-o="${esc(o.id)}">Ouvrir</button>${nx?`<button class="btn sm main" data-next="${esc(o.id)}">${esc(ST[nx])} →</button>`:''}</div></div>`}
 
@@ -162,6 +164,25 @@ function render(){
   $('#kpis').innerHTML=[[eur(ca),'Ventes ce mois'],[mo.length,'Commandes ce mois'],[eur(marge),'Marge estimée'],[eur(due),'À encaisser']].map(k=>`<div class="kpi"><b>${esc(k[0])}</b><span>${k[1]}</span></div>`).join('');
   $('#prepCount').textContent=pend.length?pend.length+' en cours':'';
   $('#prep').innerHTML=pend.length?pend.map(orderCard).join(''):'<div class="card empty">Rien à préparer pour l\'instant.</div>';
+
+  // planning
+  {const lead=Math.max(0,+($('#lead').value)||0);try{localStorage.setItem('ck_lead',lead)}catch(e){}
+   const P=S.products.filter(p=>p.actif),day=864e5,t0=new Date(today()+'T12:00');
+   const addD=(d,n)=>{const x=new Date(d.getTime()+n*day);return x};const fd=d=>d.toLocaleDateString('fr-BE',{weekday:'long',day:'numeric',month:'long'});
+   const since=new Date(t0.getTime()-90*day).toISOString().slice(0,10);
+   $('#plan').innerHTML=P.length?P.map(p=>{
+     const stock=+p.stock||0;const po=pend.filter(o=>(o.lignes||[]).some(l=>l.pid===p.id)).sort((a,b)=>(a.date_retrait||'').localeCompare(b.date_retrait||''));
+     let cum=0,firstShort=null;po.forEach(o=>{const q=(o.lignes||[]).filter(l=>l.pid===p.id).reduce((a,l)=>a+(+l.qte||0),0);cum+=q;if(!firstShort&&cum>stock)firstShort=o});
+     const reserved=cum,dispo=stock-reserved;
+     const sold=os.filter(o=>o.date_retrait>=since&&o.date_retrait<=today()).reduce((a,o)=>a+(o.lignes||[]).filter(l=>l.pid===p.id).reduce((b,l)=>b+(+l.qte||0),0),0);
+     const perWeek=sold/(90/7);
+     let when,why,urgent=false;
+     if(firstShort){const d=new Date(firstShort.date_retrait+'T12:00');when=addD(d,-lead);urgent=true;why=`il manque ${reserved-stock} boîte${reserved-stock>1?'s':''} pour couvrir les commandes, la première non couverte est celle de ${esc(firstShort.client_nom)} (retrait ${esc(fdate(firstShort.date_retrait))})`}
+     else if(perWeek>0){const weeks=dispo/perWeek;const rupt=addD(t0,Math.floor(weeks*7));when=addD(rupt,-lead);why=`au rythme de ${perWeek.toFixed(1).replace('.',',')} boîte${perWeek>=2?'s':''} par semaine, les ${dispo} boîtes libres tiennent jusqu'au ${fd(rupt)} environ`}
+     const late=when&&when<=t0;const batch=Math.max(26,Math.ceil((Math.max(0,reserved-stock))+perWeek*4));
+     return `<div class="card"><div class="row"><b class="grow">${esc(p.nom)}</b>${when?`<span class="pill ${late||urgent?'p-a_preparer':'p-prete'}">${late?'À lancer maintenant':'Avant le '+esc(when.toLocaleDateString('fr-BE',{day:'numeric',month:'short'}))}</span>`:''}</div>
+     <div class="kp3"><div><b>${stock}</b><span>en stock</span></div><div><b>${reserved}</b><span>réservées</span></div><div><b class="${dispo<0?'neg':''}">${dispo}</b><span>libres</span></div></div>
+     <p class="mute" style="margin:8px 0 0">${when?`Lance le prochain batch ${late?'<b>dès maintenant</b>':'au plus tard le <b>'+esc(fd(when))+'</b>'} : ${why}. Batch conseillé : <b>${batch} boîtes</b> (environ ${batch*4} coolkies).`:'Pas assez de ventes récentes pour estimer une date. Le stock couvre les commandes en cours.'}</p></div>`}).join(''):'<div class="card empty">Ajoute un produit pour voir le planning.</div>'}
   const need={};pend.forEach(o=>(o.lignes||[]).forEach(l=>need[l.pid]=(need[l.pid]||0)+(+l.qte||0)));
   const rows=S.products.filter(p=>p.actif).map(p=>({p,n:need[p.id]||0,s:+p.stock||0})).filter(r=>r.n>r.s||r.s<=(+r.p.seuil||0));
   $('#toMake').innerHTML=rows.length?rows.map(r=>`<div class="card row"><div class="grow"><b>${esc(r.p.nom)}</b><div class="mute">Commandé ${esc(r.n)} · en stock ${esc(r.s)}</div></div><span class="pill p-a_preparer">${r.n>r.s?'Manque '+esc(r.n-r.s):'Stock bas'}</span><button class="btn sm ice" data-make="${esc(r.p.id)}">Produire</button></div>`).join(''):'<div class="card empty">Le stock couvre toutes les commandes.</div>';
@@ -225,7 +246,7 @@ function orderForm(o){const isNew=!o;o=o||{lignes:[],date_retrait:today(),point:
     await sb.rpc('set_order_status',{p_id:id,p_statut:st});closeSheet();toast('Commande enregistrée');load('orders');load('products')}}
 
 function prodForm(p){const isNew=!p;p=p||{nom:'',description:'',photo:'',prix:'',cout:'',stock:0,seuil:5,unite:'',actif:true};
-  const pics=['','img/hero.jpg',...Array.from({length:12},(_,i)=>'img/coolkie-'+String(i+1).padStart(2,'0')+'.jpg')];
+  const pics=['','img/boite.jpg','img/hero.jpg',...['02','05','07','09','10','11'].map(n=>'img/coolkie-'+n+'.jpg')];
   openSheet(`<h2>${isNew?'Nouveau produit':'Modifier le produit'}</h2>
   <label for="pN">Nom du parfum</label><input id="pN" value="${esc(p.nom)}" placeholder="Ex. Chocolat noir">
   <label for="pD">Description (visible sur le site)</label><input id="pD" value="${esc(p.description)}" placeholder="Ex. Chocolat noir 70 %, fleur de sel">
@@ -272,7 +293,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(d.conv)openConv(d.conv);
   else if(d.cli)cliSheet(d.cli)});
 $('#fab').onclick=()=>orderForm();$('#addProd').onclick=()=>prodForm();
-$('#ordSearch').oninput=render;$('#cliSearch').oninput=render;
+$('#ordSearch').oninput=render;try{const l=localStorage.getItem('ck_lead');if(l!==null)$('#lead').value=l}catch(e){}$('#lead').oninput=render;$('#cliSearch').oninput=render;
 $('#logout').onclick=$('#topLogout').onclick=async()=>{await sb.auth.signOut();location.reload()};
 
 // ---------- connexion ----------

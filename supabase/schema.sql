@@ -214,6 +214,47 @@ drop policy if exists photos_admin on storage.objects;
 create policy photos_admin on storage.objects for all to authenticated
   using (bucket_id = 'photos' and public.is_admin()) with check (bucket_id = 'photos' and public.is_admin());
 
+-- ---------- Stock disponible et prochain batch ----------
+alter table public.orders add column if not exists prochain_batch integer not null default 0;
+
+create or replace function public.available_stock()
+returns table(pid uuid, dispo integer) language sql stable security definer set search_path = public as $$
+  select p.id, (p.stock - coalesce((select sum((l->>'qte')::int) from orders o, jsonb_array_elements(o.lignes) l
+    where o.statut in ('a_preparer','prete') and (l->>'pid')::uuid = p.id), 0))::int
+  from products p where p.actif
+$$;
+grant execute on function public.available_stock() to anon, authenticated;
+
+create or replace function public.place_order(items jsonb, p_point text, p_date date, p_notes text)
+returns bigint language plpgsql security definer set search_path = public as $$
+declare
+  v_lignes jsonb := '[]'; v_total numeric := 0; v_id bigint; it jsonb; pr record; q int; prof record; v_next int := 0; v_av int;
+begin
+  if auth.uid() is null then raise exception 'Connecte-toi pour commander'; end if;
+  if p_point not in ('uccle','woluwe') then raise exception 'Point de retrait inconnu'; end if;
+  if p_date < current_date then raise exception 'Date passée'; end if;
+  select * into prof from profiles where id = auth.uid();
+  for it in select * from jsonb_array_elements(items) loop
+    q := (it->>'qte')::int;
+    if q is null or q <= 0 then continue; end if;
+    if q > 50 then raise exception 'Quantité trop grande'; end if;
+    select * into pr from products where id = (it->>'pid')::uuid and actif;
+    if not found then raise exception 'Produit indisponible'; end if;
+    select dispo into v_av from available_stock() where pid = pr.id;
+    v_next := v_next + greatest(0, q - greatest(0, coalesce(v_av,0)));
+    v_lignes := v_lignes || jsonb_build_object('pid', pr.id, 'nom', pr.nom, 'prix', pr.prix, 'qte', q);
+    v_total := v_total + pr.prix * q;
+  end loop;
+  if jsonb_array_length(v_lignes) = 0 then raise exception 'Panier vide'; end if;
+  insert into orders (user_id, client_nom, client_tel, lignes, total, point, date_retrait, notes, source, paiement, prochain_batch)
+  values (auth.uid(), prof.username, prof.tel, v_lignes, v_total, p_point, p_date, left(coalesce(p_notes,''), 500), 'en_ligne', 'cash', v_next)
+  returning id into v_id;
+  return v_id;
+end $$;
+revoke execute on function public.place_order(jsonb,text,date,text) from public, anon;
+grant execute on function public.place_order(jsonb,text,date,text) to authenticated;
+
+
 -- ---------- APRÈS t'être inscrit sur le site avec ton pseudo ----------
 -- Remplace TONPSEUDO puis lance seulement cette ligne pour devenir administrateur :
 -- update public.profiles set is_admin = true where username = 'tonpseudo';
