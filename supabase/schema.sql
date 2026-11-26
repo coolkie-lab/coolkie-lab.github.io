@@ -282,3 +282,82 @@ language sql stable security definer set search_path = public as $$
          (select count(*) from o), (select count(*) from per), (select count(*) from per where n >= 2);
 $$;
 grant execute on function public.public_stats() to anon, authenticated;
+-- ===== v4 : contenu du site éditable + codes promo =====
+create table if not exists public.site_settings (
+  id text primary key default 'main',
+  data jsonb not null default '{}',
+  updated_at timestamptz not null default now()
+);
+alter table public.site_settings enable row level security;
+drop policy if exists ss_read on public.site_settings;
+create policy ss_read on public.site_settings for select using (true);
+drop policy if exists ss_admin on public.site_settings;
+create policy ss_admin on public.site_settings for all using (public.is_admin()) with check (public.is_admin());
+grant select on public.site_settings to anon, authenticated;
+grant insert, update on public.site_settings to authenticated;
+insert into public.site_settings (id, data) values ('main', '{}') on conflict do nothing;
+
+create table if not exists public.promo_codes (
+  code text primary key check (code = upper(code) and length(code) between 3 and 20),
+  type text not null default 'pct' check (type in ('pct','eur')),
+  valeur numeric(10,2) not null check (valeur > 0),
+  actif boolean not null default true,
+  expire date,
+  max_uses int,
+  uses int not null default 0,
+  created_at timestamptz not null default now()
+);
+alter table public.promo_codes enable row level security;
+drop policy if exists pc_admin on public.promo_codes;
+create policy pc_admin on public.promo_codes for all using (public.is_admin()) with check (public.is_admin());
+grant select, insert, update, delete on public.promo_codes to authenticated;
+
+alter table public.orders add column if not exists promo_code text;
+alter table public.orders add column if not exists remise numeric(10,2) not null default 0;
+
+create or replace function public.check_promo(p_code text) returns table(code text, type text, valeur numeric)
+language sql stable security definer set search_path = public as $$
+  select c.code, c.type, c.valeur from promo_codes c
+  where c.code = upper(trim(p_code)) and c.actif
+    and (c.expire is null or c.expire >= current_date)
+    and (c.max_uses is null or c.uses < c.max_uses);
+$$;
+grant execute on function public.check_promo(text) to anon, authenticated;
+
+create or replace function public.place_order(items jsonb, p_point text, p_date date, p_notes text, p_code text)
+returns bigint language plpgsql security definer set search_path = public as $$
+declare
+  v_lignes jsonb := '[]'; v_total numeric := 0; v_id bigint; it jsonb; pr record; q int; prof record; v_next int := 0; v_av int;
+  pc record; v_remise numeric := 0; v_code text := null;
+begin
+  if auth.uid() is null then raise exception 'Connecte-toi pour commander'; end if;
+  if p_point not in ('uccle','woluwe') then raise exception 'Point de retrait inconnu'; end if;
+  if p_date < current_date then raise exception 'Date passée'; end if;
+  select * into prof from profiles where id = auth.uid();
+  for it in select * from jsonb_array_elements(items) loop
+    q := (it->>'qte')::int;
+    if q is null or q <= 0 then continue; end if;
+    if q > 50 then raise exception 'Quantité trop grande'; end if;
+    select * into pr from products where id = (it->>'pid')::uuid and actif;
+    if not found then raise exception 'Produit indisponible'; end if;
+    select dispo into v_av from available_stock() where pid = pr.id;
+    v_next := v_next + greatest(0, q - greatest(0, coalesce(v_av,0)));
+    v_lignes := v_lignes || jsonb_build_object('pid', pr.id, 'nom', pr.nom, 'prix', pr.prix, 'qte', q);
+    v_total := v_total + pr.prix * q;
+  end loop;
+  if jsonb_array_length(v_lignes) = 0 then raise exception 'Panier vide'; end if;
+  if coalesce(trim(p_code),'') <> '' then
+    select * into pc from check_promo(p_code);
+    if not found then raise exception 'Code promo invalide ou expiré'; end if;
+    v_code := pc.code;
+    v_remise := case when pc.type = 'pct' then round(v_total * least(pc.valeur,100) / 100, 2) else least(pc.valeur, v_total) end;
+    update promo_codes set uses = uses + 1 where code = pc.code;
+  end if;
+  insert into orders (user_id, client_nom, client_tel, lignes, total, point, date_retrait, notes, source, paiement, prochain_batch, promo_code, remise)
+  values (auth.uid(), prof.username, prof.tel, v_lignes, v_total - v_remise, p_point, p_date, left(coalesce(p_notes,''), 500), 'en_ligne', 'cash', v_next, v_code, v_remise)
+  returning id into v_id;
+  return v_id;
+end $$;
+revoke execute on function public.place_order(jsonb,text,date,text,text) from public, anon;
+grant execute on function public.place_order(jsonb,text,date,text,text) to authenticated;
+select 'ok' as v4;
