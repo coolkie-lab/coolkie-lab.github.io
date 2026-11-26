@@ -75,6 +75,7 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
 .savebar{position:sticky;bottom:calc(64px + env(safe-area-inset-bottom));z-index:4;background:var(--ink);color:#fff;border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-top:16px}
 .savebar .btn{background:#fff;color:var(--ink);border-color:#fff}
 @media(max-width:520px){.brand>a{flex:0 0 auto!important;font-size:0}.brand>a img{width:32px;height:32px}.brand{justify-content:space-between}}
+.ico-r{width:44px;height:44px;border-radius:12px;background:var(--dough);display:grid;place-items:center;font-size:22px;flex:none}
 #report{display:none}
 @media print{@page{size:A4;margin:14mm}body{background:#fff!important;padding:0!important}body>*:not(#report){display:none!important}
 #report{display:block;color:#111;font:10.5pt/1.45 var(--fB)}#report h1{font-size:24pt;margin:0}#report h2{font-size:13pt;margin:18px 0 8px;break-after:avoid;color:#123047}#report h2 small{font:400 9pt var(--fB);color:#666}
@@ -100,6 +101,7 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
 <main id="app" style="display:none">
   <div class="view" id="v-accueil">
     <div class="kpis" id="kpis"></div>
+    <a href="#chiffres" data-goch="liasse" class="card row" style="margin-top:14px;text-decoration:none;color:inherit"><span class="ico-r" aria-hidden="true">📄</span><span class="grow"><b>Rapport mensuel en PDF</b><br><span class="mute">Tous les chiffres du mois, à télécharger</span></span><span style="color:var(--ice);font-weight:600">Ouvrir →</span></a>
     <section><h2>À préparer <small id="prepCount"></small></h2><div id="prep"></div></section>
     <section><h2>Planning de production <small>délai <input id="lead" type="number" min="0" max="14" value="2" style="width:56px;min-height:32px;padding:2px 6px;font-size:14px" aria-label="Délai de production en jours"> j</small></h2><div id="plan"></div></section>
     <section><h2>À produire <small>commandes en cours vs stock</small></h2><div id="toMake"></div></section>
@@ -146,7 +148,7 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
         <div class="acts"><button class="btn ice" id="pcAdd">Créer le code</button></div></div></section>
   </div>
   <div class="view" id="v-chiffres">
-    <div class="chips" id="chTabs"></div>
+    <div class="chips" id="chTabs" style="flex-wrap:wrap;overflow:visible"></div>
     <div class="chv" id="ch-apercu">
       <div class="chips perc"></div><div class="kpis" id="kpis2" style="margin-top:0"></div><p class="mute" id="kpiNote" style="margin-top:8px"></p>
       <section><h2>Ventes des 6 derniers mois</h2><div class="card bars" id="bars"></div></section>
@@ -168,7 +170,7 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
       <div class="savebar"><span class="grow" id="cState">Tout est enregistré</span><button class="btn sm" id="cSave">Enregistrer</button></div>
     </div>
     <div class="chv" id="ch-liasse">
-      <div class="card"><b>Liasse financière mensuelle</b>
+      <div class="card"><b>Rapport financier mensuel (liasse PDF)</b>
         <p class="mute" style="margin:6px 0 0">Un document PDF de plusieurs pages avec tous les chiffres du mois : synthèse, comparaison avec le mois précédent, compte de résultat simplifié, répartition des ventes, production, détail des commandes et des dépenses, montants à encaisser et coût de revient.</p>
         <label for="rMonth">Mois</label><select id="rMonth"></select>
         <div class="acts"><button class="btn ice" id="rGo">Télécharger le PDF</button></div>
@@ -280,7 +282,7 @@ function render(){
   $('#kpis').innerHTML=[[eur(ca),'Ventes ce mois'],[eur(marge),'Marge brute ce mois',ca?Math.round(marge/ca*100)+' % du chiffre d\'affaires':''],[stockT+' boîtes','En stock',(stockT-resT)+' libres après commandes'],[eur(due),'À encaisser']].map(k=>`<div class="kpi"><b>${esc(k[0])}</b><span>${k[1]}</span>${k[2]?'<small>'+esc(k[2])+'</small>':''}</div>`).join('');
   {const PER={mois:'Ce mois',trim:'3 derniers mois',annee:'Cette année',tout:'Depuis le début'};
    document.querySelectorAll('.perc').forEach(e=>e.innerHTML=Object.entries(PER).map(([k,l])=>`<button class="chip${S.per===k?' on':''}" data-per="${k}">${l}</button>`).join(''));
-   const CH={apercu:'Vue d\'ensemble',finances:'Finances',couts:'Coûts de revient',depenses:'Dépenses',liasse:'Liasse PDF'};
+   const CH={apercu:'Vue d\'ensemble',finances:'Finances',couts:'Coûts de revient',depenses:'Dépenses',liasse:'Rapport mensuel (PDF)'};
    $('#chTabs').innerHTML=Object.entries(CH).map(([k,l])=>`<button class="chip${S.ch===k?' on':''}" data-ch="${k}">${l}</button>`).join('');
    document.querySelectorAll('.chv').forEach(e=>e.classList.toggle('on',e.id==='ch-'+S.ch));
    const t=today(),y=t.slice(0,4),d90=new Date(Date.now()-91*864e5).toISOString().slice(0,10);
@@ -438,6 +440,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(d.editP)prodForm(prod(d.editP));
   else if(d.conv)openConv(d.conv);
   else if(d.cli)cliSheet(d.cli)});
+document.addEventListener('click',e=>{const a=e.target.closest('[data-goch]');if(a){S.ch=a.dataset.goch;if(location.hash==='#chiffres'){e.preventDefault();render()}}});
 $('#fab').onclick=$('#newOrd').onclick=()=>orderForm();
 $('#ordList').addEventListener('click',e=>{const r=e.target.closest('tr[data-row]');if(r)orderForm(S.orders.find(o=>String(o.id)===r.dataset.row))});$('#addProd').onclick=()=>prodForm();
 $('#ordSearch').oninput=render;try{const l=localStorage.getItem('ck_lead');if(l!==null)$('#lead').value=l}catch(e){}$('#lead').oninput=render;$('#cliSearch').oninput=render;
