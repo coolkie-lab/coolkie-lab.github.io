@@ -138,6 +138,16 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
       <p class="mute" style="margin:6px 0 0">Décoché : il faut se connecter ou créer un compte pour commander. Prend effet après « Publier ».</p>
       <label style="display:flex;gap:10px;align-items:center;margin:14px 0 0"><input id="promoOn" type="checkbox" style="width:24px;min-height:24px"> Autoriser les codes promo</label>
       <p class="mute" style="margin:6px 0 0">Décoché : la case « Code promo » disparaît du site et aucun code n'est accepté. Prend effet après « Publier ».</p></div></section>
+    <section><h2>Alertes WhatsApp</h2><div class="card" id="waBox">
+      <p class="mute" style="margin:0 0 10px">Reçois un message WhatsApp à chaque nouvelle commande en ligne (client, boîtes, total, point et jour de retrait). Gratuit via CallMeBot. Ces réglages restent privés : ils ne sont jamais publiés sur le site.</p>
+      <label style="display:flex;gap:10px;align-items:center;margin:0"><input id="waOn" type="checkbox" style="width:24px;min-height:24px"> Envoyer les alertes</label>
+      <div id="waList" style="margin-top:10px"></div>
+      <details style="margin:8px 0"><summary class="mute" style="cursor:pointer">Comment obtenir la clé (une fois par téléphone)</summary><ol class="mute" style="margin:6px 0 0;padding-left:20px">
+        <li>Ouvre <a href="https://www.callmebot.com/blog/free-api-whatsapp-messages/" target="_blank" rel="noopener">la page CallMeBot WhatsApp</a> et ajoute le numéro du bot indiqué dans tes contacts.</li>
+        <li>Depuis ton WhatsApp, envoie-lui : <b>I allow callmebot to send me messages</b></li>
+        <li>Le bot répond avec ton <b>apikey</b> (quelques chiffres). Colle-la ici avec ton numéro au format +32…</li></ol></details>
+      <div class="row"><button class="btn sm" id="waAdd">Ajouter une personne</button><span class="grow"></span><button class="btn sm" id="waTest">Envoyer un test</button><button class="btn sm" id="waSave">Enregistrer</button></div>
+      <p class="mute" id="waRes" style="margin:8px 0 0"></p></div></section>
     <section><h2>Bandeau d'annonce</h2><div class="card">
       <label style="display:flex;gap:10px;align-items:center;margin:0"><input id="bnOn" type="checkbox" style="width:24px;min-height:24px"> Afficher un bandeau en haut du site</label>
       <label for="bnText">Texte</label><input id="bnText" maxlength="140" placeholder="Nouveau site ! Commande en ligne, retrait à Uccle ou Woluwe">
@@ -798,7 +808,7 @@ const COLORS=[['primary','Couleur principale'],['ink','Texte et fonds foncés'],
 function dirty(v){D.dirty=v;$('#devState').textContent=v?'Modifications non publiées':'Tout est publié'}
 async function devOpen(){if(!D.site){const r=await q(sb.from('site_settings').select('data').eq('id','main').maybeSingle());D.site=Object.assign({texts:{},images:{},theme:{},banner:{}},r?.data||{});
   ['texts','images','theme','banner'].forEach(k=>D.site[k]=D.site[k]||{});devForm();dirty(false)}
-  loadPromos();if(!D.fields[D.page])loadFields(D.page);}
+  loadPromos();waLoad();if(!D.fields[D.page])loadFields(D.page);}
 function devForm(){const s=D.site,T={...CK_SITE.DEF,...s.theme};
   $('#guestOn').checked=s.guest!==false;$('#promoOn').checked=s.promo!==false;$('#bnOn').checked=!!s.banner.on;$('#bnText').value=s.banner.text||'';$('#bnTextNl').value=s.banner.text_nl||'';$('#bnTextEn').value=s.banner.text_en||'';$('#bnLink').value=s.banner.link||'';
   $('#thPresets').innerHTML=Object.entries(CK_SITE.PRESETS).map(([n,p])=>`<button class="chip" data-preset="${esc(n)}"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${esc(p.primary)};margin-right:6px;vertical-align:-1px"></span>${esc(n)}</button>`).join('');
@@ -854,6 +864,33 @@ async function promoAdd(){const code=val('pcCode').trim().toUpperCase(),v=num(va
   const d={code,type:val('pcType'),valeur:v,expire:val('pcExp')||null,max_uses:val('pcMax')?Math.round(num(val('pcMax'))):null};
   const{error}=await sb.from('promo_codes').insert(d);if(error)return toast(/duplicate/.test(error.message)?'Ce code existe déjà':'Erreur : '+error.message);
   ['pcCode','pcVal','pcExp','pcMax'].forEach(i=>$('#'+i).value='');toast('Code '+code+' créé');loadPromos()}
+// ---------- alertes WhatsApp (admin_settings id 'whatsapp', jamais public) ----------
+const W={cfg:null};
+async function waLoad(){const r=await q(sb.from('admin_settings').select('data').eq('id','whatsapp').maybeSingle());W.cfg=Object.assign({on:false,recipients:[]},r?.data||{});if(!W.cfg.recipients.length)W.cfg.recipients.push({nom:'',phone:'',apikey:'',on:true});waForm()}
+function waForm(){const c=W.cfg;$('#waOn').checked=!!c.on;
+  $('#waList').innerHTML=c.recipients.map((r,i)=>`<div class="row" style="margin-bottom:8px;align-items:flex-end"><label style="display:flex;gap:6px;align-items:center;margin:0 0 10px"><input type="checkbox" data-wa="on" data-i="${i}"${r.on!==false?' checked':''} style="width:22px;min-height:22px"></label>
+    <div style="flex:1 1 110px"><label>Prénom</label><input data-wa="nom" data-i="${i}" value="${esc(r.nom||'')}" placeholder="Dorsan" maxlength="30"></div>
+    <div style="flex:1 1 150px"><label>WhatsApp</label><input data-wa="phone" data-i="${i}" value="${esc(r.phone||'')}" placeholder="+32470123456" inputmode="tel" maxlength="20"></div>
+    <div style="flex:1 1 110px"><label>Apikey</label><input data-wa="apikey" data-i="${i}" value="${esc(r.apikey||'')}" placeholder="123456" maxlength="40" autocomplete="off"></div>
+    <button class="btn sm danger" data-wa-del="${i}" style="margin-bottom:10px" title="Retirer">✕</button></div>`).join('')}
+function waRead(){const c=W.cfg;c.on=$('#waOn').checked;$('#waList').querySelectorAll('[data-wa]').forEach(e=>{const r=c.recipients[+e.dataset.i];if(e.dataset.wa==='on')r.on=e.checked;else r[e.dataset.wa]=e.value.trim()});
+  c.recipients.forEach(r=>{r.phone=(r.phone||'').replace(/[^\d+]/g,'');if(/^00/.test(r.phone))r.phone='+'+r.phone.slice(2);if(/^0\d{8,9}$/.test(r.phone))r.phone='+32'+r.phone.slice(1)})}
+async function waSave(silent){waRead();const c=W.cfg;c.recipients=c.recipients.filter(r=>r.phone||r.apikey||r.nom);
+  const bad=c.recipients.find(r=>!/^\+\d{8,15}$/.test(r.phone)||!r.apikey);if(bad){waForm();toast('Numéro au format +32… et apikey obligatoires');return false}
+  const{error}=await sb.from('admin_settings').upsert({id:'whatsapp',data:c,updated_at:new Date().toISOString()});if(error){toast('Erreur : '+error.message);return false}
+  if(!c.recipients.length)c.recipients.push({nom:'',phone:'',apikey:'',on:true});waForm();if(!silent)toast(c.on?'Alertes WhatsApp activées':'Réglages enregistrés (alertes coupées)');return true}
+async function waTest(){const b=$('#waTest');if(!$('#waOn').checked)return toast('Coche « Envoyer les alertes » d\'abord');if(!await waSave(true))return;b.disabled=true;$('#waRes').textContent='Envoi en cours…';
+  const{data:ids,error}=await sb.rpc('whatsapp_test');if(error){b.disabled=false;$('#waRes').textContent='Erreur : '+error.message;return}
+  if(!ids?.length){b.disabled=false;$('#waRes').textContent='Aucun destinataire actif.';return}
+  let res=[];for(let k=0;k<8&&res.length<ids.length;k++){await new Promise(r=>setTimeout(r,2000));res=(await sb.rpc('whatsapp_status',{p_ids:ids})).data||[]}b.disabled=false;
+  const ok=res.filter(r=>r.code===200&&!/apikey|invalid|error/i.test(r.reponse||'')).length;
+  $('#waRes').textContent=res.length<ids.length?'Envoyé, CallMeBot n\'a pas encore répondu. Regarde ton WhatsApp.':ok===ids.length?'Test envoyé ✓ Regarde ton WhatsApp.':'Réponse de CallMeBot : '+res.map(r=>(r.reponse||'').replace(/\s+/g,' ').trim().slice(0,160)).join(' | ')}
+$('#waBox').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;e.stopPropagation();
+  if(b.id==='waAdd'){waRead();W.cfg.recipients.push({nom:'',phone:'',apikey:'',on:true});waForm()}
+  else if(b.dataset.waDel!==undefined){waRead();W.cfg.recipients.splice(+b.dataset.waDel,1);if(!W.cfg.recipients.length)W.cfg.recipients.push({nom:'',phone:'',apikey:'',on:true});waForm()}
+  else if(b.id==='waSave')waSave()
+  else if(b.id==='waTest')waTest()});
+$('#waBox').addEventListener('input',e=>e.stopPropagation());
 addEventListener('beforeunload',e=>{if(D.dirty){e.preventDefault();e.returnValue=''}});
 
 // ---------- connexion ----------
