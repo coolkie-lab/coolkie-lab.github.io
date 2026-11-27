@@ -193,18 +193,21 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
         <p class="mute" style="margin:10px 0 0">La fenêtre d'impression s'ouvre : choisis « Enregistrer au format PDF » (sur iPhone : Partager › Enregistrer dans Fichiers).</p></div>
     </div>
     <div class="chv" id="ch-budget">
+      <div class="chips" id="bVer" style="flex-wrap:wrap"></div><div class="card" id="bWarn" style="margin-bottom:10px;border-color:var(--warn)" hidden></div>
       <p class="mute" style="margin:0 0 10px" id="bIntro"></p>
       <div class="kpis" id="kpisB" style="margin-top:0"></div>
       <div class="card" style="margin-top:12px"><b id="bProgT"></b><div class="prog"><i id="bProg"></i></div><span class="mute" id="bProgS"></span></div>
       <section><h2>Réalisé vs budget <small id="bvNote"></small></h2><div class="chips" id="bvTabs"></div><div id="bView"></div></section>
+      <section><h2>Comparer les versions</h2><div id="bCmp"></div></section>
       <section><h2>Hypothèses</h2><div class="card">
+        <label for="bNom">Nom de la version</label><input id="bNom" maxlength="40">
         <div class="two"><div><label for="bYear">Année</label><input id="bYear" inputmode="numeric"></div><div><label for="bCa">Objectif de chiffre d'affaires (€)</label><input id="bCa" inputmode="decimal"></div></div>
         <div class="two"><div><label for="bPrix">Prix moyen par boîte (€)</label><input id="bPrix" inputmode="decimal"></div><div><label for="bAss">Nombre d'associés</label><input id="bAss" inputmode="numeric"></div></div>
         <div class="two"><div><label for="bH">Heures de travail par an (tous associés)</label><input id="bH" inputmode="numeric"></div><div><label for="bHb">Heures par batch de 100 coolkies (tous associés)</label><input id="bHb" inputmode="decimal"></div></div>
         <p class="mute" style="margin:8px 0 0" id="bPrixNote"></p></div></section>
       <section><h2>Saisonnalité <small id="bSeaSum"></small></h2><div class="card"><p class="mute" style="margin:0 0 8px">Part du chiffre d'affaires de l'année faite chaque mois, en %. Le total est ramené à 100 % automatiquement.</p><div class="sea" id="bSea"></div></div></section>
       <section><h2>Charges prévues <small>hors ingrédients et packaging des boîtes, calculés selon les ventes</small></h2><div id="bLines"></div><button class="btn sm" id="bAdd">+ Charge</button></section>
-      <div class="acts" style="margin-top:14px"><button class="btn" id="bPdf">Télécharger le budget en PDF</button><button class="btn sm" id="bReset">Revenir au budget proposé</button></div>
+      <div class="acts" style="margin-top:14px"><button class="btn" id="bPdf">Télécharger le budget en PDF</button><button class="btn sm" id="bReset">Revenir à la version proposée</button></div>
       <div class="savebar"><span class="grow" id="bState">Tout est enregistré</span><button class="btn sm" id="bSave">Enregistrer</button></div>
     </div>
     <div class="chv" id="ch-depenses">
@@ -287,7 +290,7 @@ async function load(t){
   if(!t||t==='plists'){S.plists=await q(sb.from('price_lists').select('*').order('nom'))||S.plists;S.plItems=await q(sb.from('price_list_items').select('*'))||S.plItems}
   if(!t||t==='depenses')S.depenses=await q(sb.from('depenses').select('*').order('date',{ascending:false}))||S.depenses;
   if(!t||t==='costs'){const r=await q(sb.from('admin_settings').select('data').eq('id','costs').maybeSingle());if(r!==null||!S.costs)S.costs=JSON.parse(JSON.stringify(r?.data||{batch_cookies:24,cookies_per_box:4,items:[]}));S.cDirty=false}
-  if(!t||t==='budget'){const r=await q(sb.from('admin_settings').select('data').eq('id','budget').maybeSingle());if(r!==null||!S.budget){S.bSaved=!!(r?.data?.lignes);S.budget=S.bSaved?JSON.parse(JSON.stringify(r.data)):budgetDefault()}S.bDirty=false}
+  if(!t||t==='budget'){const r=await q(sb.from('admin_settings').select('data').eq('id','budget').maybeSingle());if(r!==null||!S.budget){const d=r?.data?JSON.parse(JSON.stringify(r.data)):null;S.bSaved=!!(d?.versions||d?.lignes);S.budgets=d?.versions?d:d?.lignes?{active:0,versions:[Object.assign({nom:'Version '+eur(d.ca).replace(',00','')},d),budgetDefault(1)]}:{active:0,versions:[budgetDefault(0),budgetDefault(1)]};budSet()}S.bDirty=false}
   if(!t||t==='production')S.production=await q(sb.from('production').select('*').order('created_at',{ascending:false}).limit(20))||S.production;
   render();if(S.conv)renderConv()}
 const prod=id=>S.products.find(p=>p.id===id);
@@ -593,7 +596,7 @@ $('#ch-depenses').addEventListener('click',async e=>{const b=e.target.closest('b
 const MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 const MC=['Janv.','Févr.','Mars','Avr.','Mai','Juin','Juil.','Août','Sept.','Oct.','Nov.','Déc.'];
 const QUAND={mensuel:'Chaque mois',trim:'Chaque trimestre',ventes:'Selon les ventes',...Object.fromEntries(MOIS.map((m,i)=>['m'+(i+1),'En '+m]))};
-function budgetDefault(){return{year:2027,ca:10000,prix:0,associes:2,heures:416,h_batch:8,
+function budgetDefault(v){const big=v===1,d={nom:big?'Version 25 000 €':'Version 10 000 €',year:2027,ca:big?25000:10000,prix:0,associes:2,heures:big?800:416,h_batch:8,
   saison:[6,8,7,8,8,8,5,5,8,8,11,18],
   lignes:[
     {nom:'Inscription à la BCE (guichet d\'entreprises)',cat:'admin',montant:111.5,quand:'m1'},
@@ -604,9 +607,11 @@ function budgetDefault(){return{year:2027,ca:10000,prix:0,associes:2,heures:416,
     {nom:'Congélateur (500 €, amorti sur 5 ans)',cat:'materiel',montant:100,quand:'m1'},
     {nom:'Petit électroménager et matériel',cat:'materiel',montant:250,quand:'m1'},
     {nom:'Part professionnelle de frais existants',cat:'autre',montant:400,quand:'mensuel'},
-    {nom:'Marketing (flyers, stickers, Instagram)',cat:'marketing',montant:300,quand:'ventes'},
-    {nom:'Échantillons et dégustations',cat:'ingredients',montant:150,quand:'ventes'},
-    {nom:'Nom de domaine coolkie-lab.be',cat:'frais',montant:27,quand:'m11'}]}}
+    {nom:'Marketing (flyers, stickers, Instagram)',cat:'marketing',montant:big?600:300,quand:'ventes'},
+    {nom:'Échantillons et dégustations',cat:'ingredients',montant:big?300:150,quand:'ventes'},
+    {nom:'Nom de domaine coolkie-lab.be',cat:'frais',montant:27,quand:'m11'}]};
+  if(big)d.lignes.splice(4,0,{nom:'Provision pour régularisation des cotisations (revenu au-dessus du minimum)',cat:'cotisations',montant:2200,quand:'m12'});return d}
+function budSet(){const B=S.budgets;B.active=Math.min(Math.max(0,+B.active||0),B.versions.length-1);S.budget=B.versions[B.active]}
 const budH=b=>Math.max(1,+(b||S.budget)?.heures||416);
 const budHP=(b,bx)=>bx*Math.max(1,+(S.costs?.cookies_per_box)||4)/100*(+(b||S.budget)?.h_batch||8);
 const curPrice=()=>+(S.products.find(p=>p.actif)?.prix)||0;
@@ -644,27 +649,33 @@ function budPLTable(p,lb,lr,cls){const pc=(r,b)=>b?Math.round(r/b*100)+' %':'–
     ${p.cats.map(c=>row(esc(c[0]),c[1],c[2],1)).join('')}${row('<b>Total des charges</b>',p.ch[0],p.ch[1],1,1)}${row('<b>Résultat</b> (CA − charges)',p.res[0],p.res[1],0,1)}</tbody></table></div>`}
 function budIdx(from,to,real){const b=S.budget;if(!b)return[];const y=String(b.year),t=today().slice(0,7);
   return MOIS.map((_,i)=>i).filter(i=>{const m=y+'-'+String(i+1).padStart(2,'0');return m>=from.slice(0,7)&&m<=to.slice(0,7)&&(!real||m<=t)})}
-function renderBudget(){const b=S.budget;if(!b||!$('#kpisB'))return;const B=budCalc(),R=budReal(b.year),y=b.year,ass=Math.max(1,+b.associes||1);
+function budCmpTable(cls){const V=S.budgets.versions,C=V.map(v=>({v,B:budCalc(v)})),ass=v=>Math.max(1,+v.associes||1);
+  const rows=[['Chiffre d\'affaires',x=>eur(x.B.ca)],['Boîtes à vendre',x=>Math.round(x.B.bx)+' ('+Math.round(x.B.bx/12)+' par mois)'],['Batchs de 100 coolkies',x=>Math.ceil(x.B.bx*Math.max(1,+(S.costs?.cookies_per_box)||4)/100)],['Heures de production',x=>Math.round(budHP(x.v,x.B.bx))+' h'],['Heures de travail au total',x=>budH(x.v)+' h'],['Charges',x=>eur(x.B.ch)],['Résultat',x=>eur(x.B.res)],['Par associé',x=>eur(x.B.res/ass(x.v))],['Par heure de travail',x=>eur(x.B.res/budH(x.v))]];
+  return `<div style="overflow-x:auto;border-radius:16px"><table class="${cls||'tbl'}"><thead><tr><th></th>${C.map((x,i)=>`<th class="r">${esc(x.v.nom||'Version '+(i+1))}${i===S.budgets.active?' (suivie)':''}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><td>${r[0]}</td>${C.map(x=>`<td class="r">${r[1](x)}</td>`).join('')}</tr>`).join('')}</tbody></table></div><p class="mute" style="margin:6px 0 0">Résultat avant impôt sur le revenu, après cotisations sociales prévues.</p>`}
+function renderBudget(){const b=S.budget;if(!b||!$('#kpisB'))return;
+  $('#bVer').innerHTML=S.budgets.versions.map((v,i)=>`<button class="chip${i===S.budgets.active?' on':''}" data-ver="${i}">${esc(v.nom||'Version '+(i+1))}${i===S.budgets.active?' · suivie':''}</button>`).join('')+`<button class="chip" data-ver="add">+ Copier cette version</button>`+(S.budgets.versions.length>1?`<button class="chip" data-ver="del">Supprimer</button>`:'');
+  $('#bWarn').hidden=!(+b.ca>=22000);$('#bWarn').innerHTML=`<b>TVA</b><br><span class="mute">Avec ${eur(b.ca)} de chiffre d'affaires, vous êtes au plafond de la franchise de TVA (25 000 € par an aujourd'hui ; le passage à 26 000 € en 2027 est voté mais pas encore confirmé). Au-delà, il faut facturer la TVA (6 % sur l'alimentation) dès le dépassement.</span>`;const B=budCalc(),R=budReal(b.year),y=b.year,ass=Math.max(1,+b.associes||1);
   const nPast=R.filter(r=>r.past).length,caR=R.reduce((a,r)=>a+(r.past?r.ca:0),0),caAd=B.M.reduce((a,m,i)=>a+(R[i].past?m.ca:0),0),resR=R.reduce((a,r)=>a+(r.past?r.res:0),0),resAd=B.M.reduce((a,m,i)=>a+(R[i].past?m.res:0),0);
-  $('#bIntro').textContent=(S.bSaved?'Budget '+y+' enregistré.':'Budget '+y+' proposé, pas encore enregistré : vérifie les hypothèses plus bas puis enregistre.')+' Le réel vient des commandes (date de retrait, hors annulées) et des dépenses notées.';
+  $('#bIntro').textContent=(S.bSaved?'Budget '+y+' enregistré.':'Budget '+y+' proposé, pas encore enregistré : vérifie les hypothèses plus bas puis enregistre.')+' La version suivie sert au réalisé vs budget partout (ici, dans Finances et dans la liasse PDF). Le réel vient des commandes (date de retrait, hors annulées) et des dépenses notées.';
   $('#kpisB').innerHTML=[[eur(B.ca),'Objectif de CA '+y,Math.round(B.bx)+' boîtes à '+eur(B.prix)+', soit '+Math.round(B.bx/12)+' par mois','hl'],[eur(B.ch),'Charges prévues',eur(B.cogs)+' d\'ingrédients et packaging'],[eur(B.res),'Résultat prévu',ass>1?eur(B.res/ass)+' par associé':pct(B.res,B.ca)+' du CA'],[eur(B.res/budH(b)),'Par heure de travail',budH(b)+' h par an, dont '+Math.round(budHP(b,B.bx))+' h de production · '+eur(B.res/Math.max(1,budHP(b,B.bx)))+' par heure de production']]
     .map(k=>`<div class="kpi${k[3]?' '+k[3]:''}"><b>${esc(k[0])}</b><span>${esc(k[1])}</span>${k[2]?'<small>'+esc(k[2])+'</small>':''}</div>`).join('');
   $('#bProgT').textContent=eur(caR)+' réalisés sur '+eur(B.ca);$('#bProg').style.width=Math.min(100,B.ca?caR/B.ca*100:0).toFixed(1)+'%';
   $('#bProgS').textContent=nPast?pct(caR,B.ca)+' de l\'objectif, '+pct(caR,caAd)+' du budget prévu à fin '+MOIS[nPast-1]+' (écart '+sgn(caR-caAd)+', résultat réel '+eur(resR)+' pour '+eur(resAd)+' prévus).':'Rien de vendu en '+y+' pour l\'instant.';
   const all=B.M.map((_,i)=>i),done=all.filter(i=>R[i].past),BV={mois:'Mois par mois',annee:'Année complète',ytd:'Depuis janvier'};
+  $('#bCmp').innerHTML=budCmpTable();
   $('#bvTabs').innerHTML=Object.entries(BV).map(([k,l])=>`<button class="chip${S.bv===k?' on':''}" data-bv="${k}">${l}</button>`).join('');
   $('#bvNote').textContent=S.bv==='mois'?'CA, charges et résultat':S.bv==='annee'?'budget des 12 mois et réalisé à ce jour':done.length?'janvier à '+MOIS[done.length-1]+' '+y:'pas encore commencé';
   $('#bView').innerHTML=S.bv==='mois'?budMonthsTable(B,R):S.bv==='annee'?budPLTable(budPL(B,R,all,done),'Budget '+y,'Réalisé à date'):budPLTable(budPL(B,R,done,done),'Budget à date','Réalisé à date');
   const cp=curPrice();$('#bPrixNote').textContent=(+b.prix?'Prix fixé à la main.':'Laisse vide pour prendre le prix actuel de la boutique'+(cp?' ('+eur(cp)+')':'')+'.')+' Coût de revient actuel : '+eur(B.box)+' par boîte (Coûts de revient).';
   const st=b.saison.reduce((a,x)=>a+(+x||0),0);$('#bSeaSum').textContent='total '+Math.round(st)+' %';
   bDirty(S.bDirty);if(S.bDirty)return;
-  $('#bYear').value=b.year;$('#bCa').value=b.ca;$('#bPrix').value=+b.prix||'';$('#bPrix').placeholder=cp?String(cp).replace('.',','):'14';$('#bAss').value=b.associes||1;$('#bH').value=budH(b);$('#bHb').value=+b.h_batch||8;
+  $('#bNom').value=b.nom||'';$('#bYear').value=b.year;$('#bCa').value=b.ca;$('#bPrix').value=+b.prix||'';$('#bPrix').placeholder=cp?String(cp).replace('.',','):'14';$('#bAss').value=b.associes||1;$('#bH').value=budH(b);$('#bHb').value=+b.h_batch||8;
   $('#bSea').innerHTML=b.saison.map((x,i)=>`<div><label for="bs${i}">${MC[i]}</label><input id="bs${i}" data-bs="${i}" inputmode="decimal" value="${esc(x)}"></div>`).join('');
   const opt=(o,v)=>Object.entries(o).map(([k,l])=>`<option value="${k}"${k===v?' selected':''}>${esc(l)}</option>`).join('');
   $('#bLines').innerHTML=`<div class="bl h"><span class="nm">Charge</span><span>Poste</span><span>Montant / an</span><span>Quand</span><span></span></div>`+b.lignes.map((l,i)=>`<div class="bl"><input class="nm" data-bi="${i}" data-bf="nom" value="${esc(l.nom)}" aria-label="Charge"><select data-bi="${i}" data-bf="cat" aria-label="Poste">${opt(CATS,l.cat)}</select><input data-bi="${i}" data-bf="montant" inputmode="decimal" value="${esc(l.montant)}" aria-label="Montant par an"><select data-bi="${i}" data-bf="quand" aria-label="Quand">${opt(QUAND,l.quand)}</select><button data-bdel="${i}" aria-label="Supprimer">×</button></div>`).join('')}
 function bDirty(v){S.bDirty=v;$('#bState').textContent=v?'Modifications non enregistrées':(S.bSaved?'Tout est enregistré':'Budget proposé, pas encore enregistré')}
 const bEdit=e=>{const t=e.target,b=S.budget;if(!b||!t.closest('#ch-budget')||t.closest('.savebar'))return;
-  if(t.id==='bYear')b.year=Math.round(num(t.value))||b.year;else if(t.id==='bCa')b.ca=num(t.value);else if(t.id==='bPrix')b.prix=num(t.value);else if(t.id==='bAss')b.associes=Math.max(1,Math.round(num(t.value)));else if(t.id==='bH')b.heures=Math.max(1,Math.round(num(t.value)));else if(t.id==='bHb')b.h_batch=num(t.value);
+  if(t.id==='bNom'){b.nom=t.value;if(e.type==='change')$('#bVer').querySelectorAll('.chip')[S.budgets.active].textContent=b.nom+' · suivie'}else if(t.id==='bYear')b.year=Math.round(num(t.value))||b.year;else if(t.id==='bCa')b.ca=num(t.value);else if(t.id==='bPrix')b.prix=num(t.value);else if(t.id==='bAss')b.associes=Math.max(1,Math.round(num(t.value)));else if(t.id==='bH')b.heures=Math.max(1,Math.round(num(t.value)));else if(t.id==='bHb')b.h_batch=num(t.value);
   else if(t.dataset.bs!==undefined)b.saison[+t.dataset.bs]=num(t.value);
   else if(t.dataset.bi!==undefined){const l=b.lignes[+t.dataset.bi];l[t.dataset.bf]=['nom','cat','quand'].includes(t.dataset.bf)?t.value:num(t.value)}else return;
   bDirty(true);renderBudget()};
@@ -672,12 +683,13 @@ $('#ch-budget').addEventListener('input',bEdit);$('#ch-budget').addEventListener
 $('#ch-budget').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b||!S.budget)return;
   if(b.id==='bAdd'){S.budget.lignes.push({nom:'',cat:'autre',montant:0,quand:'mensuel'});S.bDirty=false;renderBudget();bDirty(true)}
   else if(b.dataset.bdel){if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='?';return}S.budget.lignes.splice(+b.dataset.bdel,1);S.bDirty=false;renderBudget();bDirty(true)}
-  else if(b.id==='bReset'){if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Sûr ? Les hypothèses actuelles seront remplacées';return}S.budget=budgetDefault();S.bDirty=false;renderBudget();bDirty(true);b.dataset.sure='';b.textContent='Revenir au budget proposé'}
+  else if(b.id==='bReset'){if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Sûr ? Les hypothèses actuelles seront remplacées';return}S.budgets.versions[S.budgets.active]=budgetDefault(S.budget.ca>=20000?1:0);budSet();S.bDirty=false;renderBudget();bDirty(true);b.dataset.sure='';b.textContent='Revenir à la version proposée'}
   else if(b.id==='bSave'){S.budget.lignes=S.budget.lignes.filter(l=>l.nom.trim()||+l.montant);b.disabled=true;
-    const{error}=await sb.from('admin_settings').upsert({id:'budget',data:S.budget,updated_at:new Date().toISOString()});b.disabled=false;
-    if(error)return toast('Erreur : '+error.message);S.bSaved=true;S.bDirty=false;bDirty(false);renderBudget();toast('Budget '+S.budget.year+' enregistré')}
+    const{error}=await sb.from('admin_settings').upsert({id:'budget',data:S.budgets,updated_at:new Date().toISOString()});b.disabled=false;
+    if(error)return toast('Erreur : '+error.message);S.bSaved=true;S.bDirty=false;bDirty(false);renderBudget();toast('Budget enregistré · '+S.budget.nom+' suivie')}
+  else if(b.dataset.ver!==undefined){if(b.dataset.ver==='add'){const c=JSON.parse(JSON.stringify(S.budget));c.nom='Version '+(S.budgets.versions.length+1);S.budgets.versions.push(c);S.budgets.active=S.budgets.versions.length-1}else if(b.dataset.ver==='del'){if(S.budgets.versions.length<2)return;if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Supprimer cette version ?';return}S.budgets.versions.splice(S.budgets.active,1);S.budgets.active=0}else S.budgets.active=+b.dataset.ver;budSet();S.bDirty=false;renderBudget();bDirty(true)}
   else if(b.dataset.bv){S.bv=b.dataset.bv;renderBudget()}
-  else if(b.id==='bPdf'){printDoc(budgetDoc(),'Coolkie - Budget '+S.budget.year)}});
+  else if(b.id==='bPdf'){printDoc(budgetDoc(),'Coolkie - Budget '+S.budget.year+' - '+(S.budget.nom||''))}});
 addEventListener('beforeunload',e=>{if(S.bDirty||S.cDirty){e.preventDefault();e.returnValue=''}});
 function budReportSection(P,n){const b=S.budget;if(!b)return'';const bI=budIdx(P.from,P.to),rI=budIdx(P.from,P.to,true);if(!bI.length)return`<h2>${n}Réalisé vs budget</h2><p class="rp-m">Pas de budget pour cette période : le budget enregistré porte sur ${b.year} (Chiffres › Budget).</p>`;
   const B=budCalc(),R=budReal(b.year),y=b.year,h3=t=>`<h3 style="font-size:11pt;margin:10px 0 6px">${t}</h3>`,full=P.type==='annee'&&rI.length<bI.length;
@@ -688,9 +700,10 @@ function budReportSection(P,n){const b=S.budget;if(!b)return'';const bI=budIdx(P
   if(ytd.length&&ytd.join()!==bI.join())h+=h3('Depuis janvier '+y)+budPLTable(budPL(B,R,ytd,ytd),'Budget à date','Réalisé à date','sm');
   return h+`<p class="rp-m">Le réalisé reprend le chiffre d'affaires des commandes (date de retrait) et les dépenses notées, rangés par poste comme dans le budget. Avancement sur l'objectif annuel : ${pct(R.reduce((a,r)=>a+(r.past?r.ca:0),0),B.ca)}.</p>`}
 function budgetDoc(){const b=S.budget,B=budCalc(),R=budReal(b.year),ass=Math.max(1,+b.associes||1);
-  return `<div class="rp-h"><div><h1>Budget ${b.year}</h1><p>Coolkie Lab · objectif ${eur(B.ca)} de chiffre d'affaires</p></div><img src="img/coolkie-logo.jpg" alt=""></div>
+  return `<div class="rp-h"><div><h1>Budget ${b.year}</h1><p>Coolkie Lab · ${esc(b.nom||'')} · objectif ${eur(B.ca)} de chiffre d'affaires</p></div><img src="img/coolkie-logo.jpg" alt=""></div>
   <p class="rp-m">Généré le ${esc(new Date().toLocaleDateString('fr-BE',{day:'numeric',month:'long',year:'numeric'}))}${S.bSaved?'':' (budget proposé, pas encore enregistré)'}.</p>
   <h2>1. Synthèse</h2><div class="rp-k">${[[eur(B.ca),'Chiffre d\'affaires visé'],[Math.round(B.bx)+' boîtes','à '+eur(B.prix)+' · '+Math.round(B.bx/12)+' par mois'],[eur(B.ch),'Charges prévues'],[eur(B.res),'Résultat prévu'+(ass>1?' · '+eur(B.res/ass)+' par associé':'')],[eur(B.res/budH(b))+' / h','Pour '+budH(b)+' h de travail par an'],[Math.round(budH(b)*60/Math.max(1,B.bx))+' min','de travail par boîte'],[pct(B.prix-B.box,B.prix),'Marge brute par boîte · '+eur(B.prix-B.box)],[eur((B.prix-B.box)*60/Math.max(1,budH(b)*60/Math.max(1,B.bx))),'Marge brute par heure']].map(x=>`<div><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div>`).join('')}</div>
+  ${S.budgets.versions.length>1?'<h3 style="font-size:11pt;margin:10px 0 6px">Comparaison des versions</h3>'+budCmpTable('sm'):''}${+b.ca>=22000?'<p class="rp-m"><b>TVA :</b> ce chiffre d\'affaires est au plafond de la franchise de TVA (25 000 € par an aujourd\'hui, 26 000 € en 2027 si la hausse votée entre en vigueur).</p>':''}
   <h2>2. Mois par mois</h2>${budMonthsTable(B,R,null,null,'sm')}
   <h2>3. Réalisé vs budget</h2><h3 style="font-size:11pt;margin:6px 0">Année complète</h3>${budPLTable(budPL(B,R,B.M.map((_,i)=>i),R.map((r,i)=>r.past?i:-1).filter(i=>i>=0)),'Budget '+b.year,'Réalisé à date','sm')}<h3 style="font-size:11pt;margin:10px 0 6px">Depuis janvier</h3>${(()=>{const d=R.map((r,i)=>r.past?i:-1).filter(i=>i>=0);return budPLTable(budPL(B,R,d,d),'Budget à date','Réalisé à date','sm')})()}
   <h2>4. Charges prévues</h2><table class="sm"><thead><tr><th>Charge</th><th>Poste</th><th>Quand</th><th class="r">Montant / an</th></tr></thead><tbody>
