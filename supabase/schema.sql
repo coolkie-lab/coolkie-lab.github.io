@@ -631,88 +631,69 @@ revoke execute on function public.place_order(jsonb,text,date,text,text) from pu
 grant execute on function public.place_order(jsonb,text,date,text,text) to authenticated;
 select 'ok' as v9;
 
--- v10 : alerte WhatsApp (CallMeBot) à chaque nouvelle commande en ligne
--- Réglages dans admin_settings id 'whatsapp' (lisible par les admins seulement) :
---   {"on": true, "recipients": [{"nom": "Dorsan", "phone": "+32470…", "apikey": "123456", "on": true}]}
--- L'envoi part du serveur (pg_net) après l'enregistrement de la commande : la clé n'est jamais dans le site.
+
+-- v11 : notifications push (remplace l'alerte WhatsApp/CallMeBot, v10 retirée)
+-- Chaque admin active les notifications sur son téléphone dans gestion > Mode dev.
+-- L'envoi est fait par la fonction Supabase « push-commande » (supabase/functions/push-commande).
+drop trigger if exists orders_whatsapp on public.orders;
+drop function if exists public.notify_whatsapp_order();
+drop function if exists public.whatsapp_test();
+drop function if exists public.whatsapp_status(bigint[]);
+drop function if exists public.whatsapp_send(text);
+drop function if exists public.whatsapp_order_text(public.orders);
+delete from public.admin_settings where id = 'whatsapp';
 create extension if not exists pg_net;
 
-create or replace function public.whatsapp_order_text(o public.orders) returns text
-language plpgsql stable security definer set search_path = public as $$
-declare
-  v_l text := ''; l jsonb; v_pt text;
-  v_j text[] := array['lun.','mar.','mer.','jeu.','ven.','sam.','dim.'];
-  m text;
-begin
-  for l in select * from jsonb_array_elements(coalesce(o.lignes,'[]')) loop
-    v_l := v_l || E'\n• ' || coalesce(l->>'qte','?') || ' × ' || coalesce(l->>'nom','?');
-  end loop;
-  v_pt := case o.point when 'uccle' then 'Uccle (Churchill)' when 'woluwe' then 'Woluwe (Georges-Henri)' else initcap(o.point) end;
-  m := '🍪 Nouvelle commande #' || o.id
-    || E'\nClient : ' || coalesce(nullif(o.client_nom,''),'?')
-    || coalesce(' · ' || nullif(o.client_tel,''), '')
-    || case when o.user_id is null then ' (sans compte)' else '' end
-    || v_l
-    || E'\nTotal : ' || replace(to_char(o.total,'FM999990.00'),'.',',') || ' €'
-    || coalesce(' (code ' || o.promo_code || ' −' || replace(to_char(o.remise,'FM999990.00'),'.',',') || ' €)', '')
-    || E'\nRetrait : ' || v_pt || ', ' || v_j[extract(isodow from o.date_retrait)::int] || ' ' || to_char(o.date_retrait,'DD/MM')
-    || case when coalesce(o.prochain_batch,0) > 0 then E'\n⚠️ ' || o.prochain_batch || ' boîte(s) pour le prochain batch' else '' end
-    || coalesce(E'\nNote : ' || left(nullif(trim(o.notes),''), 200), '');
-  return m;
-end $$;
-revoke all on function public.whatsapp_order_text(public.orders) from public, anon, authenticated;
+-- un abonnement par appareil (téléphone, ordi) ; chaque admin ne voit que les siens
+create table if not exists public.push_subscriptions (
+  endpoint text primary key,
+  user_id uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  p256dh text not null,
+  auth text not null,
+  appareil text not null default '',
+  created_at timestamptz not null default now()
+);
+alter table public.push_subscriptions enable row level security;
+drop policy if exists ps_own on public.push_subscriptions;
+create policy ps_own on public.push_subscriptions for all
+  using (user_id = auth.uid() and public.is_admin()) with check (user_id = auth.uid() and public.is_admin());
+revoke all on public.push_subscriptions from anon;
+grant select, insert, update, delete on public.push_subscriptions to authenticated;
 
--- envoie un texte à tous les destinataires actifs ; renvoie les numéros de requête pg_net
-create or replace function public.whatsapp_send(p_text text) returns bigint[]
-language plpgsql security definer set search_path = public as $$
-declare cfg jsonb; r jsonb; ids bigint[] := '{}';
-begin
-  select data into cfg from admin_settings where id = 'whatsapp';
-  if cfg is null or coalesce(cfg->>'on','false') <> 'true' then return ids; end if;
-  for r in select * from jsonb_array_elements(coalesce(cfg->'recipients','[]')) loop
-    if coalesce(r->>'on','true') = 'true' and coalesce(r->>'phone','') <> '' and coalesce(r->>'apikey','') <> '' then
-      ids := ids || net.http_get(
-        url := 'https://api.callmebot.com/whatsapp.php',
-        params := jsonb_build_object('phone', r->>'phone', 'text', p_text, 'apikey', r->>'apikey'),
-        timeout_milliseconds := 15000);
-    end if;
-  end loop;
-  return ids;
-end $$;
-revoke all on function public.whatsapp_send(text) from public, anon, authenticated;
+-- clés VAPID créées par la fonction au premier appel ; aucun accès depuis le site
+create table if not exists public.push_keys (
+  id int primary key default 1 check (id = 1),
+  public_key text not null,
+  private_key text not null
+);
+alter table public.push_keys enable row level security;
+revoke all on public.push_keys from anon, authenticated;
 
-create or replace function public.notify_whatsapp_order() returns trigger
+alter table public.orders add column if not exists push_envoye boolean not null default false;
+
+create or replace function public.notify_push_order() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
   if new.source = 'en_ligne' then
     begin
-      perform public.whatsapp_send(public.whatsapp_order_text(new));
-    exception when others then null; -- une alerte ratée ne doit jamais bloquer une commande
+      perform net.http_post(
+        url := 'https://hkzcpiangfxpkunmjzse.supabase.co/functions/v1/push-commande',
+        body := jsonb_build_object('order_id', new.id),
+        headers := jsonb_build_object('Content-Type', 'application/json',
+          'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhremNwaWFuZ2Z4cGt1bm1qenNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU2OTYyMjUsImV4cCI6MjExMTI3MjIyNX0.NX-NRUwvYPmcK6jUCncqHTtxJ84umj5VUpSO-hukkwM'),
+        timeout_milliseconds := 10000);
+    exception when others then null; -- une notification ratée ne doit jamais bloquer une commande
     end;
   end if;
   return new;
 end $$;
-drop trigger if exists orders_whatsapp on public.orders;
-create trigger orders_whatsapp after insert on public.orders for each row execute function public.notify_whatsapp_order();
-
--- bouton « Envoyer un test » dans gestion (admins seulement)
-create or replace function public.whatsapp_test() returns bigint[]
-language plpgsql security definer set search_path = public as $$
-begin
-  if not public.is_admin() then raise exception 'Réservé aux admins'; end if;
-  return public.whatsapp_send('🍪 Test Coolkie : les alertes WhatsApp des nouvelles commandes fonctionnent.');
-end $$;
-revoke all on function public.whatsapp_test() from public, anon;
-grant execute on function public.whatsapp_test() to authenticated;
-
--- résultat des envois (pour voir si CallMeBot a accepté la clé)
-create or replace function public.whatsapp_status(p_ids bigint[]) returns table(id bigint, code integer, reponse text)
-language plpgsql stable security definer set search_path = public as $$
-begin
-  if not public.is_admin() then raise exception 'Réservé aux admins'; end if;
-  return query select r.id, r.status_code, left(coalesce(r.error_msg, regexp_replace(r.content, '<[^>]*>', ' ', 'g')), 300)
-    from net._http_response r where r.id = any(p_ids);
-end $$;
-revoke all on function public.whatsapp_status(bigint[]) from public, anon;
-grant execute on function public.whatsapp_status(bigint[]) to authenticated;
-select 'ok' as v10;
+drop trigger if exists orders_push on public.orders;
+create trigger orders_push after insert on public.orders for each row execute function public.notify_push_order();
+-- la fonction push-commande lit avec la clé service_role : droits minimum (le projet n'en donne aucun par défaut)
+grant select, insert on public.push_keys to service_role;
+grant select, delete on public.push_subscriptions to service_role;
+grant select (id, is_admin) on public.profiles to service_role;
+grant select (id, lignes, total, point, date_retrait, user_id, source, created_at, push_envoye) on public.orders to service_role;
+grant update (push_envoye) on public.orders to service_role;
+notify pgrst, 'reload schema';
+select 'ok' as v11;
