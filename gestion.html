@@ -187,7 +187,7 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
     </div>
     <div class="chv" id="ch-liasse">
       <div class="card"><b>Rapport financier (liasse PDF)</b>
-        <p class="mute" style="margin:6px 0 0">Un document PDF de plusieurs pages avec tous les chiffres du mois : synthèse, comparaison avec le mois précédent, compte de résultat simplifié, répartition des ventes, production, détail des commandes et des dépenses, montants à encaisser et coût de revient.</p>
+        <p class="mute" style="margin:6px 0 0">Un document PDF de plusieurs pages avec tous les chiffres du mois : synthèse, comparaison avec le mois précédent, compte de résultat simplifié, réalisé vs budget, répartition des ventes, production, détail des commandes et des dépenses, montants à encaisser et coût de revient.</p>
         <div class="two"><div><label for="rType">Période</label><select id="rType"><option value="mois">Mensuel</option><option value="trim">Trimestriel</option><option value="annee">Annuel</option><option value="ytd">Year to date</option></select></div><div><label for="rMonth">Choix</label><select id="rMonth"></select></div></div>
         <div class="acts"><button class="btn ice" id="rGo">Télécharger le PDF</button></div>
         <p class="mute" style="margin:10px 0 0">La fenêtre d'impression s'ouvre : choisis « Enregistrer au format PDF » (sur iPhone : Partager › Enregistrer dans Fichiers).</p></div>
@@ -196,8 +196,7 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
       <p class="mute" style="margin:0 0 10px" id="bIntro"></p>
       <div class="kpis" id="kpisB" style="margin-top:0"></div>
       <div class="card" style="margin-top:12px"><b id="bProgT"></b><div class="prog"><i id="bProg"></i></div><span class="mute" id="bProgS"></span></div>
-      <section><h2>Budget mois par mois <small>prévu et réel</small></h2><div id="bMonths"></div></section>
-      <section><h2>Par poste <small>budget de l'année et réel à date</small></h2><div id="bCats"></div></section>
+      <section><h2>Réalisé vs budget <small id="bvNote"></small></h2><div class="chips" id="bvTabs"></div><div id="bView"></div></section>
       <section><h2>Hypothèses</h2><div class="card">
         <div class="two"><div><label for="bYear">Année</label><input id="bYear" inputmode="numeric"></div><div><label for="bCa">Objectif de chiffre d'affaires (€)</label><input id="bCa" inputmode="decimal"></div></div>
         <div class="two"><div><label for="bPrix">Prix moyen par boîte (€)</label><input id="bPrix" inputmode="decimal"></div><div><label for="bAss">Nombre d'associés</label><input id="bAss" inputmode="numeric"></div></div>
@@ -260,7 +259,7 @@ const NEXT={a_preparer:'prete',prete:'livree'};
 const PAY={cash:'Cash',payconiq:'Payconiq',virement:'Virement',carte:'Carte',autre:'Autre'};
 const PTS={...Object.fromEntries(Object.entries(C.points).map(([k,p])=>[k,p.nom+' ('+p.lieu+')'])),livraison:'Livraison',autre:'Autre'};
 const views={accueil:'Aujourd\'hui',commandes:'Commandes',stock:'Stock & produits',messages:'Messages',clients:'Clients',dev:'Mode dev',chiffres:'Chiffres',promos:'Codes promo'};
-const S={products:[],orders:[],messages:[],profiles:[],production:[],plists:[],plItems:[],depenses:[],costs:null,cDirty:false,budget:null,bDirty:false,bSaved:false,ch:'apercu',filter:'actifs',pay:'tous',reg:'tous',pt:'tous',ck:'tous',ov:'liste',per:'mois',conv:null};
+const S={products:[],orders:[],messages:[],profiles:[],production:[],plists:[],plItems:[],depenses:[],costs:null,cDirty:false,budget:null,bDirty:false,bSaved:false,bv:'mois',ch:'apercu',filter:'actifs',pay:'tous',reg:'tous',pt:'tous',ck:'tous',ov:'liste',per:'mois',conv:null};
 try{S.ov=localStorage.getItem('ck_ov')||'liste';S.per=localStorage.getItem('ck_per')||'mois'}catch(e){}
 function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',2400)}
 function openSheet(h){$('#sheetIn').innerHTML=h;$('#sheet').classList.add('on')}
@@ -540,6 +539,9 @@ function costCalc(c){c=c||S.costs||{items:[]};const per=Math.max(1,+c.cookies_pe
   const line=i=>(+i.pack_qty>0?(+i.pack_price||0)/(+i.pack_qty)*(+i.used||0):0);
   const ing=c.items.filter(i=>i.cat==='ing').reduce((a,i)=>a+line(i),0),pack=c.items.filter(i=>i.cat==='pack').reduce((a,i)=>a+line(i),0);
   return{line,ing,pack,bx,box:ing/bx+pack,batch:ing+pack*bx}}
+function budKpi(caP){const b=S.budget;if(!b||S.per==='tout')return[];const t=today(),ym=t.slice(0,7);
+  const from=S.per==='mois'?ym:S.per==='annee'?t.slice(0,4)+'-01':new Date(Date.now()-91*864e5).toISOString().slice(0,7),I=budIdx(from,ym,true);if(!I.length)return[];
+  const bud=budCalc().M.reduce((a,m,i)=>a+(I.includes(i)?m.ca:0),0);return[[sgn(caP-bud),'CA vs budget','budget '+eur(bud)+' · '+pct(caP,bud)+' réalisé']]}
 function renderFin(po,inP){
   const caP=po.reduce((a,o)=>a+(+o.total||0),0),bxP=po.reduce((a,o)=>a+boxes(o),0);
   const cogs=po.reduce((a,o)=>a+(o.lignes||[]).reduce((b,l)=>b+l.qte*(+(prod(l.pid)?.cout)||0),0),0),mb=caP-cogs;
@@ -548,7 +550,7 @@ function renderFin(po,inP){
   const offerts=po.filter(o=>!(+o.total)).length,cb=costCalc().box,pm=bxP?caP/bxP:0,mu=pm-cb;
   const K=[[eur(caP),'Chiffre d\'affaires',bxP+' boîtes vendues','hl'],[eur(mb),'Marge brute',pct(mb,caP)+' du CA'],[eur(cogs),'Coût des ventes','ingrédients + packaging'],[eur(enc),'Encaissé',eur(caP-enc)+' encore à encaisser'],
     [eur(dep),'Dépenses',dp.length+' achat'+(dp.length>1?'s':'')+' notés'],[eur(enc-dep),'Résultat',caP?'encaissé moins dépenses':''],[eur(pm),'Prix moyen par boîte','coût '+eur(cb)+' par boîte'],[mu>0?Math.ceil(dep/mu)+' boîtes':'–','Seuil de rentabilité','pour couvrir les dépenses'],
-    [eur(rem),'Remises (codes promo)',po.filter(o=>+o.remise).length+' commandes'],[offerts,'Commandes offertes','à 0 €']];
+    ...budKpi(caP),[eur(rem),'Remises (codes promo)',po.filter(o=>+o.remise).length+' commandes'],[offerts,'Commandes offertes','à 0 €']];
   $('#kpisF').innerHTML=K.map(k=>`<div class="kpi${k[3]?' '+k[3]:''}"><b>${esc(k[0])}</b><span>${esc(k[1])}</span>${k[2]?'<small>'+esc(k[2])+'</small>':''}</div>`).join('');
   const g=(arr,key,val)=>{const m={};arr.forEach(x=>{const k=key(x);m[k]=(m[k]||0)+val(x)});return Object.entries(m).sort((a,b)=>b[1]-a[1])};
   $('#byPt').innerHTML=barsHtml(g(po,o=>(C.points[o.point]||{}).nom||PTS[o.point]||o.point,o=>+o.total||0));
@@ -628,12 +630,16 @@ function budMonthsTable(B,R,from,to,cls){const y=S.budget.year,inR=i=>{const m=y
     return `<tr><td>${MC[i]}</td><td class="r">${eur(b.ca)}</td><td class="r">${r.past?eur(r.ca):'–'}</td><td class="r ${e===null?'':ecl(e)}">${e===null?'':sgn(e)}</td><td class="r hm">${Math.round(b.bx)} / ${r.past?r.bx:'–'}</td><td class="r hm">${eur(b.ch)}</td><td class="r hm">${r.past?eur(r.ch):'–'}</td><td class="r">${eur(b.res)}</td><td class="r">${r.past?eur(r.res):'–'}</td></tr>`}).join('');
   return `<div style="overflow-x:auto;border-radius:16px"><table class="${cls||'tbl'}"><thead><tr><th>Mois</th><th class="r">CA prévu</th><th class="r">CA réel</th><th class="r">Écart</th><th class="r hm">Boîtes prévu / réel</th><th class="r hm">Charges prévues</th><th class="r hm">Dépenses réelles</th><th class="r">Résultat prévu</th><th class="r">Résultat réel</th></tr></thead><tbody>${rows}
     <tr class="t"><td>Total</td><td class="r">${eur(t.cb)}</td><td class="r">${eur(t.cr)}</td><td class="r"></td><td class="r hm">${Math.round(t.bb)} / ${t.br}</td><td class="r hm">${eur(t.hb)}</td><td class="r hm">${eur(t.hr)}</td><td class="r">${eur(t.cb-t.hb)}</td><td class="r">${eur(t.cr-t.hr)}</td></tr></tbody></table></div>`}
-function budCatsTable(B,R,cls){const keys=[...new Set([...Object.keys(CATS),...B.M.flatMap(m=>Object.keys(m.cat)),...R.flatMap(r=>Object.keys(r.cat))])];
-  const rows=keys.map(c=>{const an=B.M.reduce((a,m)=>a+(m.cat[c]||0),0),ad=B.M.reduce((a,m,i)=>a+(R[i].past?m.cat[c]||0:0),0),re=R.reduce((a,r)=>a+(r.past?r.cat[c]||0:0),0);return{c,an,ad,re}}).filter(x=>x.an||x.re);
-  const T=rows.reduce((a,x)=>({an:a.an+x.an,ad:a.ad+x.ad,re:a.re+x.re}),{an:0,ad:0,re:0});
-  return `<div style="overflow-x:auto;border-radius:16px"><table class="${cls||'tbl'}"><thead><tr><th>Poste</th><th class="r">Budget de l'année</th><th class="r hm">Budget à date</th><th class="r">Réel à date</th><th class="r">Écart</th></tr></thead><tbody>
-    ${rows.map(x=>`<tr><td>${esc(CATS[x.c]||x.c)}</td><td class="r">${eur(x.an)}</td><td class="r hm">${eur(x.ad)}</td><td class="r">${eur(x.re)}</td><td class="r ${ecl(x.re-x.ad,1)}">${sgn(x.re-x.ad)}</td></tr>`).join('')}
-    <tr class="t"><td>Total des charges</td><td class="r">${eur(T.an)}</td><td class="r hm">${eur(T.ad)}</td><td class="r">${eur(T.re)}</td><td class="r ${ecl(T.re-T.ad,1)}">${sgn(T.re-T.ad)}</td></tr></tbody></table></div>`}
+function budPL(B,R,bI,rI){const keys=[...new Set([...Object.keys(CATS),...B.M.flatMap(m=>Object.keys(m.cat)),...R.flatMap(r=>Object.keys(r.cat))])];
+  const sb=f=>bI.reduce((a,i)=>a+f(B.M[i]),0),sr=f=>rI.reduce((a,i)=>a+f(R[i]),0),ca=[sb(m=>m.ca),sr(r=>r.ca)],ch=[sb(m=>m.ch),sr(r=>r.ch)];
+  return{ca,bx:[sb(m=>m.bx),sr(r=>r.bx)],ch,res:[ca[0]-ch[0],ca[1]-ch[1]],cats:keys.map(c=>[CATS[c]||c,sb(m=>m.cat[c]||0),sr(r=>r.cat[c]||0)]).filter(x=>x[1]||x[2])}}
+function budPLTable(p,lb,lr,cls){const pc=(r,b)=>b?Math.round(r/b*100)+' %':'–';
+  const row=(l,b,r,inv,t,n)=>`<tr${t?' class="t"':''}><td>${l}</td><td class="r">${n?Math.round(b):eur(b)}</td><td class="r">${n?r:eur(r)}</td><td class="r ${ecl(r-b,inv)}">${n?(r-b>=0?'+':'− ')+Math.abs(Math.round(r-b)):sgn(r-b)}</td><td class="r hm">${pc(r,b)}</td></tr>`;
+  return `<div style="overflow-x:auto;border-radius:16px"><table class="${cls||'tbl'}"><thead><tr><th></th><th class="r">${esc(lb)}</th><th class="r">${esc(lr)}</th><th class="r">Écart</th><th class="r hm">% du budget</th></tr></thead><tbody>
+    ${row('<b>Chiffre d\'affaires</b>',p.ca[0],p.ca[1],0,1)}${row('Boîtes vendues',p.bx[0],p.bx[1],0,0,1)}
+    ${p.cats.map(c=>row(esc(c[0]),c[1],c[2],1)).join('')}${row('<b>Total des charges</b>',p.ch[0],p.ch[1],1,1)}${row('<b>Résultat</b> (CA − charges)',p.res[0],p.res[1],0,1)}</tbody></table></div>`}
+function budIdx(from,to,real){const b=S.budget;if(!b)return[];const y=String(b.year),t=today().slice(0,7);
+  return MOIS.map((_,i)=>i).filter(i=>{const m=y+'-'+String(i+1).padStart(2,'0');return m>=from.slice(0,7)&&m<=to.slice(0,7)&&(!real||m<=t)})}
 function renderBudget(){const b=S.budget;if(!b||!$('#kpisB'))return;const B=budCalc(),R=budReal(b.year),y=b.year,ass=Math.max(1,+b.associes||1);
   const nPast=R.filter(r=>r.past).length,caR=R.reduce((a,r)=>a+(r.past?r.ca:0),0),caAd=B.M.reduce((a,m,i)=>a+(R[i].past?m.ca:0),0),resR=R.reduce((a,r)=>a+(r.past?r.res:0),0),resAd=B.M.reduce((a,m,i)=>a+(R[i].past?m.res:0),0);
   $('#bIntro').textContent=(S.bSaved?'Budget '+y+' enregistré.':'Budget '+y+' proposé, pas encore enregistré : vérifie les hypothèses plus bas puis enregistre.')+' Le réel vient des commandes (date de retrait, hors annulées) et des dépenses notées.';
@@ -641,7 +647,10 @@ function renderBudget(){const b=S.budget;if(!b||!$('#kpisB'))return;const B=budC
     .map(k=>`<div class="kpi${k[3]?' '+k[3]:''}"><b>${esc(k[0])}</b><span>${esc(k[1])}</span>${k[2]?'<small>'+esc(k[2])+'</small>':''}</div>`).join('');
   $('#bProgT').textContent=eur(caR)+' réalisés sur '+eur(B.ca);$('#bProg').style.width=Math.min(100,B.ca?caR/B.ca*100:0).toFixed(1)+'%';
   $('#bProgS').textContent=nPast?pct(caR,B.ca)+' de l\'objectif, '+pct(caR,caAd)+' du budget prévu à fin '+MOIS[nPast-1]+'.':'Rien de vendu en '+y+' pour l\'instant.';
-  $('#bMonths').innerHTML=budMonthsTable(B,R);$('#bCats').innerHTML=budCatsTable(B,R);
+  const all=B.M.map((_,i)=>i),done=all.filter(i=>R[i].past),BV={mois:'Mois par mois',annee:'Année complète',ytd:'Depuis janvier'};
+  $('#bvTabs').innerHTML=Object.entries(BV).map(([k,l])=>`<button class="chip${S.bv===k?' on':''}" data-bv="${k}">${l}</button>`).join('');
+  $('#bvNote').textContent=S.bv==='mois'?'CA, charges et résultat':S.bv==='annee'?'budget des 12 mois et réalisé à ce jour':done.length?'janvier à '+MOIS[done.length-1]+' '+y:'pas encore commencé';
+  $('#bView').innerHTML=S.bv==='mois'?budMonthsTable(B,R):S.bv==='annee'?budPLTable(budPL(B,R,all,done),'Budget '+y,'Réalisé à date'):budPLTable(budPL(B,R,done,done),'Budget à date','Réalisé à date');
   const cp=curPrice();$('#bPrixNote').textContent=(+b.prix?'Prix fixé à la main.':'Laisse vide pour prendre le prix actuel de la boutique'+(cp?' ('+eur(cp)+')':'')+'.')+' Coût de revient actuel : '+eur(B.box)+' par boîte (Coûts de revient).';
   const st=b.saison.reduce((a,x)=>a+(+x||0),0);$('#bSeaSum').textContent='total '+Math.round(st)+' %';
   bDirty(S.bDirty);if(S.bDirty)return;
@@ -663,17 +672,23 @@ $('#ch-budget').addEventListener('click',async e=>{const b=e.target.closest('but
   else if(b.id==='bSave'){S.budget.lignes=S.budget.lignes.filter(l=>l.nom.trim()||+l.montant);b.disabled=true;
     const{error}=await sb.from('admin_settings').upsert({id:'budget',data:S.budget,updated_at:new Date().toISOString()});b.disabled=false;
     if(error)return toast('Erreur : '+error.message);S.bSaved=true;S.bDirty=false;bDirty(false);renderBudget();toast('Budget '+S.budget.year+' enregistré')}
+  else if(b.dataset.bv){S.bv=b.dataset.bv;renderBudget()}
   else if(b.id==='bPdf'){printDoc(budgetDoc(),'Coolkie - Budget '+S.budget.year)}});
 addEventListener('beforeunload',e=>{if(S.bDirty||S.cDirty){e.preventDefault();e.returnValue=''}});
-function budReportSection(from,to,n){const b=S.budget;if(!b||from.slice(0,4)>String(b.year)||to.slice(0,4)<String(b.year))return'';const B=budCalc(),R=budReal(b.year);
-  return `<h2>${n||''}Budget ${b.year} : prévu et réel <small>objectif ${eur(B.ca)} de chiffre d'affaires sur l'année</small></h2>${budMonthsTable(B,R,from,to,'sm')}
-  <p class="rp-m">Réalisé depuis janvier ${b.year} : ${eur(R.reduce((a,r)=>a+(r.past?r.ca:0),0))}, soit ${pct(R.reduce((a,r)=>a+(r.past?r.ca:0),0),B.ca)} de l'objectif annuel. Les mois à venir n'ont pas encore de réel.</p>`}
+function budReportSection(P,n){const b=S.budget;if(!b)return'';const bI=budIdx(P.from,P.to),rI=budIdx(P.from,P.to,true);if(!bI.length)return`<h2>${n}Réalisé vs budget</h2><p class="rp-m">Pas de budget pour cette période : le budget enregistré porte sur ${b.year} (Chiffres › Budget).</p>`;
+  const B=budCalc(),R=budReal(b.year),y=b.year,h3=t=>`<h3 style="font-size:11pt;margin:10px 0 6px">${t}</h3>`,full=P.type==='annee'&&rI.length<bI.length;
+  const ytd=MOIS.map((_,i)=>i).filter(i=>R[i].past&&(y+'-'+String(i+1).padStart(2,'0'))<=P.to.slice(0,7));
+  let h=`<h2>${n}Réalisé vs budget <small>budget ${y} : objectif ${eur(B.ca)} de chiffre d'affaires</small></h2>`;
+  if(P.type!=='mois')h+=h3('Mois par mois')+budMonthsTable(B,R,P.from,P.to,'sm');
+  h+=h3(P.type==='mois'?'Le mois':P.type==='trim'?'Le trimestre':full?'Année complète (réalisé à ce jour)':P.type==='annee'?'Année':'Depuis janvier')+budPLTable(budPL(B,R,bI,rI),P.type==='mois'?'Budget du mois':full?'Budget '+y:'Budget de la période','Réalisé','sm');
+  if(ytd.length&&ytd.join()!==bI.join())h+=h3('Depuis janvier '+y)+budPLTable(budPL(B,R,ytd,ytd),'Budget à date','Réalisé à date','sm');
+  return h+`<p class="rp-m">Le réalisé reprend le chiffre d'affaires des commandes (date de retrait) et les dépenses notées, rangés par poste comme dans le budget. Avancement sur l'objectif annuel : ${pct(R.reduce((a,r)=>a+(r.past?r.ca:0),0),B.ca)}.</p>`}
 function budgetDoc(){const b=S.budget,B=budCalc(),R=budReal(b.year),ass=Math.max(1,+b.associes||1);
   return `<div class="rp-h"><div><h1>Budget ${b.year}</h1><p>Coolkie Lab · objectif ${eur(B.ca)} de chiffre d'affaires</p></div><img src="img/coolkie-logo.jpg" alt=""></div>
   <p class="rp-m">Généré le ${esc(new Date().toLocaleDateString('fr-BE',{day:'numeric',month:'long',year:'numeric'}))}${S.bSaved?'':' (budget proposé, pas encore enregistré)'}.</p>
   <h2>1. Synthèse</h2><div class="rp-k">${[[eur(B.ca),'Chiffre d\'affaires visé'],[Math.round(B.bx)+' boîtes','à '+eur(B.prix)+' · '+Math.round(B.bx/12)+' par mois'],[eur(B.ch),'Charges prévues'],[eur(B.res),'Résultat prévu'+(ass>1?' · '+eur(B.res/ass)+' par associé':'')]].map(x=>`<div><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div>`).join('')}</div>
   <h2>2. Mois par mois</h2>${budMonthsTable(B,R,null,null,'sm')}
-  <h2>3. Par poste</h2>${budCatsTable(B,R,'sm')}
+  <h2>3. Réalisé vs budget</h2><h3 style="font-size:11pt;margin:6px 0">Année complète</h3>${budPLTable(budPL(B,R,B.M.map((_,i)=>i),R.map((r,i)=>r.past?i:-1).filter(i=>i>=0)),'Budget '+b.year,'Réalisé à date','sm')}<h3 style="font-size:11pt;margin:10px 0 6px">Depuis janvier</h3>${(()=>{const d=R.map((r,i)=>r.past?i:-1).filter(i=>i>=0);return budPLTable(budPL(B,R,d,d),'Budget à date','Réalisé à date','sm')})()}
   <h2>4. Charges prévues</h2><table class="sm"><thead><tr><th>Charge</th><th>Poste</th><th>Quand</th><th class="r">Montant / an</th></tr></thead><tbody>
   <tr><td>Ingrédients des boîtes vendues (${eur(B.ingB)} par boîte)</td><td>Ingrédients</td><td>Selon les ventes</td><td class="r">${eur(B.ingB*B.bx)}</td></tr><tr><td>Packaging des boîtes vendues (${eur(B.packB)} par boîte)</td><td>Packaging</td><td>Selon les ventes</td><td class="r">${eur(B.packB*B.bx)}</td></tr>
   ${b.lignes.map(l=>`<tr><td>${esc(l.nom)}</td><td>${esc(CATS[l.cat]||l.cat)}</td><td>${esc(QUAND[l.quand]||l.quand)}</td><td class="r">${eur(l.montant)}</td></tr>`).join('')}
@@ -734,20 +749,21 @@ async function buildReport(P){
   ${g(dm,d=>CATS[d.categorie]||d.categorie,d=>+d.montant||0).map(([c,v])=>tr('Dépenses : '+esc(c),'− '+eur(v))).join('')||tr('Dépenses','0,00 €')}
   ${tr('<b>Encaissé sur la période</b>','<b>'+eur(A.enc)+'</b>')}${tr('<b>Résultat de trésorerie</b> (encaissé − dépenses)','<b>'+eur(A.enc-dep)+'</b>','t')}</tbody></table>
   <p class="rp-m">La marge brute compare les ventes au coût des ingrédients et du packaging des boîtes vendues. Les dépenses sont les achats réellement payés sur la période (courses, matériel, marketing).</p>
-  <h2>4. Répartition des ventes</h2><div class="rp-2"><table><thead><tr><th>Point de retrait</th><th class="r">CA</th></tr></thead><tbody>${g(po,o=>(C.points[o.point]||{}).nom||PTS[o.point]||o.point,o=>+o.total||0).map(([l,v])=>tr(esc(l),eur(v))).join('')||tr('–','')}</tbody></table>
+  ${budReportSection(P,'4. ')}
+  <h2>5. Répartition des ventes</h2><div class="rp-2"><table><thead><tr><th>Point de retrait</th><th class="r">CA</th></tr></thead><tbody>${g(po,o=>(C.points[o.point]||{}).nom||PTS[o.point]||o.point,o=>+o.total||0).map(([l,v])=>tr(esc(l),eur(v))).join('')||tr('–','')}</tbody></table>
   <table><thead><tr><th>Paiement (encaissé)</th><th class="r">Montant</th></tr></thead><tbody>${g(po.filter(o=>o.paye),o=>PAY[o.paiement]||o.paiement||'Autre',o=>+o.total||0).map(([l,v])=>tr(esc(l),eur(v))).join('')||tr('–','')}</tbody></table></div>
-  <h2>5. Production et stock</h2>${P.type!=='mois'?`<h3 style="font-size:11pt;margin:6px 0">Ventes par mois</h3><table><thead><tr><th>Mois</th><th class="r">Commandes</th><th class="r">Boîtes</th><th class="r">CA</th><th class="r">Marge brute</th><th class="r">Dépenses</th></tr></thead><tbody>${(()=>{const mm=[];let d=new Date(P.from+'T12:00');while(d.toISOString().slice(0,10)<=P.to){mm.push(d.toISOString().slice(0,7));d.setMonth(d.getMonth()+1)}return mm.map(m=>{const ar=po.filter(o=>(o.date_retrait||'').startsWith(m)),st=stat(ar),dd=dm.filter(x=>(x.date||'').startsWith(m)).reduce((a,x)=>a+(+x.montant||0),0);return `<tr><td>${esc(new Date(m+'-15T12:00').toLocaleDateString('fr-BE',{month:'long',year:'numeric'}))}</td><td class="r">${st.n}</td><td class="r">${st.bx}</td><td class="r">${eur(st.net)}</td><td class="r">${eur(st.mb)}</td><td class="r">${eur(dd)}</td></tr>`}).join('')})()}</tbody></table>`:''}<table><thead><tr><th>Date</th><th>Produit</th><th class="r">Boîtes produites</th></tr></thead><tbody>${prodM.map(x=>`<tr><td>${esc(fdate(x.date))}</td><td>${esc(x.nom)}</td><td class="r">${esc(x.qte)}</td></tr>`).join('')||'<tr><td colspan="3">Aucune production enregistrée sur la période.</td></tr>'}</tbody></table>
+  <h2>6. Production et stock</h2>${P.type!=='mois'?`<h3 style="font-size:11pt;margin:6px 0">Ventes par mois</h3><table><thead><tr><th>Mois</th><th class="r">Commandes</th><th class="r">Boîtes</th><th class="r">CA</th><th class="r">Marge brute</th><th class="r">Dépenses</th></tr></thead><tbody>${(()=>{const mm=[];let d=new Date(P.from+'T12:00');while(d.toISOString().slice(0,10)<=P.to){mm.push(d.toISOString().slice(0,7));d.setMonth(d.getMonth()+1)}return mm.map(m=>{const ar=po.filter(o=>(o.date_retrait||'').startsWith(m)),st=stat(ar),dd=dm.filter(x=>(x.date||'').startsWith(m)).reduce((a,x)=>a+(+x.montant||0),0);return `<tr><td>${esc(new Date(m+'-15T12:00').toLocaleDateString('fr-BE',{month:'long',year:'numeric'}))}</td><td class="r">${st.n}</td><td class="r">${st.bx}</td><td class="r">${eur(st.net)}</td><td class="r">${eur(st.mb)}</td><td class="r">${eur(dd)}</td></tr>`}).join('')})()}</tbody></table>`:''}<table><thead><tr><th>Date</th><th>Produit</th><th class="r">Boîtes produites</th></tr></thead><tbody>${prodM.map(x=>`<tr><td>${esc(fdate(x.date))}</td><td>${esc(x.nom)}</td><td class="r">${esc(x.qte)}</td></tr>`).join('')||'<tr><td colspan="3">Aucune production enregistrée sur la période.</td></tr>'}</tbody></table>
   <p class="rp-m">Stock au ${esc(new Date().toLocaleDateString('fr-BE'))} : ${S.products.filter(p=>p.actif).map(p=>esc(p.nom)+' '+(+p.stock||0)+' boîtes').join(', ')} (valeur ${eur(S.products.filter(p=>p.actif).reduce((a,p)=>a+(+p.stock||0)*(+p.cout||0),0))} au coût de revient).</p>
-  <h2>6. Détail des commandes</h2><table class="sm"><thead><tr><th>Retrait</th><th>N°</th><th>Client</th><th class="r">Boîtes</th><th class="r">Total</th><th>Statut</th><th>Payé</th></tr></thead><tbody>
+  <h2>7. Détail des commandes</h2><table class="sm"><thead><tr><th>Retrait</th><th>N°</th><th>Client</th><th class="r">Boîtes</th><th class="r">Total</th><th>Statut</th><th>Payé</th></tr></thead><tbody>
   ${po.sort((a,b)=>(a.date_retrait||'').localeCompare(b.date_retrait||'')).map(o=>`<tr><td>${esc(fdate(o.date_retrait))}</td><td>${esc(o.id)}</td><td>${esc(o.client_nom)}${o.promo_code?' <i>('+esc(o.promo_code)+')</i>':''}</td><td class="r">${boxes(o)}</td><td class="r">${eur(o.total)}</td><td>${esc(ST[o.statut]||o.statut)}</td><td>${o.paye?'Oui':'Non'}</td></tr>`).join('')||'<tr><td colspan="7">Aucune commande.</td></tr>'}</tbody></table>
-  <h2>7. Détail des dépenses</h2><table class="sm"><thead><tr><th>Date</th><th>Description</th><th>Catégorie</th><th>Payé par</th><th class="r">Montant</th></tr></thead><tbody>
+  <h2>8. Détail des dépenses</h2><table class="sm"><thead><tr><th>Date</th><th>Description</th><th>Catégorie</th><th>Payé par</th><th class="r">Montant</th></tr></thead><tbody>
   ${dm.map(d=>`<tr><td>${esc(fdate(d.date))}</td><td>${esc(d.description)}</td><td>${esc(CATS[d.categorie]||d.categorie)}</td><td>${esc(d.qui)}</td><td class="r">${eur(d.montant)}</td></tr>`).join('')||'<tr><td colspan="5">Aucune dépense notée sur la période.</td></tr>'}</tbody></table>
-  <h2>8. Montants restant à encaisser <small>commandes jusqu'au ${esc(fmtD(P.to))}, non payées à ce jour</small></h2><table class="sm"><thead><tr><th>Retrait</th><th>N°</th><th>Client</th><th class="r">Montant</th></tr></thead><tbody>
+  <h2>9. Montants restant à encaisser <small>commandes jusqu'au ${esc(fmtD(P.to))}, non payées à ce jour</small></h2><table class="sm"><thead><tr><th>Retrait</th><th>N°</th><th>Client</th><th class="r">Montant</th></tr></thead><tbody>
   ${unpaid.map(o=>`<tr><td>${esc(fdate(o.date_retrait))}</td><td>${esc(o.id)}</td><td>${esc(o.client_nom)}</td><td class="r">${eur(o.total)}</td></tr>`).join('')||'<tr><td colspan="4">Tout est encaissé.</td></tr>'}
   ${unpaid.length?`<tr class="t"><td colspan="3"><b>Total</b></td><td class="r"><b>${eur(unpaid.reduce((a,o)=>a+(+o.total||0),0))}</b></td></tr>`:''}</tbody></table>
-  <h2>9. Coût de revient d'une boîte</h2><table class="sm"><thead><tr><th>Élément</th><th class="r">Achat</th><th class="r">Utilisé</th><th class="r">Coût</th></tr></thead><tbody>
+  <h2>10. Coût de revient d'une boîte</h2><table class="sm"><thead><tr><th>Élément</th><th class="r">Achat</th><th class="r">Utilisé</th><th class="r">Coût</th></tr></thead><tbody>
   ${(S.costs?.items||[]).map(i=>`<tr><td>${esc(i.nom)}${i.cat==='pack'?' <i>(par boîte)</i>':''}</td><td class="r">${esc(i.pack_qty)} ${esc(i.unit||'')} · ${eur(i.pack_price)}</td><td class="r">${esc(i.used)} ${esc(i.unit||'')}</td><td class="r">${eur(k.line(i))}</td></tr>`).join('')}
-  <tr class="t"><td colspan="3">Ingrédients par batch (${esc(S.costs?.batch_cookies)} coolkies, ${k.bx.toFixed(0)} boîtes)</td><td class="r">${eur(k.ing)}</td></tr><tr class="t"><td colspan="3"><b>Coût par boîte</b></td><td class="r"><b>${eur(k.box)}</b></td></tr></tbody></table>${budReportSection(P.from,P.to,'10. ')}`}
+  <tr class="t"><td colspan="3">Ingrédients par batch (${esc(S.costs?.batch_cookies)} coolkies, ${k.bx.toFixed(0)} boîtes)</td><td class="r">${eur(k.ing)}</td></tr><tr class="t"><td colspan="3"><b>Coût par boîte</b></td><td class="r"><b>${eur(k.box)}</b></td></tr></tbody></table>`}
 $('#rType')?.addEventListener('change',renderRep);
 $('#rGo')?.addEventListener('click',async()=>{const type=$('#rType').value,v=$('#rMonth').value;if(type!=='ytd'&&!v)return;const P=periodOf(type,v),ym=P.from+'_'+P.to;const b=$('#rGo');b.disabled=true;
   try{if(!S.costs)await load('costs');let r=$('#report');if(!r){r=document.createElement('div');r.id='report';document.body.appendChild(r)}r.innerHTML=await buildReport(P);
