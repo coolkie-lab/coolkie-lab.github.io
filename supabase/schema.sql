@@ -531,3 +531,102 @@ begin
 end $$;
 revoke all on function public.place_guest_order(jsonb, text, date, text, text, text, text, text) from public;
 grant execute on function public.place_guest_order(jsonb, text, date, text, text, text, text, text) to anon, authenticated;
+
+-- v9 : listes de prix par client + interrupteur codes promo (site_settings.data.promo)
+create table if not exists public.price_lists (
+  id uuid primary key default gen_random_uuid(),
+  nom text not null check (length(trim(nom)) between 1 and 40),
+  created_at timestamptz not null default now()
+);
+create table if not exists public.price_list_items (
+  list_id uuid not null references public.price_lists(id) on delete cascade,
+  product_id uuid not null references public.products(id) on delete cascade,
+  prix numeric(10,2) not null check (prix >= 0),
+  primary key (list_id, product_id)
+);
+alter table public.price_lists enable row level security;
+alter table public.price_list_items enable row level security;
+drop policy if exists pl_admin on public.price_lists;
+create policy pl_admin on public.price_lists for all using (public.is_admin()) with check (public.is_admin());
+drop policy if exists pli_admin on public.price_list_items;
+create policy pli_admin on public.price_list_items for all using (public.is_admin()) with check (public.is_admin());
+revoke all on public.price_lists, public.price_list_items from anon;
+grant select, insert, update, delete on public.price_lists, public.price_list_items to authenticated;
+
+-- le client ne peut pas changer sa liste lui-même (seul "tel" est modifiable par le client)
+alter table public.profiles add column if not exists price_list_id uuid references public.price_lists(id) on delete set null;
+alter table public.orders add column if not exists liste_prix text;
+
+-- prix du client connecté (uniquement sa propre liste)
+create or replace function public.my_prices() returns table(pid uuid, prix numeric, liste text)
+language sql stable security definer set search_path = public as $$
+  select i.product_id, i.prix, l.nom from profiles p
+  join price_lists l on l.id = p.price_list_id
+  join price_list_items i on i.list_id = l.id
+  where p.id = auth.uid();
+$$;
+revoke all on function public.my_prices() from public, anon;
+grant execute on function public.my_prices() to authenticated;
+
+create or replace function public.set_price_list(p_user uuid, p_list uuid) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'Réservé'; end if;
+  update public.profiles set price_list_id = p_list where id = p_user;
+  if not found then raise exception 'Client introuvable'; end if;
+end $$;
+revoke all on function public.set_price_list(uuid, uuid) from public, anon;
+grant execute on function public.set_price_list(uuid, uuid) to authenticated;
+
+-- codes promo désactivables depuis la gestion : plus aucun code n'est accepté
+create or replace function public.check_promo(p_code text) returns table(code text, type text, valeur numeric)
+language sql stable security definer set search_path = public as $$
+  select c.code, c.type, c.valeur from promo_codes c
+  where c.code = upper(trim(p_code)) and c.actif
+    and (c.expire is null or c.expire >= current_date)
+    and (c.max_uses is null or c.uses < c.max_uses)
+    and not exists (select 1 from site_settings s where s.id = 'main' and s.data->>'promo' = 'false');
+$$;
+grant execute on function public.check_promo(text) to anon, authenticated;
+
+-- commande client : prix de sa liste si elle en a un, sinon prix normal
+create or replace function public.place_order(items jsonb, p_point text, p_date date, p_notes text, p_code text)
+returns bigint language plpgsql security definer set search_path = public as $$
+declare
+  v_lignes jsonb := '[]'; v_total numeric := 0; v_id bigint; it jsonb; pr record; q int; prof record; v_next int := 0; v_av int;
+  pc record; v_remise numeric := 0; v_code text := null; v_prix numeric; v_liste text;
+begin
+  if auth.uid() is null then raise exception 'Connecte-toi pour commander'; end if;
+  if p_point not in ('uccle','woluwe') then raise exception 'Point de retrait inconnu'; end if;
+  if p_date < current_date then raise exception 'Date passée'; end if;
+  select * into prof from profiles where id = auth.uid();
+  select nom into v_liste from price_lists where id = prof.price_list_id;
+  for it in select * from jsonb_array_elements(items) loop
+    q := (it->>'qte')::int;
+    if q is null or q <= 0 then continue; end if;
+    if q > 50 then raise exception 'Quantité trop grande'; end if;
+    select * into pr from products where id = (it->>'pid')::uuid and actif;
+    if not found then raise exception 'Produit indisponible'; end if;
+    select i.prix into v_prix from price_list_items i where i.list_id = prof.price_list_id and i.product_id = pr.id;
+    v_prix := coalesce(v_prix, pr.prix);
+    select dispo into v_av from available_stock() where pid = pr.id;
+    v_next := v_next + greatest(0, q - greatest(0, coalesce(v_av,0)));
+    v_lignes := v_lignes || jsonb_build_object('pid', pr.id, 'nom', pr.nom, 'prix', v_prix, 'qte', q);
+    v_total := v_total + v_prix * q;
+  end loop;
+  if jsonb_array_length(v_lignes) = 0 then raise exception 'Panier vide'; end if;
+  if coalesce(trim(p_code),'') <> '' then
+    select * into pc from check_promo(p_code);
+    if not found then raise exception 'Code promo invalide ou expiré'; end if;
+    v_code := pc.code;
+    v_remise := case when pc.type = 'pct' then round(v_total * least(pc.valeur,100) / 100, 2) else least(pc.valeur, v_total) end;
+    update promo_codes set uses = uses + 1 where code = pc.code;
+  end if;
+  insert into orders (user_id, client_nom, client_tel, lignes, total, point, date_retrait, notes, source, paiement, prochain_batch, promo_code, remise, liste_prix)
+  values (auth.uid(), prof.username, prof.tel, v_lignes, v_total - v_remise, p_point, p_date, left(coalesce(p_notes,''), 500), 'en_ligne', 'cash', v_next, v_code, v_remise, v_liste)
+  returning id into v_id;
+  return v_id;
+end $$;
+revoke execute on function public.place_order(jsonb,text,date,text,text) from public, anon;
+grant execute on function public.place_order(jsonb,text,date,text,text) to authenticated;
+select 'ok' as v9;

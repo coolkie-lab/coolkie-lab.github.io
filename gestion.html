@@ -11,8 +11,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="common.css?v=12">
 <script src="config.js?v=5"></script>
-<script src="i18n.js?v=3"></script>
-<script src="site.js?v=6"></script>
+<script src="i18n.js?v=4"></script>
+<script src="site.js?v=7"></script>
 <style>
 body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 header{background:var(--dough);border-bottom:1px solid var(--line);padding:calc(16px + env(safe-area-inset-top)) max(5vw,16px) 44px}
@@ -127,7 +127,9 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
     <p class="mute" style="margin:0 0 4px">Modifie le site toi-même. Rien n'est visible tant que tu n'as pas cliqué sur « Publier ».</p>
     <section><h2>Boutique</h2><div class="card">
       <label style="display:flex;gap:10px;align-items:center;margin:0"><input id="guestOn" type="checkbox" style="width:24px;min-height:24px"> Autoriser les commandes sans compte</label>
-      <p class="mute" style="margin:6px 0 0">Décoché : il faut se connecter ou créer un compte pour commander. Prend effet après « Publier ».</p></div></section>
+      <p class="mute" style="margin:6px 0 0">Décoché : il faut se connecter ou créer un compte pour commander. Prend effet après « Publier ».</p>
+      <label style="display:flex;gap:10px;align-items:center;margin:14px 0 0"><input id="promoOn" type="checkbox" style="width:24px;min-height:24px"> Autoriser les codes promo</label>
+      <p class="mute" style="margin:6px 0 0">Décoché : la case « Code promo » disparaît du site et aucun code n'est accepté. Prend effet après « Publier ».</p></div></section>
     <section><h2>Bandeau d'annonce</h2><div class="card">
       <label style="display:flex;gap:10px;align-items:center;margin:0"><input id="bnOn" type="checkbox" style="width:24px;min-height:24px"> Afficher un bandeau en haut du site</label>
       <label for="bnText">Texte</label><input id="bnText" maxlength="140" placeholder="Nouveau site ! Commande en ligne, retrait à Uccle ou Woluwe">
@@ -196,6 +198,9 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
     <div class="chips" id="cliKind" style="flex-wrap:wrap"></div>
     <div class="mute" id="cliSum" style="margin:-2px 0 10px"></div>
     <div id="cliList"></div>
+    <section style="margin-top:22px"><h2>Listes de prix</h2>
+      <p class="mute" style="margin:0 0 10px">Crée une liste (ex. Professionnel) avec ses prix, puis ouvre la fiche d'un client enregistré pour l'y placer. Il verra ces prix sur le site et paiera ces prix. Un produit sans prix dans la liste garde son prix normal.</p>
+      <div id="plList"></div><button class="btn sm" id="plAdd">+ Liste de prix</button></section>
     <section style="margin-top:22px"><h2>Sauvegarde des données</h2><div class="card">
       <p class="mute" style="margin:0 0 10px">Télécharge une copie de toutes les données (commandes, clients, messages, stock, promos, coûts, dépenses, réglages du site). Garde-la en lieu sûr : elle contient des données personnelles.</p>
       <div class="row" style="flex-wrap:wrap;gap:8px"><button class="btn ice" id="expAll">Tout exporter (JSON)</button><button class="btn" id="expOrders">Commandes (Excel CSV)</button><button class="btn" id="expClients">Clients (Excel CSV)</button></div>
@@ -232,7 +237,7 @@ const NEXT={a_preparer:'prete',prete:'livree'};
 const PAY={cash:'Cash',payconiq:'Payconiq',virement:'Virement',carte:'Carte',autre:'Autre'};
 const PTS={...Object.fromEntries(Object.entries(C.points).map(([k,p])=>[k,p.nom+' ('+p.lieu+')'])),livraison:'Livraison',autre:'Autre'};
 const views={accueil:'Aujourd\'hui',commandes:'Commandes',stock:'Stock & produits',messages:'Messages',clients:'Clients',dev:'Mode dev',chiffres:'Chiffres',promos:'Codes promo'};
-const S={products:[],orders:[],messages:[],profiles:[],production:[],depenses:[],costs:null,cDirty:false,ch:'apercu',filter:'actifs',pay:'tous',reg:'tous',pt:'tous',ck:'tous',ov:'liste',per:'mois',conv:null};
+const S={products:[],orders:[],messages:[],profiles:[],production:[],plists:[],plItems:[],depenses:[],costs:null,cDirty:false,ch:'apercu',filter:'actifs',pay:'tous',reg:'tous',pt:'tous',ck:'tous',ov:'liste',per:'mois',conv:null};
 try{S.ov=localStorage.getItem('ck_ov')||'liste';S.per=localStorage.getItem('ck_per')||'mois'}catch(e){}
 function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',2400)}
 function openSheet(h){$('#sheetIn').innerHTML=h;$('#sheet').classList.add('on')}
@@ -255,12 +260,15 @@ async function load(t){
   if(!t||t==='products')S.products=await q(sb.from('products').select('*').order('nom'))||S.products;
   if(!t||t==='orders')S.orders=await q(sb.from('orders').select('*').order('created_at',{ascending:false}).limit(1000))||S.orders;
   if(!t||t==='messages')S.messages=await q(sb.from('messages').select('*').order('created_at').limit(2000))||S.messages;
-  if(!t||t==='profiles')S.profiles=await q(sb.from('profiles').select('id,username,tel,created_at,is_admin'))||S.profiles;
+  if(!t||t==='profiles')S.profiles=await q(sb.from('profiles').select('id,username,tel,created_at,is_admin,price_list_id'))||S.profiles;
+  if(!t||t==='plists'){S.plists=await q(sb.from('price_lists').select('*').order('nom'))||S.plists;S.plItems=await q(sb.from('price_list_items').select('*'))||S.plItems}
   if(!t||t==='depenses')S.depenses=await q(sb.from('depenses').select('*').order('date',{ascending:false}))||S.depenses;
   if(!t||t==='costs'){const r=await q(sb.from('admin_settings').select('data').eq('id','costs').maybeSingle());if(r!==null||!S.costs)S.costs=JSON.parse(JSON.stringify(r?.data||{batch_cookies:24,cookies_per_box:4,items:[]}));S.cDirty=false}
   if(!t||t==='production')S.production=await q(sb.from('production').select('*').order('created_at',{ascending:false}).limit(20))||S.production;
   render();if(S.conv)renderConv()}
 const prod=id=>S.products.find(p=>p.id===id);
+const plName=id=>S.plists.find(l=>l.id===id)?.nom||'';
+const plPrice=(p,lid)=>{const i=lid&&S.plItems.find(x=>x.list_id===lid&&x.product_id===p.id);return i?+i.prix:(+p.prix||0)};
 const active=o=>o.statut!=='annulee';
 const month=d=>(d||'').slice(0,7);
 const uname=id=>S.profiles.find(p=>p.id===id)?.username;
@@ -271,14 +279,14 @@ const margeO=o=>(o.lignes||[]).reduce((b,l)=>b+l.qte*((+l.prix||0)-(+(prod(l.pid
 function orderRows(ol){return `<div style="overflow-x:auto;border-radius:16px"><table class="tbl"><thead><tr><th class="hm">N°</th><th>Retrait</th><th>Client</th><th class="r hm">Boîtes</th><th class="r">Total</th><th>Statut</th><th class="hm">Paiement</th></tr></thead><tbody>${ol.map(o=>`<tr data-row="${esc(o.id)}"><td class="mute hm">${esc(o.id)}</td><td style="white-space:nowrap">${esc(fdate(o.date_retrait))}<div class="mute hm">${esc((C.points[o.point]||{}).nom||o.point||'')}</div></td><td><b>${esc(o.client_nom||'Client')}</b><div>${regTag(o)}</div></td><td class="r hm">${boxes(o)}</td><td class="r">${eur(o.total)}</td><td><span class="pill p-${esc(o.statut)}">${esc(ST[o.statut]||o.statut)}</span></td><td class="hm">${o.paye?'<span class="pill p-livree">Payé</span>':(o.statut==='annulee'?'':'<span class="pill p-a_preparer">À encaisser</span>')}</td></tr>`).join('')}</tbody></table></div>`}
 
 function orderCard(o){const items=(o.lignes||[]).map(l=>esc(l.qte)+'× '+esc(l.nom)).join(', '),nx=NEXT[o.statut];
-  return `<div class="card"><div class="row"><div class="grow"><b>${esc(o.client_nom||'Client')}</b> <span class="mute">n°${esc(o.id)}</span> ${regTag(o)} ${o.source==='en_ligne'?'<span class="src">en ligne</span>':''}<div class="mute">${esc(fdate(o.date_retrait))} · ${esc(PTS[o.point]||o.point)}</div></div><span class="pill p-${esc(o.statut)}">${esc(ST[o.statut]||o.statut)}</span></div>
+  return `<div class="card"><div class="row"><div class="grow"><b>${esc(o.client_nom||'Client')}</b> <span class="mute">n°${esc(o.id)}</span> ${regTag(o)} ${o.source==='en_ligne'?'<span class="src">en ligne</span>':''}${o.liste_prix?' <span class="pill p-prete">'+esc(o.liste_prix)+'</span>':''}<div class="mute">${esc(fdate(o.date_retrait))} · ${esc(PTS[o.point]||o.point)}</div></div><span class="pill p-${esc(o.statut)}">${esc(ST[o.statut]||o.statut)}</span></div>
   <div style="margin:8px 0">${items}</div>${o.prochain_batch>0&&(o.statut==='a_preparer'||o.statut==='prete')?`<div class="mute" style="color:var(--warn);font-weight:600;margin-bottom:8px">${esc(o.prochain_batch)} boîte(s) pour le prochain batch</div>`:''}${o.notes?`<div class="mute" style="margin-bottom:8px">« ${esc(o.notes)} »</div>`:''}
   <div class="row"><span class="price grow">${eur(o.total)}${+o.remise?' <span class="mute">(code '+esc(o.promo_code)+', −'+eur(o.remise)+')</span>':''} ${o.paye?'<span class="pill p-livree">Payé</span>':'<span class="pill p-a_preparer">À encaisser</span>'}</span>
   <button class="btn sm" data-edit-o="${esc(o.id)}">Ouvrir</button>${nx?`<button class="btn sm main" data-next="${esc(o.id)}">${esc(ST[nx])} →</button>`:''}</div></div>`}
 
 const lastD=c=>{const d=c.os.map(o=>o.date_retrait).filter(Boolean).sort().pop();return d?new Date(d+'T12:00').toLocaleDateString('fr-BE'):''};
 function clients(){const m=new Map();
-  S.profiles.forEach(p=>m.set('u:'+p.id,{key:'u:'+p.id,uid:p.id,nom:p.username,tel:p.tel,online:true,admin:p.is_admin,since:p.created_at,os:[]}));
+  S.profiles.forEach(p=>m.set('u:'+p.id,{key:'u:'+p.id,uid:p.id,nom:p.username,tel:p.tel,online:true,admin:p.is_admin,since:p.created_at,pl:p.price_list_id,os:[]}));
   S.orders.forEach(o=>{const k=o.user_id?'u:'+o.user_id:'n:'+(o.client_nom||'').trim().toLowerCase();if(!m.has(k))m.set(k,{key:k,nom:o.client_nom,tel:o.client_tel,online:false,os:[]});const c=m.get(k);c.os.push(o);if(!c.tel&&o.client_tel)c.tel=o.client_tel});
   return[...m.values()].map(c=>({...c,n:c.os.filter(active).length,t:c.os.filter(active).reduce((a,o)=>a+(+o.total||0),0)}))}
 
@@ -372,7 +380,8 @@ function render(){
   $('#cliKind').innerHTML=Object.entries(CK).map(([k,l])=>`<button class="chip${S.ck===k?' on':''}" data-ck="${k}">${l}</button>`).join('');
   const nA=all.filter(c=>c.online).length;$('#cliSum').textContent=`${all.length} clients · ${nA} avec un compte · ${all.filter(c=>c.admin).length} admin(s) · ${all.length-nA} sans compte`;
   const cs=all.filter(c=>S.ck==='tous'||(S.ck==='comptes'&&c.online)||(S.ck==='admins'&&c.admin)||(S.ck==='sans'&&!c.online)).filter(c=>!cq||((c.nom||'')+' '+(c.tel||'')).toLowerCase().includes(cq)).sort((a,b)=>b.t-a.t);
-  $('#cliList').innerHTML=cs.length?cs.map(c=>`<div class="card row"><div class="grow"><b>${esc(c.nom)}</b> ${c.online?'<span class="reg">● enregistré</span>':'<span class="nreg">○ non enregistré</span>'} ${c.admin?'<span class="adm">admin</span>':''}<div class="mute">${esc(c.tel||'Pas de téléphone')}${c.since?' · inscrit le '+esc(new Date(c.since).toLocaleDateString('fr-BE')):''}${lastD(c)?' · dernière cmd '+esc(lastD(c)):''}</div></div><div style="text-align:right"><div class="price">${eur(c.t)}</div><div class="mute">${c.n} cmd</div></div><button class="btn sm" data-cli="${esc(c.key)}">Ouvrir</button></div>`).join(''):'<div class="card empty">Aucun client pour l\'instant.</div>';
+  $('#plList').innerHTML=S.plists.length?S.plists.map(l=>{const n=S.profiles.filter(p=>p.price_list_id===l.id).length,k=S.plItems.filter(i=>i.list_id===l.id).length;return `<div class="card row"><div class="grow"><b>${esc(l.nom)}</b><div class="mute">${k} prix personnalisé${k>1?'s':''} · ${n} client${n>1?'s':''}</div></div><button class="btn sm" data-pl="${esc(l.id)}">Modifier</button></div>`}).join(''):'<div class="card empty">Aucune liste de prix. Tous les clients paient le prix normal.</div>';
+  $('#cliList').innerHTML=cs.length?cs.map(c=>`<div class="card row"><div class="grow"><b>${esc(c.nom)}</b> ${c.online?'<span class="reg">● enregistré</span>':'<span class="nreg">○ non enregistré</span>'} ${c.admin?'<span class="adm">admin</span>':''}${c.pl&&plName(c.pl)?' <span class="pill p-prete">'+esc(plName(c.pl))+'</span>':''}<div class="mute">${esc(c.tel||'Pas de téléphone')}${c.since?' · inscrit le '+esc(new Date(c.since).toLocaleDateString('fr-BE')):''}${lastD(c)?' · dernière cmd '+esc(lastD(c)):''}</div></div><div style="text-align:right"><div class="price">${eur(c.t)}</div><div class="mute">${c.n} cmd</div></div><button class="btn sm" data-cli="${esc(c.key)}">Ouvrir</button></div>`).join(''):'<div class="card empty">Aucun client pour l\'instant.</div>';
 }
 
 // ---------- actions ----------
@@ -390,18 +399,19 @@ function orderForm(o){const isNew=!o;o=o||{lignes:[],date_retrait:today(),point:
   <label style="display:flex;gap:10px;align-items:center"><input id="fPaye" type="checkbox" style="width:24px;min-height:24px"${o.paye?' checked':''}> Payé</label>
   <label for="fNotes">Notes</label><textarea id="fNotes">${esc(o.notes)}</textarea>
   <div class="acts">${o.user_id?`<button class="btn" data-conv-open="${esc(o.user_id)}">Message</button>`:''}${isNew?'':'<button class="btn danger" id="fDel">Supprimer</button>'}<button class="btn" data-close>Fermer</button><button class="btn main" id="fSave">Enregistrer</button></div>`);
-  const tot=()=>{$('#fTot').textContent=eur(ps.reduce((a,p)=>a+(qt[p.id]||0)*(+p.prix||0),0))};tot();
+  const curPl=()=>{if(!isNew)return null;const pf=S.profiles.find(p=>p.username===val('fCn').trim().toLowerCase());return pf?.price_list_id||null};
+  const tot=()=>{const lid=curPl();$('#fTot').textContent=eur(ps.reduce((a,p)=>{const old=!isNew&&(o.lignes||[]).find(l=>l.pid===p.id);return a+(qt[p.id]||0)*(old?+old.prix:plPrice(p,lid))},0))+(lid?' · prix « '+plName(lid)+' »':'')};tot();if(isNew)$('#fCn').addEventListener('input',tot);
   $('#sheetIn').querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{const id=b.dataset.q;qt[id]=Math.max(0,(qt[id]||0)+ +b.dataset.d);$('#q-'+CSS.escape(id)).textContent=qt[id];tot()});
   const cb=$('#sheetIn').querySelector('[data-conv-open]');if(cb)cb.onclick=()=>openConv(cb.dataset.convOpen);
   if(!isNew)$('#fDel').onclick=async()=>{if($('#fDel').dataset.sure!=='1'){$('#fDel').dataset.sure='1';$('#fDel').textContent='Confirmer la suppression';return}
     if(o.stock_deduit)await sb.rpc('set_order_status',{p_id:o.id,p_statut:'annulee'});const{error}=await sb.from('orders').delete().eq('id',o.id);if(error)return toast('Erreur : '+error.message);closeSheet();toast('Commande supprimée');load('orders');load('products')};
   $('#fSave').onclick=async()=>{const nom=val('fCn').trim();if(!nom)return toast('Nom du client ?');
-    const lignes=ps.filter(p=>qt[p.id]>0).map(p=>{const old=(o.lignes||[]).find(l=>l.pid===p.id);return{pid:p.id,nom:p.nom,prix:old&&!isNew?+old.prix:(+p.prix||0),qte:qt[p.id]}});
+    const lignes=ps.filter(p=>qt[p.id]>0).map(p=>{const old=(o.lignes||[]).find(l=>l.pid===p.id);return{pid:p.id,nom:p.nom,prix:old&&!isNew?+old.prix:plPrice(p,curPl()),qte:qt[p.id]}});
     if(!lignes.length)return toast('Ajoute au moins un produit');$('#fSave').disabled=true;
     const st=val('fSt'),prof=S.profiles.find(p=>p.username===nom.toLowerCase());
     const d={client_nom:nom,client_tel:val('fCt').trim(),lignes,total:lignes.reduce((a,l)=>a+l.qte*l.prix,0),date_retrait:val('fDate')||today(),point:val('fPt'),paiement:val('fPay'),paye:$('#fPaye').checked,notes:val('fNotes').trim()};
     let id=o.id;
-    if(isNew){d.source='manuel';d.statut='a_preparer';if(prof)d.user_id=prof.id;const r=await q(sb.from('orders').insert(d).select('id').single());if(!r){$('#fSave').disabled=false;return}id=r.id}
+    if(isNew){d.source='manuel';d.statut='a_preparer';if(prof)d.user_id=prof.id;if(curPl())d.liste_prix=plName(curPl());const r=await q(sb.from('orders').insert(d).select('id').single());if(!r){$('#fSave').disabled=false;return}id=r.id}
     else{if(o.stock_deduit)await sb.rpc('set_order_status',{p_id:id,p_statut:'prete'});const{error}=await sb.from('orders').update(d).eq('id',id);if(error){$('#fSave').disabled=false;return toast('Erreur : '+error.message)}}
     await sb.rpc('set_order_status',{p_id:id,p_statut:st});closeSheet();toast('Commande enregistrée');load('orders');load('products')}}
 
@@ -441,8 +451,10 @@ function cliSheet(key){const c=clients().find(x=>x.key===key);if(!c)return;
   openSheet(`<h2>${esc(c.nom)}</h2><p class="mute">${c.n} commande${c.n>1?'s':''} · ${eur(c.t)}${c.tel?' · '+esc(c.tel):''}</p>
   ${c.os.slice(0,15).map(o=>`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span class="grow">${esc(fdate(o.date_retrait))} · n°${esc(o.id)}</span><span class="pill p-${esc(o.statut)}">${esc(ST[o.statut])}</span><span class="price">${eur(o.total)}</span></div>`).join('')}
   ${c.uid?`<p class="mute" style="margin-top:14px">${c.admin?'Ce compte a accès à la gestion.':'Client enregistré sur le site.'}</p>`:'<p class="mute" style="margin-top:14px">Client non enregistré : commandes ajoutées à la main.</p>'}
+  ${c.uid?`<label for="cPl">Liste de prix</label><select id="cPl"><option value="">Prix normal</option>${S.plists.map(l=>`<option value="${esc(l.id)}"${c.pl===l.id?' selected':''}>${esc(l.nom)}</option>`).join('')}</select>`:''}
   <div class="acts">${c.uid?`<button class="btn ice" id="cMsg">Envoyer un message</button><button class="btn" id="cAdm">${c.admin?'Retirer l\'accès gestion':'Donner l\'accès gestion'}</button>`:''}<button class="btn" data-close>Fermer</button></div>`);
-  if(c.uid){$('#cMsg').onclick=()=>openConv(c.uid);$('#cAdm').onclick=async()=>{const b=$('#cAdm');if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent=c.admin?'Confirmer : retirer l\'accès':'Confirmer : '+c.nom+' devient admin';return}
+  if(c.uid){$('#cPl').onchange=async()=>{const v=val('cPl')||null;$('#cPl').disabled=true;const{error}=await sb.rpc('set_price_list',{p_user:c.uid,p_list:v});$('#cPl').disabled=false;if(error)return toast('Erreur : '+error.message);toast(v?c.nom+' : prix « '+plName(v)+' »':c.nom+' : prix normal');await load('profiles')};
+    $('#cMsg').onclick=()=>openConv(c.uid);$('#cAdm').onclick=async()=>{const b=$('#cAdm');if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent=c.admin?'Confirmer : retirer l\'accès':'Confirmer : '+c.nom+' devient admin';return}
     b.disabled=true;const{error}=await sb.rpc('set_admin',{p_username:c.nom,p_admin:!c.admin});if(error)return toast('Erreur : '+error.message);closeSheet();toast(c.admin?'Accès retiré':c.nom+' a maintenant accès à la gestion');load('profiles')}}}
 
 document.addEventListener('click',async e=>{const t=e.target.closest('button');if(!t||t.closest('#sheet'))return;const d=t.dataset;
@@ -455,7 +467,26 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(d.adj){t.disabled=true;await sb.rpc('adjust_stock',{p_id:d.adj,p_delta:+d.d});await load('products')}
   else if(d.editP)prodForm(prod(d.editP));
   else if(d.conv)openConv(d.conv);
-  else if(d.cli)cliSheet(d.cli)});
+  else if(d.cli)cliSheet(d.cli)
+  else if(d.pl)plForm(S.plists.find(l=>l.id===d.pl))});
+$('#plAdd').onclick=()=>plForm();
+function plForm(l){const isNew=!l;l=l||{nom:''};const it=id=>S.plItems.find(x=>x.list_id===l.id&&x.product_id===id);
+  const ps=[...S.products].sort((a,b)=>(!a.actif)-(!b.actif)||(a.nom||'').localeCompare(b.nom||''));
+  openSheet(`<h2>${isNew?'Nouvelle liste de prix':'Liste « '+esc(l.nom)+' »'}</h2>
+  <label for="plN">Nom de la liste</label><input id="plN" maxlength="40" value="${esc(l.nom)}" placeholder="Ex. Professionnel">
+  <label>Prix par produit <span class="mute">(vide = prix normal)</span></label>
+  ${ps.map(p=>`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><div class="grow"><b>${esc(p.nom)}</b>${p.actif?'':' <span class="pill">Masqué</span>'}<div class="mute">Prix normal ${eur(p.prix)}${+p.cout?' · coût '+eur(p.cout):''}</div></div><input data-plp="${esc(p.id)}" inputmode="decimal" style="width:110px" placeholder="${esc(+p.prix||0)}" value="${it(p.id)?esc(+it(p.id).prix):''}" aria-label="Prix ${esc(p.nom)}"></div>`).join('')||'<div class="mute">Ajoute d\'abord tes produits dans Stock.</div>'}
+  <div class="acts">${isNew?'':'<button class="btn danger" id="plDel">Supprimer</button>'}<button class="btn" data-close>Fermer</button><button class="btn main" id="plSave">Enregistrer</button></div>`);
+  if(!isNew)$('#plDel').onclick=async()=>{const b=$('#plDel'),n=S.profiles.filter(p=>p.price_list_id===l.id).length;if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent=n?'Confirmer ('+n+' client'+(n>1?'s':'')+' repasse'+(n>1?'nt':'')+' au prix normal)':'Confirmer la suppression';return}
+    const{error}=await sb.from('price_lists').delete().eq('id',l.id);if(error)return toast('Erreur : '+error.message);closeSheet();toast('Liste supprimée');await load('plists');load('profiles')};
+  $('#plSave').onclick=async()=>{const nom=val('plN').trim();if(!nom)return toast('Nom de la liste ?');
+    const rows=[];for(const e of $('#sheetIn').querySelectorAll('[data-plp]')){const v=e.value.trim();if(!v)continue;const n=num(v);if(!(n>=0)||!/^\d+([.,]\d{1,2})?$/.test(v))return toast('Prix invalide : '+(prod(e.dataset.plp)?.nom||''));rows.push({product_id:e.dataset.plp,prix:n})}
+    $('#plSave').disabled=true;let id=l.id;
+    if(isNew){const r=await q(sb.from('price_lists').insert({nom}).select('id').single());if(!r){$('#plSave').disabled=false;return}id=r.id}
+    else{const{error}=await sb.from('price_lists').update({nom}).eq('id',id);if(error){$('#plSave').disabled=false;return toast('Erreur : '+error.message)}}
+    const del=await sb.from('price_list_items').delete().eq('list_id',id);if(del.error){$('#plSave').disabled=false;return toast('Erreur : '+del.error.message)}
+    if(rows.length){const{error}=await sb.from('price_list_items').insert(rows.map(r=>({...r,list_id:id})));if(error){$('#plSave').disabled=false;return toast('Erreur : '+error.message)}}
+    closeSheet();toast('Liste « '+nom+' » enregistrée');load('plists')}}
 document.addEventListener('click',e=>{const a=e.target.closest('[data-goch]');if(a){S.ch=a.dataset.goch;if(location.hash==='#chiffres'){e.preventDefault();render()}}});
 $('#fab').onclick=$('#newOrd').onclick=()=>orderForm();
 $('#ordList').addEventListener('click',e=>{const r=e.target.closest('tr[data-row]');if(r)orderForm(S.orders.find(o=>String(o.id)===r.dataset.row))});$('#addProd').onclick=()=>prodForm();
@@ -465,7 +496,7 @@ function dl(name,text,type){const a=document.createElement('a');a.href=URL.creat
 const csv=rows=>'\ufeff'+rows.map(r=>r.map(v=>{v=v==null?'':String(v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return /[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(';')).join('\r\n');
 const stamp=()=>today();
 $('#expAll').onclick=async()=>{const b=$('#expAll'),m=$('#expMsg');b.disabled=true;m.textContent='Export en cours…';
-  const T=['orders','profiles','messages','products','production','promo_codes','depenses','admin_settings','site_settings'],out={exporte_le:new Date().toISOString(),tables:{}};
+  const T=['orders','profiles','messages','products','production','promo_codes','depenses','admin_settings','site_settings','price_lists','price_list_items'],out={exporte_le:new Date().toISOString(),tables:{}};
   try{for(const t of T){const{data,error}=await sb.from(t).select('*').range(0,49999);if(error)throw new Error(t+' : '+error.message);out.tables[t]=data}
     dl('coolkie-sauvegarde-'+stamp()+'.json',JSON.stringify(out,null,1),'application/json');
     m.textContent='Sauvegarde téléchargée : '+T.map(t=>out.tables[t].length+' '+t).join(', ')+'.'}
@@ -614,7 +645,7 @@ async function devOpen(){if(!D.site){const r=await q(sb.from('site_settings').se
   ['texts','images','theme','banner'].forEach(k=>D.site[k]=D.site[k]||{});devForm();dirty(false)}
   loadPromos();if(!D.fields[D.page])loadFields(D.page);}
 function devForm(){const s=D.site,T={...CK_SITE.DEF,...s.theme};
-  $('#guestOn').checked=s.guest!==false;$('#bnOn').checked=!!s.banner.on;$('#bnText').value=s.banner.text||'';$('#bnTextNl').value=s.banner.text_nl||'';$('#bnTextEn').value=s.banner.text_en||'';$('#bnLink').value=s.banner.link||'';
+  $('#guestOn').checked=s.guest!==false;$('#promoOn').checked=s.promo!==false;$('#bnOn').checked=!!s.banner.on;$('#bnText').value=s.banner.text||'';$('#bnTextNl').value=s.banner.text_nl||'';$('#bnTextEn').value=s.banner.text_en||'';$('#bnLink').value=s.banner.link||'';
   $('#thPresets').innerHTML=Object.entries(CK_SITE.PRESETS).map(([n,p])=>`<button class="chip" data-preset="${esc(n)}"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${esc(p.primary)};margin-right:6px;vertical-align:-1px"></span>${esc(n)}</button>`).join('');
   $('#thColors').innerHTML=COLORS.map(([k,l])=>`<label><input type="color" data-th="${k}" value="${esc(T[k])}">${esc(l)}</label>`).join('');
   const opt=v=>CK_SITE.FONTS.map(f=>`<option${f===v?' selected':''}>${esc(f)}</option>`).join('');$('#thFt').innerHTML=opt(T.fontTitle);$('#thFb').innerHTML=opt(T.fontBody);
@@ -635,6 +666,7 @@ $('#v-dev').addEventListener('input',e=>{const t=e.target,s=D.site;if(!s)return;
   else if(t.dataset.th){s.theme[t.dataset.th]=t.value;CK_SITE.theme(s.theme);dirty(true)}
   else if(t.id==='thFt'||t.id==='thFb'){s.theme[t.id==='thFt'?'fontTitle':'fontBody']=t.value;CK_SITE.theme(s.theme);dirty(true)}
   else if(t.id==='guestOn'){s.guest=t.checked;dirty(true)}
+  else if(t.id==='promoOn'){s.promo=t.checked;dirty(true)}
   else if(/^bn(On|Text|TextNl|TextEn|Link)$/.test(t.id)){s.banner=bnRead();dirty(true)}});
 $('#v-dev').addEventListener('change',async e=>{const t=e.target;if(t.id==='bnOn'){if(t.checked&&!$('#bnText').value.trim())$('#bnText').value='Nouveau site ! Commande en ligne, retrait à Uccle ou Woluwe';D.site.banner=bnRead();dirty(true)}
   if(!t.dataset.up||!t.files[0])return;const k=t.dataset.up;toast('Envoi de la photo…');

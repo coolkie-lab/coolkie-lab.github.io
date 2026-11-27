@@ -34,5 +34,5 @@ window.CK_SITE={DEF,PRESETS,FONTS,theme,content,rich,safeUrl,banner};
 if(window.CK_NO_FETCH||!C.supabaseUrl)return;
 fetch(C.supabaseUrl+'/rest/v1/site_settings?id=eq.main&select=data',{headers:{apikey:C.supabaseKey,Authorization:'Bearer '+C.supabaseKey}})
   .then(r=>r.ok?r.json():null).then(r=>{const d=r&&r[0]&&r[0].data||{};try{localStorage.setItem('ck_site',JSON.stringify(d))}catch(e){}
-    theme(d.theme);ready(()=>content(d))}).catch(()=>{});
+    theme(d.theme);ready(()=>{content(d);window.dispatchEvent(new CustomEvent('ck-site',{detail:d}))})}).catch(()=>{});
 })();

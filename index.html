@@ -11,8 +11,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="common.css?v=12">
 <script src="config.js?v=5"></script>
-<script src="i18n.js?v=3"></script>
-<script src="site.js?v=6"></script>
+<script src="i18n.js?v=4"></script>
+<script src="site.js?v=7"></script>
 <style>
 body{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 .hero{background:var(--dough)}
@@ -81,6 +81,7 @@ section>.sub{color:var(--mute);margin:0 0 16px}
     <section id="commander">
       <h2 data-c="home.order_title" data-label="Titre commande" data-i>Choisis tes boîtes</h2>
       <p class="sub" data-c="home.order_text" data-label="Texte commande" data-i>Un seul parfum pour l'instant : chocolat noir, par boîtes de 4. Commande autant de boîtes que tu veux.</p>
+      <p class="info" id="plNote" hidden style="margin-bottom:12px"></p>
       <div class="prods" id="prods"><div class="card empty" data-i>Chargement…</div></div>
       <p class="info" id="nextb" style="display:none;margin-top:12px"></p>
       <p class="info" id="special" style="display:none;margin-top:12px" data-i>Plus de 20 coolkies : c'est une commande spéciale. On te confirme la date par le chat.</p>
@@ -90,9 +91,9 @@ section>.sub{color:var(--mute);margin:0 0 16px}
       <p class="sub" data-i>Paiement sur place, rien à payer en ligne.</p>
       <div class="pts" id="pts"></div>
       <div class="two" style="margin-top:4px"><div><label for="date" data-i>Date</label><input type="date" id="date"></div><div><label for="notes" data-i>Note (optionnel)</label><input id="notes" placeholder="Heure, remarque…" data-ip></div></div>
-      <label for="promoIn" data-i>Code promo</label>
+      <div id="promoBox"><label for="promoIn" data-i>Code promo</label>
       <div class="promo"><input id="promoIn" placeholder="Ex. BIENVENUE" autocapitalize="characters" maxlength="20"><button class="btn" id="promoGo" data-i>Appliquer</button></div>
-      <div id="promoMsg"></div>
+      <div id="promoMsg"></div></div>
     </section>
     <section>
       <div class="bake"><div class="k"><div><b>170°</b><span data-i>four classique</span></div><div><b data-i>17 min</b><span data-i>direct du congélateur</span></div><div><b data-i>5 min</b><span data-i>de repos</span></div></div><a href="guide.html" data-i>Mode d'emploi →</a></div>
@@ -166,7 +167,7 @@ function dispoLine(p){const d=dispo(p);if(d===null)return'';return d>0?`<div cla
 function overflow(){return cartLines().reduce((a,x)=>{const d=dispo(x.p);return a+(d===null?0:Math.max(0,x.q-d))},0)}
 function renderProds(){
   $('#prods').innerHTML=S.prods.length?S.prods.map(p=>{const q=S.cart[p.id]||0,out=(+p.stock||0)<=0;return `<div class="prod"><a class="im" href="${esc(C.instagram)}" aria-label="${T('Voir sur Instagram')}"${p.photo&&/^img\/[\w.-]+$/.test(p.photo)?` style="background-image:url('${esc(p.photo)}')"`:''}></a><div class="bd"><h3>${esc(T(p.nom))}</h3>${p.description?`<div class="mute">${esc(T(p.description||""))}</div>`:''}
-  <div class="row"><span class="price grow">${eur(p.prix)}${p.unite?' <span class="mute">/ '+esc(T(p.unite))+'</span>':''}</span><div class="step"><button data-q="${esc(p.id)}" data-d="-1" aria-label="${T('Retirer')} ${esc(T(p.nom))}">−</button><output>${q}</output><button data-q="${esc(p.id)}" data-d="1" aria-label="${T('Ajouter')} ${esc(T(p.nom))}">+</button></div></div>${dispoLine(p)}</div></div>`}).join(''):'<div class="card empty">'+T('Les parfums arrivent bientôt.')+'</div>';
+  <div class="row"><span class="price grow">${p.prix0!=null&&+p.prix0!==+p.prix?'<s class="mute" style="font-weight:400;margin-right:6px">'+eur(p.prix0)+'</s>':''}${eur(p.prix)}${p.unite?' <span class="mute">/ '+esc(T(p.unite))+'</span>':''}</span><div class="step"><button data-q="${esc(p.id)}" data-d="-1" aria-label="${T('Retirer')} ${esc(T(p.nom))}">−</button><output>${q}</output><button data-q="${esc(p.id)}" data-d="1" aria-label="${T('Ajouter')} ${esc(T(p.nom))}">+</button></div></div>${dispoLine(p)}</div></div>`}).join(''):'<div class="card empty">'+T('Les parfums arrivent bientôt.')+'</div>';
   renderBar()}
 function cartLines(){return S.prods.filter(p=>S.cart[p.id]>0).map(p=>({p,q:S.cart[p.id]}))}
 function renderBar(){const l=cartLines(),n=l.reduce((a,x)=>a+x.q,0);$('#barCount').textContent=n?T(n>1?'{n} boîtes':'{n} boîte',{n})+' · '+n*4+' coolkies':T('Panier vide');$('#special').style.display=n*4>20?'block':'none';const ov=overflow();$('#nextb').style.display=ov?'block':'none';$('#nextb').textContent=ov?(ov===n?T('Ta commande sera préparée avec le prochain batch. On te confirme la date par le chat.'):T('{o} boîte(s) sur {n} seront pour le prochain batch. On te confirme la date par le chat.',{o:ov,n})):'';const t=sub();$('#barTot').textContent=eur(t-remise(t));if(S.promo&&t)$('#barCount').textContent+=' · '+S.promo.code+' '+promoTxt()}
@@ -178,7 +179,9 @@ $('#promoGo').onclick=async()=>{const c=$('#promoIn').value.trim().toUpperCase()
   $('#promoGo').disabled=true;const{data,error}=await sb.rpc('check_promo',{p_code:c});$('#promoGo').disabled=false;
   if(error||!data||!data.length){S.promo=null;$('#promoMsg').innerHTML='<div class="err">'+T('Ce code n\'est pas valide.')+'</div>'}else{S.promo=data[0];$('#promoMsg').innerHTML='<div class="promo-ok">'+esc(T('Code {c} appliqué : {r}',{c:S.promo.code,r:promoTxt()}))+'</div>'}renderBar()};
 
-async function loadProds(){const{data,error}=await sb.from('products').select('id,nom,description,photo,prix,unite,stock').eq('actif',true).order('nom');if(error){$('#prods').innerHTML='<div class="card empty">'+T('Impossible de charger les parfums. Réessaie dans un instant.')+'</div>';return}S.prods=data||[];const r=await sb.rpc('available_stock');if(!r.error&&r.data){S.dispo={};r.data.forEach(x=>S.dispo[x.pid]=x.dispo)}renderProds()}
+async function loadProds(){const seq=loadProds.n=(loadProds.n||0)+1,uid=S.user?.id;const{data,error}=await sb.from('products').select('id,nom,description,photo,prix,unite,stock').eq('actif',true).order('nom');if(seq!==loadProds.n)return;if(error){$('#prods').innerHTML='<div class="card empty">'+T('Impossible de charger les parfums. Réessaie dans un instant.')+'</div>';return}let pl=null;if(uid){const m=await sb.rpc('my_prices');if(seq!==loadProds.n)return;if(!m.error&&m.data&&m.data.length){pl={};m.data.forEach(x=>pl[x.pid]=x)}}
+  S.prods=(data||[]).map(p=>pl&&pl[p.id]?{...p,prix0:p.prix,prix:+pl[p.id].prix}:p);const ln=pl&&Object.values(pl)[0].liste;$('#plNote').hidden=!ln;if(ln)$('#plNote').textContent=T('Tes prix « {l} » sont appliqués.',{l:ln});
+  const r=await sb.rpc('available_stock');if(seq!==loadProds.n)return;if(!r.error&&r.data){S.dispo={};r.data.forEach(x=>S.dispo[x.pid]=x.dispo)}renderProds()}
 
 // ---------- compte ----------
 function authForm(mode,after){mode=mode||'signup';
@@ -196,7 +199,7 @@ function authForm(mode,after){mode=mode||'signup';
     if(r.error||!r.data.session){$('#aGo').disabled=false;$('#aE').textContent=r.error?msgErr(r.error):T('Compte créé, mais la connexion directe est désactivée. Préviens Coolkie.');return}
     closeSheet();await onUser(r.data.session.user);toast(mode==='signup'?T('Bienvenue {u} !',{u}):T('Connecté'));if(after)after()}}
 
-async function onUser(u){S.user=u;if(!u){S.profile=null;$('#acctBtn').textContent=T('Se connecter');$('#adminBtn').hidden=true;return}
+async function onUser(u){const ch=(S.user?.id||null)!==(u?.id||null);S.user=u;if(ch)loadProds();if(!u){S.profile=null;$('#acctBtn').textContent=T('Se connecter');$('#adminBtn').hidden=true;return}
   const{data}=await sb.from('profiles').select('username,tel,is_admin').eq('id',u.id).maybeSingle();S.profile=data;
   $('#acctBtn').textContent=T('Mon compte');$('#adminBtn').hidden=!data?.is_admin;}
 $('#acctBtn').onclick=()=>S.user?showAccount():authForm('login',showAccount);
@@ -208,6 +211,9 @@ $('#checkout').onclick=()=>{const l=cartLines();
   if(!l.length){toast(T('Ajoute au moins un parfum'));location.hash='commander';return}
   if(!S.point){toast(T('Choisis un point de retrait'));$('#pts').scrollIntoView({behavior:'smooth',block:'center'});return}
   if(!S.user&&!guestOk())return authForm('signup',confirmOrder);confirmOrder()};
+const promoOk=()=>{try{return(JSON.parse(localStorage.getItem('ck_site')||'{}')||{}).promo!==false}catch(e){return true}};
+function applyPromo(){const on=promoOk();$('#promoBox').hidden=!on;if(!on&&S.promo){S.promo=null;$('#promoIn').value='';$('#promoMsg').innerHTML='';renderBar()}}
+applyPromo();addEventListener('ck-site',applyPromo);
 const guestOk=()=>{try{return(JSON.parse(localStorage.getItem('ck_site')||'{}')||{}).guest!==false}catch(e){return true}};
 function confirmOrder(){const l=cartLines(),p=C.points[S.point],st=sub(),rm=remise(st),tot=st-rm,tot0=tot;
   openSheet(`<h2>${T('Ta commande')}</h2>${l.map(x=>`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)"><span class="grow">${x.q} × ${esc(x.p.nom)}</span><span class="price">${eur(x.q*x.p.prix)}</span></div>`).join('')}
