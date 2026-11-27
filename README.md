@@ -7,3 +7,4 @@ Site de commande en ligne et espace de gestion de Coolkie (pâte à cookies surg
 - `config.js` : URL et clé publique Supabase, points de retrait.
 - `supabase/schema.sql` : base de données à installer une fois dans Supabase.
 - `img/` : photos.
+- `CNAME` : domaine du site (coolkie-lab.be). coolkie-lab.com redirige vers lui depuis OVHcloud.
