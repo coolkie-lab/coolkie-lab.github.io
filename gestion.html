@@ -78,6 +78,14 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
 @media(max-width:520px){.brand>a{flex:0 0 auto!important;font-size:0}.brand>a img{width:32px;height:32px}.brand{justify-content:space-between}}
 .ico-r{width:44px;height:44px;border-radius:12px;background:var(--dough);display:grid;place-items:center;font-size:22px;flex:none}
 #report{display:none}
+.bl{display:grid;grid-template-columns:minmax(0,2.4fr) minmax(0,1.3fr) 90px minmax(0,1.3fr) 30px;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.bl input,.bl select{min-height:38px;padding:6px 8px;font-size:14px}.bl.h{font-size:12px;color:var(--mute);font-weight:600;border:0;padding-bottom:0}
+.bl button{border:0;background:none;color:var(--mute);font-size:18px;min-height:38px}
+@media(max-width:640px){.bl{grid-template-columns:minmax(0,1.2fr) 80px minmax(0,1.2fr) 26px}.bl .nm{grid-column:1/-1}.bl.h .nm{display:none}}
+.sea{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}.sea label{margin:0;font-size:12px;color:var(--mute);text-align:center}.sea input{min-height:38px;padding:6px;text-align:center;font-size:14px}
+@media(max-width:520px){.sea{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.prog{height:14px;border-radius:7px;background:var(--line);overflow:hidden;margin:8px 0 4px}.prog i{display:block;height:100%;background:var(--ice);border-radius:7px}
+.tbl tr.t td{font-weight:600;background:var(--bg)}.tbl td.neg{color:var(--warn)}.tbl td.pos{color:var(--ok)}
 @media print{@page{size:A4;margin:14mm}body{background:#fff!important;padding:0!important}body>*:not(#report){display:none!important}
 #report{display:block;color:#111;font:10.5pt/1.45 var(--fB)}#report h1{font-size:24pt;margin:0}#report h2{font-size:13pt;margin:18px 0 8px;break-after:avoid;color:#123047}#report h2 small{font:400 9pt var(--fB);color:#666}
 #report .rp-h{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--ice);padding-bottom:10px}#report .rp-h p{margin:2px 0 0;font-size:12pt;color:#444}#report .rp-h img{width:56px;height:56px;border-radius:50%}
@@ -184,6 +192,21 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
         <div class="acts"><button class="btn ice" id="rGo">Télécharger le PDF</button></div>
         <p class="mute" style="margin:10px 0 0">La fenêtre d'impression s'ouvre : choisis « Enregistrer au format PDF » (sur iPhone : Partager › Enregistrer dans Fichiers).</p></div>
     </div>
+    <div class="chv" id="ch-budget">
+      <p class="mute" style="margin:0 0 10px" id="bIntro"></p>
+      <div class="kpis" id="kpisB" style="margin-top:0"></div>
+      <div class="card" style="margin-top:12px"><b id="bProgT"></b><div class="prog"><i id="bProg"></i></div><span class="mute" id="bProgS"></span></div>
+      <section><h2>Budget mois par mois <small>prévu et réel</small></h2><div id="bMonths"></div></section>
+      <section><h2>Par poste <small>budget de l'année et réel à date</small></h2><div id="bCats"></div></section>
+      <section><h2>Hypothèses</h2><div class="card">
+        <div class="two"><div><label for="bYear">Année</label><input id="bYear" inputmode="numeric"></div><div><label for="bCa">Objectif de chiffre d'affaires (€)</label><input id="bCa" inputmode="decimal"></div></div>
+        <div class="two"><div><label for="bPrix">Prix moyen par boîte (€)</label><input id="bPrix" inputmode="decimal"></div><div><label for="bAss">Nombre d'associés</label><input id="bAss" inputmode="numeric"></div></div>
+        <p class="mute" style="margin:8px 0 0" id="bPrixNote"></p></div></section>
+      <section><h2>Saisonnalité <small id="bSeaSum"></small></h2><div class="card"><p class="mute" style="margin:0 0 8px">Part du chiffre d'affaires de l'année faite chaque mois, en %. Le total est ramené à 100 % automatiquement.</p><div class="sea" id="bSea"></div></div></section>
+      <section><h2>Charges prévues <small>hors ingrédients et packaging des boîtes, calculés selon les ventes</small></h2><div id="bLines"></div><button class="btn sm" id="bAdd">+ Charge</button></section>
+      <div class="acts" style="margin-top:14px"><button class="btn" id="bPdf">Télécharger le budget en PDF</button><button class="btn sm" id="bReset">Revenir au budget proposé</button></div>
+      <div class="savebar"><span class="grow" id="bState">Tout est enregistré</span><button class="btn sm" id="bSave">Enregistrer</button></div>
+    </div>
     <div class="chv" id="ch-depenses">
       <div class="card"><b>Nouvelle dépense</b>
         <div class="two"><div><label for="dDate">Date</label><input id="dDate" type="date"></div><div><label for="dMt">Montant (€)</label><input id="dMt" inputmode="decimal"></div></div>
@@ -237,7 +260,7 @@ const NEXT={a_preparer:'prete',prete:'livree'};
 const PAY={cash:'Cash',payconiq:'Payconiq',virement:'Virement',carte:'Carte',autre:'Autre'};
 const PTS={...Object.fromEntries(Object.entries(C.points).map(([k,p])=>[k,p.nom+' ('+p.lieu+')'])),livraison:'Livraison',autre:'Autre'};
 const views={accueil:'Aujourd\'hui',commandes:'Commandes',stock:'Stock & produits',messages:'Messages',clients:'Clients',dev:'Mode dev',chiffres:'Chiffres',promos:'Codes promo'};
-const S={products:[],orders:[],messages:[],profiles:[],production:[],plists:[],plItems:[],depenses:[],costs:null,cDirty:false,ch:'apercu',filter:'actifs',pay:'tous',reg:'tous',pt:'tous',ck:'tous',ov:'liste',per:'mois',conv:null};
+const S={products:[],orders:[],messages:[],profiles:[],production:[],plists:[],plItems:[],depenses:[],costs:null,cDirty:false,budget:null,bDirty:false,bSaved:false,ch:'apercu',filter:'actifs',pay:'tous',reg:'tous',pt:'tous',ck:'tous',ov:'liste',per:'mois',conv:null};
 try{S.ov=localStorage.getItem('ck_ov')||'liste';S.per=localStorage.getItem('ck_per')||'mois'}catch(e){}
 function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',2400)}
 function openSheet(h){$('#sheetIn').innerHTML=h;$('#sheet').classList.add('on')}
@@ -264,6 +287,7 @@ async function load(t){
   if(!t||t==='plists'){S.plists=await q(sb.from('price_lists').select('*').order('nom'))||S.plists;S.plItems=await q(sb.from('price_list_items').select('*'))||S.plItems}
   if(!t||t==='depenses')S.depenses=await q(sb.from('depenses').select('*').order('date',{ascending:false}))||S.depenses;
   if(!t||t==='costs'){const r=await q(sb.from('admin_settings').select('data').eq('id','costs').maybeSingle());if(r!==null||!S.costs)S.costs=JSON.parse(JSON.stringify(r?.data||{batch_cookies:24,cookies_per_box:4,items:[]}));S.cDirty=false}
+  if(!t||t==='budget'){const r=await q(sb.from('admin_settings').select('data').eq('id','budget').maybeSingle());if(r!==null||!S.budget){S.bSaved=!!(r?.data?.lignes);S.budget=S.bSaved?JSON.parse(JSON.stringify(r.data)):budgetDefault()}S.bDirty=false}
   if(!t||t==='production')S.production=await q(sb.from('production').select('*').order('created_at',{ascending:false}).limit(20))||S.production;
   render();if(S.conv)renderConv()}
 const prod=id=>S.products.find(p=>p.id===id);
@@ -303,7 +327,7 @@ function render(){
   $('#kpis').innerHTML=[[eur(ca),'Ventes ce mois'],[eur(marge),'Marge brute ce mois',ca?Math.round(marge/ca*100)+' % du chiffre d\'affaires':''],[stockT+' boîtes','En stock',(stockT-resT)+' libres après commandes'],[eur(due),'À encaisser']].map(k=>`<div class="kpi"><b>${esc(k[0])}</b><span>${k[1]}</span>${k[2]?'<small>'+esc(k[2])+'</small>':''}</div>`).join('');
   {const PER={mois:'Ce mois',trim:'3 derniers mois',annee:'Cette année',tout:'Depuis le début'};
    document.querySelectorAll('.perc').forEach(e=>e.innerHTML=Object.entries(PER).map(([k,l])=>`<button class="chip${S.per===k?' on':''}" data-per="${k}">${l}</button>`).join(''));
-   const CH={apercu:'Vue d\'ensemble',finances:'Finances',couts:'Coûts de revient',depenses:'Dépenses',liasse:'Rapport PDF'};
+   const CH={apercu:'Vue d\'ensemble',finances:'Finances',couts:'Coûts de revient',depenses:'Dépenses',budget:'Budget',liasse:'Rapport PDF'};
    $('#chTabs').innerHTML=Object.entries(CH).map(([k,l])=>`<button class="chip${S.ch===k?' on':''}" data-ch="${k}">${l}</button>`).join('');
    document.querySelectorAll('.chv').forEach(e=>e.classList.toggle('on',e.id==='ch-'+S.ch));
    const t=today(),y=t.slice(0,4),d90=new Date(Date.now()-91*864e5).toISOString().slice(0,10);
@@ -315,7 +339,7 @@ function render(){
    const K=[[eur(caP),'Chiffre d\'affaires',po.length+' commandes','hl'],[eur(mP),'Marge brute',caP?Math.round(mP/caP*100)+' % du CA':''],[bxP,'Boîtes vendues',(bxP*4)+' coolkies'],[eur(po.length?caP/po.length:0),'Panier moyen',(po.length?(bxP/po.length).toFixed(1).replace('.',','):0)+' boîtes / commande'],
      [cliP,'Clients servis',regP+' commandes de clients enregistrés'],[Math.round(cs.length?fid/cs.length*100:0)+' %','Clients fidèles',fid+' clients sur '+cs.length+' ont commandé 2 fois ou plus'],[eur(cost),'Valeur du stock','au coût de revient'],[paidP+' / '+po.length,'Commandes payées',eur(po.filter(o=>!o.paye).reduce((a,o)=>a+(+o.total||0),0))+' restant']];
    $('#kpis2').innerHTML=K.map(k=>`<div class="kpi${k[3]?' '+k[3]:''}"><b>${esc(k[0])}</b><span>${esc(k[1])}</span>${k[2]?'<small>'+esc(k[2])+'</small>':''}</div>`).join('');
-   renderFin(po,inP);renderRep();
+   renderFin(po,inP);renderRep();renderBudget();
    const noCost=S.products.filter(p=>p.actif&&!(+p.cout));$('#kpiNote').textContent=noCost.length?'Ajoute le coût de revient de '+noCost.map(p=>p.nom).join(', ')+' (Chiffres › Coûts de revient) pour une marge exacte.':'Marge brute = prix de vente moins coût de revient ('+S.products.filter(p=>p.actif).map(p=>eur(p.cout)+' par '+(p.unite||'boîte')).join(', ')+').'}
   $('#prepCount').textContent=pend.length?pend.length+' en cours':'';
   $('#prep').innerHTML=pend.length?pend.map(orderCard).join(''):'<div class="card empty">Rien à préparer pour l\'instant.</div>';
@@ -509,7 +533,7 @@ $('#expClients').onclick=()=>{dl('coolkie-clients-'+stamp()+'.csv',csv([['Client
 $('#logout').onclick=$('#topLogout').onclick=async()=>{await sb.auth.signOut();location.reload()};
 
 // ---------- chiffres : finances, coûts, dépenses ----------
-const CATS={ingredients:'Ingrédients',packaging:'Packaging',marketing:'Marketing',materiel:'Matériel',autre:'Autre'};
+const CATS={ingredients:'Ingrédients',packaging:'Packaging',marketing:'Marketing',materiel:'Matériel',cotisations:'Cotisations sociales',admin:'Assurances et administratif',frais:'Frais bancaires et web',autre:'Autre'};
 const pct=(a,b)=>b?Math.round(a/b*100)+' %':'–';
 const barsHtml=(rows,color)=>{const mx=Math.max(1,...rows.map(r=>r[1]));return rows.length?rows.map(([l,v])=>`<div class="b" style="grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr) 90px"><span>${esc(l)}</span><div class="t"><i style="width:${(v/mx*100).toFixed(1)}%${color?';background:'+color:''}"></i></div><span class="v">${eur(v)}</span></div>`).join(''):'<div class="empty">Rien sur cette période.</div>'};
 function costCalc(c){c=c||S.costs||{items:[]};const per=Math.max(1,+c.cookies_per_box||4),bx=Math.max(1,(+c.batch_cookies||24)/per);
@@ -561,6 +585,103 @@ $('#ch-depenses').addEventListener('click',async e=>{const b=e.target.closest('b
     if(error)return toast('Erreur : '+error.message);['dMt','dDesc','dQui'].forEach(i=>$('#'+i).value='');toast('Dépense ajoutée');load('depenses')}
   else if(b.dataset.ddel){if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Supprimer ?';return}const{error}=await sb.from('depenses').delete().eq('id',+b.dataset.ddel);if(error)return toast('Erreur : '+error.message);load('depenses')}});
 
+// ---------- budget annuel (stocké dans admin_settings, id 'budget') ----------
+const MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const MC=['Janv.','Févr.','Mars','Avr.','Mai','Juin','Juil.','Août','Sept.','Oct.','Nov.','Déc.'];
+const QUAND={mensuel:'Chaque mois',trim:'Chaque trimestre',ventes:'Selon les ventes',...Object.fromEntries(MOIS.map((m,i)=>['m'+(i+1),'En '+m]))};
+function budgetDefault(){return{year:2027,ca:10000,prix:0,associes:2,
+  saison:[6,8,7,8,8,8,5,5,8,8,11,18],
+  lignes:[
+    {nom:'Inscription à la BCE (guichet d\'entreprises)',cat:'admin',montant:110,quand:'m1'},
+    {nom:'Assurance RC exploitation et produits',cat:'admin',montant:250,quand:'m1'},
+    {nom:'Contribution annuelle AFSCA',cat:'admin',montant:40,quand:'m3'},
+    {nom:'Cotisations sociales provisoires (98,51 € par trimestre et par associé, frais de caisse compris)',cat:'cotisations',montant:812,quand:'trim'},
+    {nom:'Provision pour régularisation des cotisations',cat:'cotisations',montant:200,quand:'m12'},
+    {nom:'Petit matériel (moules, balance, contenants)',cat:'materiel',montant:300,quand:'m1'},
+    {nom:'Marketing (flyers, stickers, Instagram)',cat:'marketing',montant:300,quand:'ventes'},
+    {nom:'Échantillons et dégustations',cat:'ingredients',montant:150,quand:'ventes'},
+    {nom:'Compte bancaire professionnel',cat:'frais',montant:60,quand:'mensuel'},
+    {nom:'Frais de paiement (Payconiq, terminal)',cat:'frais',montant:60,quand:'ventes'},
+    {nom:'Nom de domaine coolkie-lab.be',cat:'frais',montant:27,quand:'m11'}]}}
+const curPrice=()=>+(S.products.find(p=>p.actif)?.prix)||0;
+function budCalc(b){b=b||S.budget;const prix=+b.prix||curPrice()||14;
+  const sw=b.saison.map(x=>Math.max(0,+x||0)),st=sw.reduce((a,x)=>a+x,0)||1,w=sw.map(x=>x/st);
+  const k=costCalc(),ingB=k.ing/k.bx,packB=k.pack;
+  const M=w.map((wi,i)=>{const ca=(+b.ca||0)*wi,bx=ca/prix,cat={ingredients:bx*ingB,packaging:bx*packB};
+    (b.lignes||[]).forEach(l=>{const v=+l.montant||0,qd=l.quand;const x=qd==='mensuel'?v/12:qd==='trim'?([2,5,8,11].includes(i)?v/4:0):qd==='ventes'?v*wi:qd==='m'+(i+1)?v:0;
+      cat[l.cat]=(cat[l.cat]||0)+x});
+    const ch=Object.values(cat).reduce((a,x)=>a+x,0);return{ca,bx,cat,ch,res:ca-ch}});
+  const tot=f=>M.reduce((a,m)=>a+m[f],0);
+  return{M,prix,ingB,packB,box:k.box,ca:tot('ca'),bx:tot('bx'),ch:tot('ch'),res:tot('res'),cogs:M.reduce((a,m)=>a+m.cat.ingredients+m.cat.packaging,0)}}
+function budReal(y){const os=S.orders.filter(active);
+  return MOIS.map((_,i)=>{const m=y+'-'+String(i+1).padStart(2,'0'),ar=os.filter(o=>(o.date_retrait||'').startsWith(m)),dd=S.depenses.filter(d=>(d.date||'').startsWith(m)),cat={};
+    dd.forEach(d=>cat[d.categorie]=(cat[d.categorie]||0)+(+d.montant||0));
+    const ca=ar.reduce((a,o)=>a+(+o.total||0),0),ch=dd.reduce((a,d)=>a+(+d.montant||0),0);
+    return{m,ca,bx:ar.reduce((a,o)=>a+boxes(o),0),cat,ch,res:ca-ch,past:m<=today().slice(0,7)}})}
+const sgn=v=>(v>0?'+':v<0?'− ':'')+eur(Math.abs(v));
+const ecl=(v,inv)=>v===0?'':((inv?-v:v)>0?'pos':'neg');
+function budMonthsTable(B,R,from,to,cls){const y=S.budget.year,inR=i=>{const m=y+'-'+String(i+1).padStart(2,'0');return(!from||m>=from.slice(0,7))&&(!to||m<=to.slice(0,7))};
+  const idx=B.M.map((_,i)=>i).filter(inR);if(!idx.length)return'';
+  const t={cb:0,cr:0,bb:0,br:0,hb:0,hr:0};
+  const rows=idx.map(i=>{const b=B.M[i],r=R[i];t.cb+=b.ca;t.bb+=b.bx;t.hb+=b.ch;if(r.past){t.cr+=r.ca;t.br+=r.bx;t.hr+=r.ch}
+    const e=r.past?r.ca-b.ca:null;
+    return `<tr><td>${MC[i]}</td><td class="r">${eur(b.ca)}</td><td class="r">${r.past?eur(r.ca):'–'}</td><td class="r ${e===null?'':ecl(e)}">${e===null?'':sgn(e)}</td><td class="r hm">${Math.round(b.bx)} / ${r.past?r.bx:'–'}</td><td class="r hm">${eur(b.ch)}</td><td class="r hm">${r.past?eur(r.ch):'–'}</td><td class="r">${eur(b.res)}</td><td class="r">${r.past?eur(r.res):'–'}</td></tr>`}).join('');
+  return `<div style="overflow-x:auto;border-radius:16px"><table class="${cls||'tbl'}"><thead><tr><th>Mois</th><th class="r">CA prévu</th><th class="r">CA réel</th><th class="r">Écart</th><th class="r hm">Boîtes prévu / réel</th><th class="r hm">Charges prévues</th><th class="r hm">Dépenses réelles</th><th class="r">Résultat prévu</th><th class="r">Résultat réel</th></tr></thead><tbody>${rows}
+    <tr class="t"><td>Total</td><td class="r">${eur(t.cb)}</td><td class="r">${eur(t.cr)}</td><td class="r"></td><td class="r hm">${Math.round(t.bb)} / ${t.br}</td><td class="r hm">${eur(t.hb)}</td><td class="r hm">${eur(t.hr)}</td><td class="r">${eur(t.cb-t.hb)}</td><td class="r">${eur(t.cr-t.hr)}</td></tr></tbody></table></div>`}
+function budCatsTable(B,R,cls){const keys=[...new Set([...Object.keys(CATS),...B.M.flatMap(m=>Object.keys(m.cat)),...R.flatMap(r=>Object.keys(r.cat))])];
+  const rows=keys.map(c=>{const an=B.M.reduce((a,m)=>a+(m.cat[c]||0),0),ad=B.M.reduce((a,m,i)=>a+(R[i].past?m.cat[c]||0:0),0),re=R.reduce((a,r)=>a+(r.past?r.cat[c]||0:0),0);return{c,an,ad,re}}).filter(x=>x.an||x.re);
+  const T=rows.reduce((a,x)=>({an:a.an+x.an,ad:a.ad+x.ad,re:a.re+x.re}),{an:0,ad:0,re:0});
+  return `<div style="overflow-x:auto;border-radius:16px"><table class="${cls||'tbl'}"><thead><tr><th>Poste</th><th class="r">Budget de l'année</th><th class="r hm">Budget à date</th><th class="r">Réel à date</th><th class="r">Écart</th></tr></thead><tbody>
+    ${rows.map(x=>`<tr><td>${esc(CATS[x.c]||x.c)}</td><td class="r">${eur(x.an)}</td><td class="r hm">${eur(x.ad)}</td><td class="r">${eur(x.re)}</td><td class="r ${ecl(x.re-x.ad,1)}">${sgn(x.re-x.ad)}</td></tr>`).join('')}
+    <tr class="t"><td>Total des charges</td><td class="r">${eur(T.an)}</td><td class="r hm">${eur(T.ad)}</td><td class="r">${eur(T.re)}</td><td class="r ${ecl(T.re-T.ad,1)}">${sgn(T.re-T.ad)}</td></tr></tbody></table></div>`}
+function renderBudget(){const b=S.budget;if(!b||!$('#kpisB'))return;const B=budCalc(),R=budReal(b.year),y=b.year,ass=Math.max(1,+b.associes||1);
+  const nPast=R.filter(r=>r.past).length,caR=R.reduce((a,r)=>a+(r.past?r.ca:0),0),caAd=B.M.reduce((a,m,i)=>a+(R[i].past?m.ca:0),0),resR=R.reduce((a,r)=>a+(r.past?r.res:0),0),resAd=B.M.reduce((a,m,i)=>a+(R[i].past?m.res:0),0);
+  $('#bIntro').textContent=(S.bSaved?'Budget '+y+' enregistré.':'Budget '+y+' proposé, pas encore enregistré : vérifie les hypothèses plus bas puis enregistre.')+' Le réel vient des commandes (date de retrait, hors annulées) et des dépenses notées.';
+  $('#kpisB').innerHTML=[[eur(B.ca),'Objectif de CA '+y,Math.round(B.bx)+' boîtes à '+eur(B.prix)+', soit '+Math.round(B.bx/12)+' par mois','hl'],[eur(B.ch),'Charges prévues',eur(B.cogs)+' d\'ingrédients et packaging'],[eur(B.res),'Résultat prévu',ass>1?eur(B.res/ass)+' par associé':pct(B.res,B.ca)+' du CA'],[nPast?sgn(caR-caAd):'–','Écart de CA à date',nPast?'résultat réel '+eur(resR)+' (prévu '+eur(resAd)+')':'le suivi commence en janvier '+y]]
+    .map(k=>`<div class="kpi${k[3]?' '+k[3]:''}"><b>${esc(k[0])}</b><span>${esc(k[1])}</span>${k[2]?'<small>'+esc(k[2])+'</small>':''}</div>`).join('');
+  $('#bProgT').textContent=eur(caR)+' réalisés sur '+eur(B.ca);$('#bProg').style.width=Math.min(100,B.ca?caR/B.ca*100:0).toFixed(1)+'%';
+  $('#bProgS').textContent=nPast?pct(caR,B.ca)+' de l\'objectif, '+pct(caR,caAd)+' du budget prévu à fin '+MOIS[nPast-1]+'.':'Rien de vendu en '+y+' pour l\'instant.';
+  $('#bMonths').innerHTML=budMonthsTable(B,R);$('#bCats').innerHTML=budCatsTable(B,R);
+  const cp=curPrice();$('#bPrixNote').textContent=(+b.prix?'Prix fixé à la main.':'Laisse vide pour prendre le prix actuel de la boutique'+(cp?' ('+eur(cp)+')':'')+'.')+' Coût de revient actuel : '+eur(B.box)+' par boîte (Coûts de revient).';
+  const st=b.saison.reduce((a,x)=>a+(+x||0),0);$('#bSeaSum').textContent='total '+Math.round(st)+' %';
+  bDirty(S.bDirty);if(S.bDirty)return;
+  $('#bYear').value=b.year;$('#bCa').value=b.ca;$('#bPrix').value=+b.prix||'';$('#bPrix').placeholder=cp?String(cp).replace('.',','):'14';$('#bAss').value=b.associes||1;
+  $('#bSea').innerHTML=b.saison.map((x,i)=>`<div><label for="bs${i}">${MC[i]}</label><input id="bs${i}" data-bs="${i}" inputmode="decimal" value="${esc(x)}"></div>`).join('');
+  const opt=(o,v)=>Object.entries(o).map(([k,l])=>`<option value="${k}"${k===v?' selected':''}>${esc(l)}</option>`).join('');
+  $('#bLines').innerHTML=`<div class="bl h"><span class="nm">Charge</span><span>Poste</span><span>Montant / an</span><span>Quand</span><span></span></div>`+b.lignes.map((l,i)=>`<div class="bl"><input class="nm" data-bi="${i}" data-bf="nom" value="${esc(l.nom)}" aria-label="Charge"><select data-bi="${i}" data-bf="cat" aria-label="Poste">${opt(CATS,l.cat)}</select><input data-bi="${i}" data-bf="montant" inputmode="decimal" value="${esc(l.montant)}" aria-label="Montant par an"><select data-bi="${i}" data-bf="quand" aria-label="Quand">${opt(QUAND,l.quand)}</select><button data-bdel="${i}" aria-label="Supprimer">×</button></div>`).join('')}
+function bDirty(v){S.bDirty=v;$('#bState').textContent=v?'Modifications non enregistrées':(S.bSaved?'Tout est enregistré':'Budget proposé, pas encore enregistré')}
+const bEdit=e=>{const t=e.target,b=S.budget;if(!b||!t.closest('#ch-budget')||t.closest('.savebar'))return;
+  if(t.id==='bYear')b.year=Math.round(num(t.value))||b.year;else if(t.id==='bCa')b.ca=num(t.value);else if(t.id==='bPrix')b.prix=num(t.value);else if(t.id==='bAss')b.associes=Math.max(1,Math.round(num(t.value)));
+  else if(t.dataset.bs!==undefined)b.saison[+t.dataset.bs]=num(t.value);
+  else if(t.dataset.bi!==undefined){const l=b.lignes[+t.dataset.bi];l[t.dataset.bf]=['nom','cat','quand'].includes(t.dataset.bf)?t.value:num(t.value)}else return;
+  bDirty(true);renderBudget()};
+$('#ch-budget').addEventListener('input',bEdit);$('#ch-budget').addEventListener('change',bEdit);
+$('#ch-budget').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b||!S.budget)return;
+  if(b.id==='bAdd'){S.budget.lignes.push({nom:'',cat:'autre',montant:0,quand:'mensuel'});S.bDirty=false;renderBudget();bDirty(true)}
+  else if(b.dataset.bdel){if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='?';return}S.budget.lignes.splice(+b.dataset.bdel,1);S.bDirty=false;renderBudget();bDirty(true)}
+  else if(b.id==='bReset'){if(b.dataset.sure!=='1'){b.dataset.sure='1';b.textContent='Sûr ? Les hypothèses actuelles seront remplacées';return}S.budget=budgetDefault();S.bDirty=false;renderBudget();bDirty(true);b.dataset.sure='';b.textContent='Revenir au budget proposé'}
+  else if(b.id==='bSave'){S.budget.lignes=S.budget.lignes.filter(l=>l.nom.trim()||+l.montant);b.disabled=true;
+    const{error}=await sb.from('admin_settings').upsert({id:'budget',data:S.budget,updated_at:new Date().toISOString()});b.disabled=false;
+    if(error)return toast('Erreur : '+error.message);S.bSaved=true;S.bDirty=false;bDirty(false);renderBudget();toast('Budget '+S.budget.year+' enregistré')}
+  else if(b.id==='bPdf'){printDoc(budgetDoc(),'Coolkie - Budget '+S.budget.year)}});
+addEventListener('beforeunload',e=>{if(S.bDirty||S.cDirty){e.preventDefault();e.returnValue=''}});
+function budReportSection(from,to,n){const b=S.budget;if(!b||from.slice(0,4)>String(b.year)||to.slice(0,4)<String(b.year))return'';const B=budCalc(),R=budReal(b.year);
+  return `<h2>${n||''}Budget ${b.year} : prévu et réel <small>objectif ${eur(B.ca)} de chiffre d'affaires sur l'année</small></h2>${budMonthsTable(B,R,from,to,'sm')}
+  <p class="rp-m">Réalisé depuis janvier ${b.year} : ${eur(R.reduce((a,r)=>a+(r.past?r.ca:0),0))}, soit ${pct(R.reduce((a,r)=>a+(r.past?r.ca:0),0),B.ca)} de l'objectif annuel. Les mois à venir n'ont pas encore de réel.</p>`}
+function budgetDoc(){const b=S.budget,B=budCalc(),R=budReal(b.year),ass=Math.max(1,+b.associes||1);
+  return `<div class="rp-h"><div><h1>Budget ${b.year}</h1><p>Coolkie Lab · objectif ${eur(B.ca)} de chiffre d'affaires</p></div><img src="img/coolkie-logo.jpg" alt=""></div>
+  <p class="rp-m">Généré le ${esc(new Date().toLocaleDateString('fr-BE',{day:'numeric',month:'long',year:'numeric'}))}${S.bSaved?'':' (budget proposé, pas encore enregistré)'}.</p>
+  <h2>1. Synthèse</h2><div class="rp-k">${[[eur(B.ca),'Chiffre d\'affaires visé'],[Math.round(B.bx)+' boîtes','à '+eur(B.prix)+' · '+Math.round(B.bx/12)+' par mois'],[eur(B.ch),'Charges prévues'],[eur(B.res),'Résultat prévu'+(ass>1?' · '+eur(B.res/ass)+' par associé':'')]].map(x=>`<div><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div>`).join('')}</div>
+  <h2>2. Mois par mois</h2>${budMonthsTable(B,R,null,null,'sm')}
+  <h2>3. Par poste</h2>${budCatsTable(B,R,'sm')}
+  <h2>4. Charges prévues</h2><table class="sm"><thead><tr><th>Charge</th><th>Poste</th><th>Quand</th><th class="r">Montant / an</th></tr></thead><tbody>
+  <tr><td>Ingrédients des boîtes vendues (${eur(B.ingB)} par boîte)</td><td>Ingrédients</td><td>Selon les ventes</td><td class="r">${eur(B.ingB*B.bx)}</td></tr><tr><td>Packaging des boîtes vendues (${eur(B.packB)} par boîte)</td><td>Packaging</td><td>Selon les ventes</td><td class="r">${eur(B.packB*B.bx)}</td></tr>
+  ${b.lignes.map(l=>`<tr><td>${esc(l.nom)}</td><td>${esc(CATS[l.cat]||l.cat)}</td><td>${esc(QUAND[l.quand]||l.quand)}</td><td class="r">${eur(l.montant)}</td></tr>`).join('')}
+  <tr class="t"><td colspan="3"><b>Total</b></td><td class="r"><b>${eur(B.ch)}</b></td></tr></tbody></table>
+  <h2>5. Hypothèses</h2><p>Prix moyen de ${eur(B.prix)} par boîte et coût de revient de ${eur(B.box)} par boîte (ingrédients et packaging), soit une marge brute de ${pct(B.prix-B.box,B.prix)}. Saisonnalité : ${b.saison.map((x,i)=>MC[i]+' '+x+' %').join(', ')}. Activité en indépendants complémentaires (${ass} associé${ass>1?'s':''}), sous le régime de la franchise de TVA (chiffre d'affaires sous 25 000 €). Les cotisations sociales provisoires sont le minimum légal 2026 (98,51 € par trimestre et par associé) ; elles sont régularisées deux ans plus tard selon le revenu réel (20,5 % du revenu au-delà de 1 922,16 € par associé). L'impôt sur le revenu n'est pas compris : il dépend des autres revenus de chacun.</p>`}
+function printDoc(html,title){let r=$('#report');if(!r){r=document.createElement('div');r.id='report';document.body.appendChild(r)}r.innerHTML=html;const t=document.title;document.title=title;
+  const im=r.querySelector('img');const go=()=>setTimeout(()=>{window.print();setTimeout(()=>document.title=t,1500)},100);if(!im||im.complete)go();else im.onload=im.onerror=go}
+
 // ---------- liasse financière mensuelle (PDF via impression) ----------
 const fmtD=d=>new Date(d+'T12:00').toLocaleDateString('fr-BE',{day:'numeric',month:'short',year:'numeric'});
 const lastDay=(y,m)=>new Date(Date.UTC(y,m,0)).toISOString().slice(0,10);
@@ -581,6 +702,7 @@ function renderRep(){const sel=$('#rMonth');if(!sel)return;const type=$('#rType'
   sel.innerHTML=op.map(([v,l])=>`<option value="${v}"${v===cur?' selected':''}>${esc(l)}</option>`).join('');sel.disabled=type==='ytd';
   if(!cur&&type==='mois'){const prev=new Date();prev.setDate(1);prev.setMonth(prev.getMonth()-1);const pm=prev.toISOString().slice(0,7);if(op.some(o=>o[0]===pm))sel.value=pm}}
 async function buildReport(P){
+  if(!S.budget)await load('budget');
   const ym='cur',pym='prev',inM=(d,m)=>{d=d||'';return m==='cur'?(d>=P.from&&d<=P.to):(d>=P.pf&&d<=P.pt)},os=S.orders.filter(active);
   const mLabel=x=>x==='cur'?P.label:x==='prev'?P.pl:x;
   const po=os.filter(o=>inM(o.date_retrait,ym)),pp=os.filter(o=>inM(o.date_retrait,pym));
@@ -625,7 +747,7 @@ async function buildReport(P){
   ${unpaid.length?`<tr class="t"><td colspan="3"><b>Total</b></td><td class="r"><b>${eur(unpaid.reduce((a,o)=>a+(+o.total||0),0))}</b></td></tr>`:''}</tbody></table>
   <h2>9. Coût de revient d'une boîte</h2><table class="sm"><thead><tr><th>Élément</th><th class="r">Achat</th><th class="r">Utilisé</th><th class="r">Coût</th></tr></thead><tbody>
   ${(S.costs?.items||[]).map(i=>`<tr><td>${esc(i.nom)}${i.cat==='pack'?' <i>(par boîte)</i>':''}</td><td class="r">${esc(i.pack_qty)} ${esc(i.unit||'')} · ${eur(i.pack_price)}</td><td class="r">${esc(i.used)} ${esc(i.unit||'')}</td><td class="r">${eur(k.line(i))}</td></tr>`).join('')}
-  <tr class="t"><td colspan="3">Ingrédients par batch (${esc(S.costs?.batch_cookies)} coolkies, ${k.bx.toFixed(0)} boîtes)</td><td class="r">${eur(k.ing)}</td></tr><tr class="t"><td colspan="3"><b>Coût par boîte</b></td><td class="r"><b>${eur(k.box)}</b></td></tr></tbody></table>`}
+  <tr class="t"><td colspan="3">Ingrédients par batch (${esc(S.costs?.batch_cookies)} coolkies, ${k.bx.toFixed(0)} boîtes)</td><td class="r">${eur(k.ing)}</td></tr><tr class="t"><td colspan="3"><b>Coût par boîte</b></td><td class="r"><b>${eur(k.box)}</b></td></tr></tbody></table>${budReportSection(P.from,P.to,'10. ')}`}
 $('#rType')?.addEventListener('change',renderRep);
 $('#rGo')?.addEventListener('click',async()=>{const type=$('#rType').value,v=$('#rMonth').value;if(type!=='ytd'&&!v)return;const P=periodOf(type,v),ym=P.from+'_'+P.to;const b=$('#rGo');b.disabled=true;
   try{if(!S.costs)await load('costs');let r=$('#report');if(!r){r=document.createElement('div');r.id='report';document.body.appendChild(r)}r.innerHTML=await buildReport(P);
