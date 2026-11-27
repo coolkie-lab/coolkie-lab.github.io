@@ -532,7 +532,7 @@ $('#expClients').onclick=()=>{dl('coolkie-clients-'+stamp()+'.csv',csv([['Client
 $('#logout').onclick=$('#topLogout').onclick=async()=>{await sb.auth.signOut();location.reload()};
 
 // ---------- chiffres : finances, coûts, dépenses ----------
-const CATS={ingredients:'Ingrédients',packaging:'Packaging',marketing:'Marketing',materiel:'Matériel',cotisations:'Cotisations sociales',admin:'Assurances et administratif',frais:'Frais bancaires et web',autre:'Autre'};
+const CATS={ingredients:'Ingrédients',packaging:'Packaging',marketing:'Marketing',materiel:'Matériel',cotisations:'Cotisations sociales',locaux:'Locaux et énergie',admin:'Assurances et administratif',frais:'Frais bancaires et web',autre:'Autre'};
 const pct=(a,b)=>b?Math.round(a/b*100)+' %':'–';
 const barsHtml=(rows,color)=>{const mx=Math.max(1,...rows.map(r=>r[1]));return rows.length?rows.map(([l,v])=>`<div class="b" style="grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr) 90px"><span>${esc(l)}</span><div class="t"><i style="width:${(v/mx*100).toFixed(1)}%${color?';background:'+color:''}"></i></div><span class="v">${eur(v)}</span></div>`).join(''):'<div class="empty">Rien sur cette période.</div>'};
 function costCalc(c){c=c||S.costs||{items:[]};const per=Math.max(1,+c.cookies_per_box||4),bx=Math.max(1,(+c.batch_cookies||24)/per);
@@ -598,6 +598,7 @@ function budgetDefault(){return{year:2027,ca:10000,prix:0,associes:2,
     {nom:'Assurance RC exploitation et produits',cat:'admin',montant:250,quand:'m1'},
     {nom:'Contribution annuelle AFSCA (enregistrement de la cuisine gratuit)',cat:'admin',montant:50,quand:'m3'},
     {nom:'Cotisations sociales provisoires (98,51 € par trimestre et par associé)',cat:'cotisations',montant:788,quand:'trim'},
+    {nom:'Utilisation des locaux privés (cuisine et bureau : loyer, charges, énergie)',cat:'locaux',montant:1000,quand:'mensuel'},
     {nom:'Petit matériel (moules, balance, contenants)',cat:'materiel',montant:300,quand:'m1'},
     {nom:'Marketing (flyers, stickers, Instagram)',cat:'marketing',montant:300,quand:'ventes'},
     {nom:'Échantillons et dégustations',cat:'ingredients',montant:150,quand:'ventes'},
