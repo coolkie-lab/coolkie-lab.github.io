@@ -15,13 +15,16 @@ const json = (d: unknown, s = 200) => new Response(JSON.stringify(d), { status: 
 let K: { public_key: string; private_key: string } | null = null;
 async function keys() {
   if (K) return K;
-  let { data } = await sb.from("push_keys").select("public_key,private_key").eq("id", 1).maybeSingle();
+  let { data, error } = await sb.from("push_keys").select("public_key,private_key").eq("id", 1).maybeSingle();
+  if (error) throw new Error("push_keys : " + error.message);
   if (!data) {
     const k = webpush.generateVAPIDKeys();
-    await sb.from("push_keys").upsert({ id: 1, public_key: k.publicKey, private_key: k.privateKey }, { onConflict: "id", ignoreDuplicates: true });
-    ({ data } = await sb.from("push_keys").select("public_key,private_key").eq("id", 1).single());
+    const w = await sb.from("push_keys").upsert({ id: 1, public_key: k.publicKey, private_key: k.privateKey }, { onConflict: "id", ignoreDuplicates: true });
+    if (w.error) throw new Error("push_keys : " + w.error.message);
+    ({ data, error } = await sb.from("push_keys").select("public_key,private_key").eq("id", 1).single());
+    if (error || !data) throw new Error("push_keys : " + (error?.message || "vide"));
   }
-  K = data!;
+  K = data;
   webpush.setVapidDetails("https://coolkie-lab.be", K.public_key, K.private_key);
   return K;
 }
@@ -47,7 +50,8 @@ async function send(subs: Sub[], msg: Record<string, unknown>) {
 async function adminSubs(uid?: string) {
   let q = sb.from("push_subscriptions").select("endpoint,p256dh,auth,user_id,profiles!inner(is_admin)").eq("profiles.is_admin", true);
   if (uid) q = q.eq("user_id", uid);
-  const { data } = await q;
+  const { data, error } = await q;
+  if (error) throw new Error("push_subscriptions : " + error.message);
   return (data || []) as Sub[];
 }
 
@@ -57,6 +61,15 @@ const POINTS: Record<string, string> = { uccle: "Uccle", woluwe: "Woluwe", livra
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+  try {
+    return await handle(req);
+  } catch (e) {
+    console.error(e);
+    return json({ error: (e as Error).message }, 500);
+  }
+});
+
+async function handle(req: Request): Promise<Response> {
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { /* vide */ }
 
@@ -77,9 +90,10 @@ Deno.serve(async (req) => {
   if (!id) return json({ error: "order_id manquant" }, 400);
   // Une seule notification par commande, seulement pour une commande en ligne toute récente.
   const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-  const { data: o } = await sb.from("orders").update({ push_envoye: true })
+  const { data: o, error: oe } = await sb.from("orders").update({ push_envoye: true })
     .eq("id", id).eq("push_envoye", false).eq("source", "en_ligne").gte("created_at", since)
     .select("id,lignes,total,point,date_retrait,user_id").maybeSingle();
+  if (oe) throw new Error("orders : " + oe.message);
   if (!o) return json({ skip: true });
   const lignes = (o.lignes || []) as { nom: string; qte: number }[];
   const boites = lignes.reduce((a, l) => a + (+l.qte || 0), 0);
@@ -94,4 +108,4 @@ Deno.serve(async (req) => {
     tag: "cmd-" + o.id,
   }) : { envoyes: 0, echecs: 0 };
   return json(r);
-});
+}

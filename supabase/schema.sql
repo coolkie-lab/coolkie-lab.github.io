@@ -689,4 +689,11 @@ begin
 end $$;
 drop trigger if exists orders_push on public.orders;
 create trigger orders_push after insert on public.orders for each row execute function public.notify_push_order();
+-- la fonction push-commande lit avec la clé service_role : droits minimum (le projet n'en donne aucun par défaut)
+grant select, insert on public.push_keys to service_role;
+grant select, delete on public.push_subscriptions to service_role;
+grant select (id, is_admin) on public.profiles to service_role;
+grant select (id, lignes, total, point, date_retrait, user_id, source, created_at, push_envoye) on public.orders to service_role;
+grant update (push_envoye) on public.orders to service_role;
+notify pgrst, 'reload schema';
 select 'ok' as v11;
