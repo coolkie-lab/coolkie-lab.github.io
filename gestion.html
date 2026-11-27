@@ -200,7 +200,7 @@ nav .dot{position:absolute;top:5px;left:calc(50% + 6px);min-width:18px;height:18
       <section><h2>Hypothèses</h2><div class="card">
         <div class="two"><div><label for="bYear">Année</label><input id="bYear" inputmode="numeric"></div><div><label for="bCa">Objectif de chiffre d'affaires (€)</label><input id="bCa" inputmode="decimal"></div></div>
         <div class="two"><div><label for="bPrix">Prix moyen par boîte (€)</label><input id="bPrix" inputmode="decimal"></div><div><label for="bAss">Nombre d'associés</label><input id="bAss" inputmode="numeric"></div></div>
-        <div class="two"><div><label for="bH">Heures de travail par an (tous associés)</label><input id="bH" inputmode="numeric"></div><div></div></div>
+        <div class="two"><div><label for="bH">Heures de travail par an (tous associés)</label><input id="bH" inputmode="numeric"></div><div><label for="bHb">Heures par batch de 100 coolkies</label><input id="bHb" inputmode="decimal"></div></div>
         <p class="mute" style="margin:8px 0 0" id="bPrixNote"></p></div></section>
       <section><h2>Saisonnalité <small id="bSeaSum"></small></h2><div class="card"><p class="mute" style="margin:0 0 8px">Part du chiffre d'affaires de l'année faite chaque mois, en %. Le total est ramené à 100 % automatiquement.</p><div class="sea" id="bSea"></div></div></section>
       <section><h2>Charges prévues <small>hors ingrédients et packaging des boîtes, calculés selon les ventes</small></h2><div id="bLines"></div><button class="btn sm" id="bAdd">+ Charge</button></section>
@@ -593,7 +593,7 @@ $('#ch-depenses').addEventListener('click',async e=>{const b=e.target.closest('b
 const MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 const MC=['Janv.','Févr.','Mars','Avr.','Mai','Juin','Juil.','Août','Sept.','Oct.','Nov.','Déc.'];
 const QUAND={mensuel:'Chaque mois',trim:'Chaque trimestre',ventes:'Selon les ventes',...Object.fromEntries(MOIS.map((m,i)=>['m'+(i+1),'En '+m]))};
-function budgetDefault(){return{year:2027,ca:10000,prix:0,associes:2,heures:416,
+function budgetDefault(){return{year:2027,ca:10000,prix:0,associes:2,heures:416,h_batch:4,
   saison:[6,8,7,8,8,8,5,5,8,8,11,18],
   lignes:[
     {nom:'Inscription à la BCE (guichet d\'entreprises)',cat:'admin',montant:111.5,quand:'m1'},
@@ -608,6 +608,7 @@ function budgetDefault(){return{year:2027,ca:10000,prix:0,associes:2,heures:416,
     {nom:'Échantillons et dégustations',cat:'ingredients',montant:150,quand:'ventes'},
     {nom:'Nom de domaine coolkie-lab.be',cat:'frais',montant:27,quand:'m11'}]}}
 const budH=b=>Math.max(1,+(b||S.budget)?.heures||416);
+const budHP=(b,bx)=>bx*Math.max(1,+(S.costs?.cookies_per_box)||4)/100*(+(b||S.budget)?.h_batch||4);
 const curPrice=()=>+(S.products.find(p=>p.actif)?.prix)||0;
 function budCalc(b){b=b||S.budget;const prix=+b.prix||curPrice()||14;
   const sw=b.saison.map(x=>Math.max(0,+x||0)),st=sw.reduce((a,x)=>a+x,0)||1,w=sw.map(x=>x/st);
@@ -646,7 +647,7 @@ function budIdx(from,to,real){const b=S.budget;if(!b)return[];const y=String(b.y
 function renderBudget(){const b=S.budget;if(!b||!$('#kpisB'))return;const B=budCalc(),R=budReal(b.year),y=b.year,ass=Math.max(1,+b.associes||1);
   const nPast=R.filter(r=>r.past).length,caR=R.reduce((a,r)=>a+(r.past?r.ca:0),0),caAd=B.M.reduce((a,m,i)=>a+(R[i].past?m.ca:0),0),resR=R.reduce((a,r)=>a+(r.past?r.res:0),0),resAd=B.M.reduce((a,m,i)=>a+(R[i].past?m.res:0),0);
   $('#bIntro').textContent=(S.bSaved?'Budget '+y+' enregistré.':'Budget '+y+' proposé, pas encore enregistré : vérifie les hypothèses plus bas puis enregistre.')+' Le réel vient des commandes (date de retrait, hors annulées) et des dépenses notées.';
-  $('#kpisB').innerHTML=[[eur(B.ca),'Objectif de CA '+y,Math.round(B.bx)+' boîtes à '+eur(B.prix)+', soit '+Math.round(B.bx/12)+' par mois','hl'],[eur(B.ch),'Charges prévues',eur(B.cogs)+' d\'ingrédients et packaging'],[eur(B.res),'Résultat prévu',ass>1?eur(B.res/ass)+' par associé':pct(B.res,B.ca)+' du CA'],[eur(B.res/budH(b)),'Par heure de travail',budH(b)+' h par an, '+Math.round(budH(b)*60/Math.max(1,B.bx))+' min par boîte, avant impôt']]
+  $('#kpisB').innerHTML=[[eur(B.ca),'Objectif de CA '+y,Math.round(B.bx)+' boîtes à '+eur(B.prix)+', soit '+Math.round(B.bx/12)+' par mois','hl'],[eur(B.ch),'Charges prévues',eur(B.cogs)+' d\'ingrédients et packaging'],[eur(B.res),'Résultat prévu',ass>1?eur(B.res/ass)+' par associé':pct(B.res,B.ca)+' du CA'],[eur(B.res/budH(b)),'Par heure de travail',budH(b)+' h par an, dont '+Math.round(budHP(b,B.bx))+' h de production · '+eur(B.res/Math.max(1,budHP(b,B.bx)))+' par heure de production']]
     .map(k=>`<div class="kpi${k[3]?' '+k[3]:''}"><b>${esc(k[0])}</b><span>${esc(k[1])}</span>${k[2]?'<small>'+esc(k[2])+'</small>':''}</div>`).join('');
   $('#bProgT').textContent=eur(caR)+' réalisés sur '+eur(B.ca);$('#bProg').style.width=Math.min(100,B.ca?caR/B.ca*100:0).toFixed(1)+'%';
   $('#bProgS').textContent=nPast?pct(caR,B.ca)+' de l\'objectif, '+pct(caR,caAd)+' du budget prévu à fin '+MOIS[nPast-1]+' (écart '+sgn(caR-caAd)+', résultat réel '+eur(resR)+' pour '+eur(resAd)+' prévus).':'Rien de vendu en '+y+' pour l\'instant.';
@@ -657,13 +658,13 @@ function renderBudget(){const b=S.budget;if(!b||!$('#kpisB'))return;const B=budC
   const cp=curPrice();$('#bPrixNote').textContent=(+b.prix?'Prix fixé à la main.':'Laisse vide pour prendre le prix actuel de la boutique'+(cp?' ('+eur(cp)+')':'')+'.')+' Coût de revient actuel : '+eur(B.box)+' par boîte (Coûts de revient).';
   const st=b.saison.reduce((a,x)=>a+(+x||0),0);$('#bSeaSum').textContent='total '+Math.round(st)+' %';
   bDirty(S.bDirty);if(S.bDirty)return;
-  $('#bYear').value=b.year;$('#bCa').value=b.ca;$('#bPrix').value=+b.prix||'';$('#bPrix').placeholder=cp?String(cp).replace('.',','):'14';$('#bAss').value=b.associes||1;$('#bH').value=budH(b);
+  $('#bYear').value=b.year;$('#bCa').value=b.ca;$('#bPrix').value=+b.prix||'';$('#bPrix').placeholder=cp?String(cp).replace('.',','):'14';$('#bAss').value=b.associes||1;$('#bH').value=budH(b);$('#bHb').value=+b.h_batch||4;
   $('#bSea').innerHTML=b.saison.map((x,i)=>`<div><label for="bs${i}">${MC[i]}</label><input id="bs${i}" data-bs="${i}" inputmode="decimal" value="${esc(x)}"></div>`).join('');
   const opt=(o,v)=>Object.entries(o).map(([k,l])=>`<option value="${k}"${k===v?' selected':''}>${esc(l)}</option>`).join('');
   $('#bLines').innerHTML=`<div class="bl h"><span class="nm">Charge</span><span>Poste</span><span>Montant / an</span><span>Quand</span><span></span></div>`+b.lignes.map((l,i)=>`<div class="bl"><input class="nm" data-bi="${i}" data-bf="nom" value="${esc(l.nom)}" aria-label="Charge"><select data-bi="${i}" data-bf="cat" aria-label="Poste">${opt(CATS,l.cat)}</select><input data-bi="${i}" data-bf="montant" inputmode="decimal" value="${esc(l.montant)}" aria-label="Montant par an"><select data-bi="${i}" data-bf="quand" aria-label="Quand">${opt(QUAND,l.quand)}</select><button data-bdel="${i}" aria-label="Supprimer">×</button></div>`).join('')}
 function bDirty(v){S.bDirty=v;$('#bState').textContent=v?'Modifications non enregistrées':(S.bSaved?'Tout est enregistré':'Budget proposé, pas encore enregistré')}
 const bEdit=e=>{const t=e.target,b=S.budget;if(!b||!t.closest('#ch-budget')||t.closest('.savebar'))return;
-  if(t.id==='bYear')b.year=Math.round(num(t.value))||b.year;else if(t.id==='bCa')b.ca=num(t.value);else if(t.id==='bPrix')b.prix=num(t.value);else if(t.id==='bAss')b.associes=Math.max(1,Math.round(num(t.value)));else if(t.id==='bH')b.heures=Math.max(1,Math.round(num(t.value)));
+  if(t.id==='bYear')b.year=Math.round(num(t.value))||b.year;else if(t.id==='bCa')b.ca=num(t.value);else if(t.id==='bPrix')b.prix=num(t.value);else if(t.id==='bAss')b.associes=Math.max(1,Math.round(num(t.value)));else if(t.id==='bH')b.heures=Math.max(1,Math.round(num(t.value)));else if(t.id==='bHb')b.h_batch=num(t.value);
   else if(t.dataset.bs!==undefined)b.saison[+t.dataset.bs]=num(t.value);
   else if(t.dataset.bi!==undefined){const l=b.lignes[+t.dataset.bi];l[t.dataset.bf]=['nom','cat','quand'].includes(t.dataset.bf)?t.value:num(t.value)}else return;
   bDirty(true);renderBudget()};
@@ -696,7 +697,7 @@ function budgetDoc(){const b=S.budget,B=budCalc(),R=budReal(b.year),ass=Math.max
   <tr><td>Ingrédients des boîtes vendues (${eur(B.ingB)} par boîte)</td><td>Ingrédients</td><td>Selon les ventes</td><td class="r">${eur(B.ingB*B.bx)}</td></tr><tr><td>Packaging des boîtes vendues (${eur(B.packB)} par boîte)</td><td>Packaging</td><td>Selon les ventes</td><td class="r">${eur(B.packB*B.bx)}</td></tr>
   ${b.lignes.map(l=>`<tr><td>${esc(l.nom)}</td><td>${esc(CATS[l.cat]||l.cat)}</td><td>${esc(QUAND[l.quand]||l.quand)}</td><td class="r">${eur(l.montant)}</td></tr>`).join('')}
   <tr class="t"><td colspan="3"><b>Total</b></td><td class="r"><b>${eur(B.ch)}</b></td></tr></tbody></table>
-  <h2>5. Hypothèses</h2><p>Prix moyen de ${eur(B.prix)} par boîte et coût de revient de ${eur(B.box)} par boîte (ingrédients et packaging), soit une marge brute de ${pct(B.prix-B.box,B.prix)}. Saisonnalité : ${b.saison.map((x,i)=>MC[i]+' '+x+' %').join(', ')}. Activité en indépendants complémentaires (${ass} associé${ass>1?'s':''}), sous le régime de la franchise de TVA (pas de TVA facturée ni récupérée), sans compte professionnel ni comptable. Les cotisations sociales provisoires sont le minimum légal 2026 (98,51 € par trimestre et par associé) ; elles sont régularisées deux ans plus tard selon le revenu réel (20,5 % du revenu au-delà de 1 922,16 € par associé). Temps de travail prévu : ${budH(b)} h par an au total, soit ${eur(B.res/budH(b))} de résultat par heure avant impôt. L'impôt sur le revenu n'est pas compris : il dépend des autres revenus de chacun.</p>`}
+  <h2>5. Hypothèses</h2><p>Prix moyen de ${eur(B.prix)} par boîte et coût de revient de ${eur(B.box)} par boîte (ingrédients et packaging), soit une marge brute de ${pct(B.prix-B.box,B.prix)}. Saisonnalité : ${b.saison.map((x,i)=>MC[i]+' '+x+' %').join(', ')}. Activité en indépendants complémentaires (${ass} associé${ass>1?'s':''}), sous le régime de la franchise de TVA (pas de TVA facturée ni récupérée), sans compte professionnel ni comptable. Les cotisations sociales provisoires sont le minimum légal 2026 (98,51 € par trimestre et par associé) ; elles sont régularisées deux ans plus tard selon le revenu réel (20,5 % du revenu au-delà de 1 922,16 € par associé). Temps de travail prévu : ${budH(b)} h par an au total, soit ${eur(B.res/budH(b))} de résultat par heure avant impôt ; la production seule représente environ ${Math.round(budHP(b,B.bx))} h (${+b.h_batch||4} h par batch de 100 coolkies, ${S.costs?.cookies_per_box||4} coolkies par boîte), soit ${eur(B.res/Math.max(1,budHP(b,B.bx)))} par heure de production. L'impôt sur le revenu n'est pas compris : il dépend des autres revenus de chacun.</p>`}
 function printDoc(html,title){let r=$('#report');if(!r){r=document.createElement('div');r.id='report';document.body.appendChild(r)}r.innerHTML=html;const t=document.title;document.title=title;
   const im=r.querySelector('img');const go=()=>setTimeout(()=>{window.print();setTimeout(()=>document.title=t,1500)},100);if(!im||im.complete)go();else im.onload=im.onerror=go}
 
